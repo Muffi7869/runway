@@ -46,3 +46,11 @@
 - Rebuilt Git history as one clean commit because the earlier local commits contained a local machine path.
 - Decisions: retained the authorized public owner identity and project context while removing disallowed data.
 - Known issues: none introduced by this task.
+
+### P0-T2-b — Public GitHub repository connected
+
+- Published the repository at https://github.com/Muffi7869/runway with public visibility.
+- Confirmed the repository is MIT licensed and contains the prepared public README.
+- Verified the working tree contained no secrets or disallowed environment files before publishing.
+- Decisions: secret scanning and push protection remain for Mufaddal to enable manually in GitHub settings.
+- Known issues: secret scanning and push protection are not yet confirmed enabled.
