@@ -9,6 +9,7 @@
 - Initialized shadcn/ui with its current default `base-nova` preset; removed the automatically generated sample button so no shadcn components are included.
 - Configured production builds to use Next.js webpack mode because Turbopack's CSS worker cannot bind its internal port in the project environment.
 - `agentRules: false` in `next.config.ts` is kept on purpose. It stops `next dev` from modifying the required `AGENTS.md` or generating `CLAUDE.md`. It does not affect the deployed app. The Orchestrator confirmed keeping it.
+- Supabase browser and server clients live in `src/lib/db`, matching the project layout. The Supabase CLI installed and ran without requiring install-script approval, so no package scripts were approved.
 - Live Vercel URL: https://runway-xi-ten.vercel.app
 
 ## Known issues
@@ -83,3 +84,12 @@
 - Confirmed npm audit reports 9 high findings overall and 0 high findings for runtime dependencies.
 - Decisions: retained `agentRules: false` as confirmed by the Orchestrator.
 - Known issues: the development-only audit findings remain because no non-breaking fix exists.
+
+### P1-T1-a — Supabase clients and CLI
+
+- Added `@supabase/supabase-js` 2.117.2 and `@supabase/ssr` 0.12.7 as application dependencies, plus Supabase CLI 2.120.0 as a development dependency.
+- Initialized the local Supabase configuration non-interactively without IDE settings.
+- Created browser and server clients in `src/lib/db` with clear environment-variable validation and cookie handling for Server Components.
+- Decisions: no CLI install-script approval was needed, and no package scripts were approved.
+- Manual step: Mufaddal will link the CLI to the Supabase project by hand; Codex did not log in, link, or push database changes.
+- Known issues: none introduced by this task.
