@@ -9,6 +9,7 @@
 - Initialized shadcn/ui with its current default `base-nova` preset; removed the automatically generated sample button so no shadcn components are included.
 - Configured production builds to use Next.js webpack mode because Turbopack's CSS worker cannot bind its internal port in the project environment.
 - Disabled Next.js automatic agent-rule generation so `next dev` cannot modify the project's required `AGENTS.md` file.
+- Live Vercel URL: https://runway-xi-ten.vercel.app
 
 ## Known issues
 
@@ -54,3 +55,10 @@
 - Verified the working tree contained no secrets or disallowed environment files before publishing.
 - Decisions: secret scanning and push protection remain for Mufaddal to enable manually in GitHub settings.
 - Known issues: secret scanning and push protection are not yet confirmed enabled.
+
+### P0-T3 — Vercel deployment live
+
+- Connected the GitHub repository to Vercel and confirmed the first deployment succeeded.
+- Added the visible `v0.0.1` marker to test automatic deployments from the `main` branch.
+- Decisions: recorded the live deployment URL above.
+- Known issues: none introduced by this task.
