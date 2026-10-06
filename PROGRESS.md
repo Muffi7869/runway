@@ -101,3 +101,10 @@
 - Decisions: sessions use one row per step touched, with direct step and assignment references plus before/after percentages. This keeps per-class pace calculations simple to aggregate and preserves foreign-key enforcement for the step.
 - Manual step: the migration has not been applied; Mufaddal will review and push it to Supabase by hand.
 - Known issues: none introduced by this task.
+
+### P1-T2-b — Generated database types
+
+- Added the database types generated from the live Supabase schema, covering all eight core tables.
+- Typed both the browser and server Supabase clients with the generated `Database` type.
+- Decisions: kept the generated types file unchanged and made no runtime or schema changes.
+- Known issues: none introduced by this task.
