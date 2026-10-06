@@ -115,3 +115,11 @@
 - Added unit coverage for matches, mismatches, capitalization, whitespace, missing user email, and every missing allowed-email form.
 - Decisions: the helper fails closed when either value is absent or blank and does not read environment variables or log values.
 - Known issues: none introduced by this task.
+
+### P1-T3-b — Google sign-in with owner lock
+
+- Added Google sign-in, the OAuth callback, owner-only route protection, a private-app notice, and sign-out.
+- Moved the existing homepage into a protected route group with a minimal header.
+- Decisions: used `src/proxy.ts`, as required by the installed Next.js version. The public paths are `/login`, `/auth/callback`, and `/private`.
+- Decisions: Google sign-in uses `prompt=select_account` so the owner can choose a different account while testing, without requesting extra scopes or offline access.
+- Known issues: real Google sign-in requires browser testing by Mufaddal.
