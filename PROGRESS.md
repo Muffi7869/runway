@@ -13,8 +13,7 @@
 
 ## Known issues
 
-- `npm install` reports nine high-severity vulnerabilities in the generated dependency tree. No forced upgrades were applied because they may introduce breaking changes.
-- Next.js reports an unrelated lockfile outside the project root and ignores it; the project uses its own lockfile and all checks pass.
+- npm audit reports 9 high findings from one braces advisory. No non-breaking fix exists. The only fixes are forced major downgrades of shadcn and eslint-config-next, which were not applied. npm counts shadcn as a runtime dependency. Decision on moving it to dev dependencies is with the Orchestrator.
 
 ## Log
 
@@ -68,3 +67,11 @@
 - Wrote the Phase 0 report with requirement status, changed files, verification output, known issues, setup status, testing instructions, commits, and the remaining review question.
 - Decisions: normalized machine-specific paths and package banners in public verification output.
 - Known issues: GitHub secret scanning and push protection still need manual confirmation.
+
+### P0-FIX — Phase 0 cleanup
+
+- Set `turbopack.root` and `outputFileTracingRoot` to one project-root value computed by the Next.js configuration.
+- Confirmed the non-forced audit attempt left the result at 9 high findings and 0 critical findings, with no dependency changes retained.
+- Pinned the project to Node.js 24 through package engine metadata and `.nvmrc`.
+- Decisions: did not apply forced major downgrades or move shadcn between dependency groups.
+- Known issues: the audit finding and pending Orchestrator decision are recorded above.
