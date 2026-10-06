@@ -123,3 +123,11 @@
 - Decisions: used `src/proxy.ts`, as required by the installed Next.js version. The public paths are `/login`, `/auth/callback`, and `/private`.
 - Decisions: Google sign-in uses `prompt=select_account` so the owner can choose a different account while testing, without requesting extra scopes or offline access.
 - Known issues: real Google sign-in requires browser testing by Mufaddal.
+
+### P1-T4-a — Settings validation and tests
+
+- Added shared Zod validation for settings inputs using integer minutes and days, including the requested relational rules and boundary checks.
+- Added optional HTTPS-only Canvas feed validation with error messages that do not echo submitted values.
+- Added hours-and-minutes conversion helpers and unit tests for all requested rules and boundaries.
+- Decisions: kept the schema client-safe and shared, with no server-only code or additional validation limits.
+- Known issues: none introduced by this task.
