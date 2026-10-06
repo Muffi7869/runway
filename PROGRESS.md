@@ -62,3 +62,9 @@
 - Added the visible `v0.0.1` marker to test automatic deployments from the `main` branch.
 - Decisions: recorded the live deployment URL above.
 - Known issues: none introduced by this task.
+
+### P0-T3-b — Phase 0 report
+
+- Wrote the Phase 0 report with requirement status, changed files, verification output, known issues, setup status, testing instructions, commits, and the remaining review question.
+- Decisions: normalized machine-specific paths and package banners in public verification output.
+- Known issues: GitHub secret scanning and push protection still need manual confirmation.
