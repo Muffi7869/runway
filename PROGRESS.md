@@ -8,12 +8,12 @@
 - Installed Vitest 4.1.11 because Vitest 5.0.3 requires newer Node type definitions than the generated Next.js scaffold.
 - Initialized shadcn/ui with its current default `base-nova` preset; removed the automatically generated sample button so no shadcn components are included.
 - Configured production builds to use Next.js webpack mode because Turbopack's CSS worker cannot bind its internal port in the project environment.
-- Disabled Next.js automatic agent-rule generation so `next dev` cannot modify the project's required `AGENTS.md` file.
+- `agentRules: false` in `next.config.ts` is kept on purpose. It stops `next dev` from modifying the required `AGENTS.md` or generating `CLAUDE.md`. It does not affect the deployed app. The Orchestrator confirmed keeping it.
 - Live Vercel URL: https://runway-xi-ten.vercel.app
 
 ## Known issues
 
-- npm audit reports 9 high findings from one braces advisory. No non-breaking fix exists. The only fixes are forced major downgrades of shadcn and eslint-config-next, which were not applied. npm counts shadcn as a runtime dependency. Decision on moving it to dev dependencies is with the Orchestrator.
+- npm audit reports 9 high findings from one braces advisory. No non-breaking fix exists. The only fixes are forced major downgrades of shadcn and eslint-config-next, which were not applied. Moving shadcn to devDependencies reduced the runtime audit result to 0 high findings.
 
 ## Log
 
@@ -75,3 +75,11 @@
 - Pinned the project to Node.js 24 through package engine metadata and `.nvmrc`.
 - Decisions: did not apply forced major downgrades or move shadcn between dependency groups.
 - Known issues: the audit finding and pending Orchestrator decision are recorded above.
+
+### P0-FIX-c — shadcn development dependency
+
+- Moved shadcn from dependencies to devDependencies without changing its version or adding packages.
+- Confirmed the only application use is a build-time stylesheet import; the shadcn configuration also references its schema, and there are no runtime imports.
+- Confirmed npm audit reports 9 high findings overall and 0 high findings for runtime dependencies.
+- Decisions: retained `agentRules: false` as confirmed by the Orchestrator.
+- Known issues: the development-only audit findings remain because no non-breaking fix exists.
