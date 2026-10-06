@@ -131,3 +131,11 @@
 - Added hours-and-minutes conversion helpers and unit tests for all requested rules and boundaries.
 - Decisions: kept the schema client-safe and shared, with no server-only code or additional validation limits.
 - Known issues: none introduced by this task.
+
+### P1-T4-b — App shell and settings gate
+
+- Extended the protected header with navigation for Week, Assignments, Classes, and Settings while retaining sign-out.
+- Added the four requested placeholder pages and changed the root route to redirect to Week.
+- Added a shared server gate that authenticates the owner, reads only the required non-secret settings columns, and redirects incomplete settings to the Settings page.
+- Decisions: every protected page calls the gate directly except Settings, which calls the owner check directly to avoid a redirect loop.
+- Known issues: none introduced by this task.
