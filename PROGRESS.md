@@ -108,3 +108,10 @@
 - Typed both the browser and server Supabase clients with the generated `Database` type.
 - Decisions: kept the generated types file unchanged and made no runtime or schema changes.
 - Known issues: none introduced by this task.
+
+### P1-T3-a — Owner check and tests
+
+- Added a pure owner-email comparison helper that trims and lower-cases both inputs.
+- Added unit coverage for matches, mismatches, capitalization, whitespace, missing user email, and every missing allowed-email form.
+- Decisions: the helper fails closed when either value is absent or blank and does not read environment variables or log values.
+- Known issues: none introduced by this task.
