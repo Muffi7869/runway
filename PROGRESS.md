@@ -93,3 +93,11 @@
 - Decisions: no CLI install-script approval was needed, and no package scripts were approved.
 - Manual step: Mufaddal will link the CLI to the Supabase project by hand; Codex did not log in, link, or push database changes.
 - Known issues: none introduced by this task.
+
+### P1-T2-a — Core schema migration
+
+- Wrote one migration for all eight core tables, their named constraints, automatic `updated_at` triggers, and Row Level Security policies.
+- Added exactly three authenticated policies per table for select, insert, and update; no delete or anonymous policies were added.
+- Decisions: sessions use one row per step touched, with direct step and assignment references plus before/after percentages. This keeps per-class pace calculations simple to aggregate and preserves foreign-key enforcement for the step.
+- Manual step: the migration has not been applied; Mufaddal will review and push it to Supabase by hand.
+- Known issues: none introduced by this task.
