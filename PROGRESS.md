@@ -239,3 +239,10 @@
 - Added fixed callback-result messages and filtered missing permissions against only the three approved scope names before display.
 - Decisions: the Settings page remains reachable before settings are complete, and no encrypted token data is selected or sent to the browser.
 - Known issues: none introduced by this task.
+
+### P2-T2-a — Calendar API helpers and Runway calendar find-or-create
+
+- Added small fetch-based helpers to list visible and hidden calendars with bounded pagination, create a calendar, identify owned non-primary Runway calendars, and return structured API errors without response bodies.
+- Added a server-only coordinator that verifies the connected state, obtains a fresh access token, and deterministically returns, adopts, or creates the Runway calendar while reporting extras.
+- Decisions: deliberately store no placeholder value. The coordinator lists before creating and saves with a compare-and-set update so a concurrent request cannot overwrite the winning calendar identifier.
+- Known issues: extra Runway calendars are reported but never deleted.
