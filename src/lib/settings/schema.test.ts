@@ -39,6 +39,10 @@ function expectInvalid(overrides: Partial<Record<keyof SettingsInput, unknown>>)
 }
 
 describe("settingsSchema", () => {
+  it("accepts a fully valid settings object", () => {
+    expectValid();
+  });
+
   it("accepts a study window whose start is before its end", () => {
     expectValid({ study_window_start: 480, study_window_end: 1020 });
   });
@@ -75,6 +79,17 @@ describe("settingsSchema", () => {
     expectInvalid({ min_block_minutes: 91, max_block_minutes: 90 });
   });
 
+  it.each([14, 10])(
+    "rejects a minimum block of %i minutes",
+    (minBlockMinutes) => {
+      expectInvalid({ min_block_minutes: minBlockMinutes });
+    },
+  );
+
+  it("accepts a minimum block of 15 minutes", () => {
+    expectValid({ min_block_minutes: 15 });
+  });
+
   it("accepts a maximum block equal to the daily maximum", () => {
     expectValid({ max_block_minutes: 240 });
   });
@@ -86,12 +101,46 @@ describe("settingsSchema", () => {
     });
   });
 
-  it("accepts zero-minute duration values", () => {
+  it("accepts minimum valid duration values", () => {
     expectValid({
-      max_study_minutes_per_day: 0,
-      min_block_minutes: 0,
-      max_block_minutes: 0,
+      max_study_minutes_per_day: 15,
+      min_block_minutes: 15,
+      max_block_minutes: 15,
     });
+  });
+
+  it("accepts a study window exactly as long as the minimum block", () => {
+    expectValid({
+      study_window_start: 600,
+      study_window_end: 630,
+      min_block_minutes: 30,
+    });
+  });
+
+  it("rejects a study window one minute shorter than the minimum block", () => {
+    expectInvalid({
+      study_window_start: 600,
+      study_window_end: 629,
+      min_block_minutes: 30,
+    });
+  });
+
+  it("uses plain-English messages for the new settings rules", () => {
+    const minimumBlockIssues = expectInvalid({ min_block_minutes: 14 });
+    const studyWindowIssues = expectInvalid({
+      study_window_start: 600,
+      study_window_end: 629,
+      min_block_minutes: 30,
+    });
+    const messages = [...minimumBlockIssues, ...studyWindowIssues]
+      .map((issue) => issue.message)
+      .join(" ");
+
+    expect(messages).toContain("Minimum block must be at least 15 minutes.");
+    expect(messages).toContain(
+      "Study window must be at least as long as the minimum block.",
+    );
+    expect(messages).not.toMatch(/NaN|expected|received/i);
   });
 
   it.each([
@@ -207,7 +256,7 @@ describe("time-of-day conversion", () => {
   it("validates a complete object built from form-style strings", () => {
     const formValues = {
       studyWindowStart: "12:00",
-      studyWindowEnd: "12:30",
+      studyWindowEnd: "13:00",
       maximumStudyHours: "5",
       maximumStudyMinutes: "30",
       minimumBlockHours: "1",

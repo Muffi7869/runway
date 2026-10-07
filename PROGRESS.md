@@ -169,3 +169,11 @@
 - Wrote the Phase 1 report with implementation status, database decisions, changed files, fresh verification output, audit totals, manual checks, setup status, and testing instructions.
 - Decisions: applied the established public-safety substitutions to machine-specific verification output without changing results or pass counts.
 - Known issues: the development-only audit findings remain documented in the report.
+
+### P1-FIX-a — Settings validation rules
+
+- Confirmed the nine-table contract defines `session_steps` with its session and step links, allowed progress values, and progress ordering, while `sessions` no longer contains step progress fields.
+- Added the 15-minute minimum block rule and the rule requiring the study window to fit at least one minimum block, with boundary and message tests.
+- Rules audit: Zod already enforced maximum block versus minimum block and daily maximum versus maximum block; the two new rules were missing. The current migration has none of the four relationship constraints.
+- Decisions: used the explicit `session_id` now present in the updated contract; no fallback to the brief was needed.
+- Known issues: database enforcement for these four rules remains for the separate database-fix task.

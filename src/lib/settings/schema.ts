@@ -50,7 +50,7 @@ export const settingsSchema = z
     min_block_minutes: nonnegativeMinutes(
       "Minimum block time",
       "Enter a minimum block length.",
-    ),
+    ).min(15, "Minimum block must be at least 15 minutes."),
     max_block_minutes: nonnegativeMinutes(
       "Maximum block time",
       "Enter a maximum block length.",
@@ -73,6 +73,18 @@ export const settingsSchema = z
         code: "custom",
         path: ["study_window_end"],
         message: "Study window start must be before study window end.",
+      });
+    }
+
+    if (
+      settings.study_window_end - settings.study_window_start <
+      settings.min_block_minutes
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["study_window_end"],
+        message:
+          "Study window must be at least as long as the minimum block.",
       });
     }
 

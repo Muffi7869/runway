@@ -55,13 +55,14 @@ PROGRESS.md           running log (see below)
 | settings | user | study window start/end, max study minutes per day, min/max block minutes, buffer days, timezone, check-in time (default 23:30), Canvas feed URL (treat as secret) |
 | classes | user | name, color, pace_ratio (default 1.0) |
 | fixed_events | user | title, start, end, google_event_id, source_calendar_id |
-| assignments | class | title, type (assignment/exam), deadline, spec_text, weight (low/medium/high), status (active/done/dropped), ai_total_estimate_minutes, recurrence_rule (v2, nullable), canvas_uid (nullable, unique per user) |
-| steps | assignment | name, order, estimated_minutes, percent_done (0/25/50/75/100) |
-| blocks | step | start, end, planned_minutes, google_event_id, status (planned/checked_in/missed) |
-| sessions | assignment | date, actual_minutes, step progress (step id, percent before, percent after) |
+| assignments | class | class_id, title, type (assignment/exam), deadline, spec_text, weight (low/medium/high), status (active/done/dropped), ai_total_estimate_minutes, recurrence_rule (v2, nullable), canvas_uid (nullable, unique per user) |
+| steps | assignment | assignment_id, name, order, estimated_minutes, percent_done (0/25/50/75/100) |
+| blocks | step | step_id, start, end, planned_minutes, google_event_id, status (planned/checked_in/missed) |
+| sessions | assignment | assignment_id, date, actual_minutes |
+| session_steps | session | session_id, step_id, percent_before, percent_after (both 0/25/50/75/100, after ≥ before) |
 | blocked_days | user | date, reason |
 
-Every table has `id`, `user_id`, `created_at`, `updated_at`.
+Every table has `id`, `user_id`, `created_at`, `updated_at`. Link columns (`*_id`) are foreign keys to the table named in "Belongs to" (`session_steps.step_id` links to steps). No foreign key cascades deletes.
 
 ## Hard rules
 
