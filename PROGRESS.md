@@ -307,3 +307,10 @@
 - Added a pure pixel-placement helper with tests for row offsets, proportional duration height, minimum short-event height, pre-grid clamping, and the reported multi-hour positions.
 - Decisions: the hour gutter and every responsive day column use the same total pixel height and top origin; event blocks render above grid lines with clipped overflow.
 - Known issues: none introduced by this task.
+
+### P2-T4-b-fix2 — Scoped Week grid layout
+
+- Diagnosed that Tailwind is imported and all Week responsive utilities are present in the production CSS, but the reported runtime layout still depended on those global utilities being applied; replaced every layout-critical Week-grid utility with scoped CSS Module rules and explicit event geometry.
+- Added static-markup tests proving that all seven day columns render, hour lines and event blocks share each day container, reported event times receive the expected top offsets, overlapping lanes differ horizontally, and an empty weekend remains empty.
+- Decisions: retained the 768-pixel phone-to-desktop switch, swipe controls, Week logic, and placement math unchanged.
+- Known issues: the site-wide sans font variable is self-referential, so the body falls back to the browser's serif font. The smallest fix is to point the global sans variable at the existing Geist sans variable; this task intentionally did not change global styling.

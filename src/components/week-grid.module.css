@@ -1,0 +1,153 @@
+.weekGrid {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #ffffff;
+}
+
+.mobileNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.dayButton {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: #111827;
+}
+
+.dayButton:disabled {
+  opacity: 0.4;
+}
+
+.mobileDayLabel {
+  padding: 0.25rem 0.75rem;
+  font-weight: 600;
+}
+
+.todayLabel,
+.todayHeader {
+  background: #dbeafe;
+}
+
+.desktopHeaders {
+  display: none;
+  grid-template-columns: 4rem repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.dayHeader {
+  min-width: 0;
+  padding: 0.75rem 0.5rem;
+  border-left: 1px solid #e5e7eb;
+  text-align: center;
+  font-weight: 600;
+}
+
+.calendarBody {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 3.5rem minmax(0, 1fr);
+  background: #ffffff;
+}
+
+.hourGutter {
+  position: relative;
+  border-right: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 0.75rem;
+}
+
+.hourLabel {
+  position: absolute;
+  right: 0.5rem;
+}
+
+.dayColumn {
+  position: relative;
+  display: none;
+  min-width: 0;
+  border-right: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.dayColumn[data-active="true"] {
+  display: block;
+}
+
+.todayColumn {
+  background: #eff6ff;
+}
+
+.hourLine {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 0;
+  border-top: 1px solid #e5e7eb;
+  pointer-events: none;
+}
+
+.eventSlot {
+  position: absolute;
+  z-index: 10;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0 2px;
+}
+
+.eventBlock {
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #9ca3af;
+  border-radius: 0.25rem;
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.eventTitle,
+.eventTime {
+  overflow: hidden;
+  margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.eventTime {
+  font-size: 0.6875rem;
+}
+
+@media (min-width: 768px) {
+  .mobileNavigation {
+    display: none;
+  }
+
+  .desktopHeaders {
+    display: grid;
+  }
+
+  .calendarBody {
+    grid-template-columns: 4rem repeat(7, minmax(0, 1fr));
+  }
+
+  .dayColumn {
+    display: block;
+  }
+}
