@@ -207,3 +207,67 @@ Route (app)
 ## 11. Questions
 
 None.
+
+# Addendum: P1-FIX
+
+## Data model change
+
+The original Phase 1 report said that `sessions` stored one row per step touched, including the step reference and progress percentages. The report did not identify that design as a deviation. That description contradicted both the nine-table contract in `AGENTS.md` and the Orchestrator decision: a session stores `assignment_id`, `date`, and `actual_minutes`, while one `session_steps` row records each step touched in that session.
+
+The correction removed `step_id`, `percent_before`, and `percent_after` from `sessions`. It created `session_steps` with `session_id`, `step_id`, `percent_before`, and `percent_after`, plus the standard identity, owner, and timestamp fields. Named checks restrict both percentages to 0, 25, 50, 75, or 100 and require the ending percentage to be at least the starting percentage. A unique constraint permits only one row per session and step. Its foreign keys do not cascade deletes, Row Level Security is enabled, owner-scoped select, insert, and update policies are present, and no delete policy exists. The schema now has all nine contract tables.
+
+## Requirement check
+
+### Orchestrator decisions
+
+1. **Done — Nine-table session model:** `sessions` holds assignment-level date and actual-minute data. `session_steps` holds one row per session and step with progress before and after.
+2. **Done — Settings rules in both layers:** All four relationship rules are enforced by the shared Zod schema and named database constraints. Boundary tests cover rejected and accepted edge values.
+3. **Done — Single Supabase user:** Manual confirmation found exactly one authentication user, sign-ups are disabled, and the owner can still sign in.
+4. **Done — New migration only:** The correction is in a new migration; the previously applied migration was not edited.
+5. **Done — Database safety:** Foreign keys do not cascade deletes. Every contract table has Row Level Security with owner-scoped select, insert, and update policies and no delete policy.
+6. **Done — Other Phase 1 decisions:** The Orchestrator reported no additional decision messages for this correction.
+
+### Original P1-FIX brief
+
+- **Done — Contract preflight:** The contract was confirmed to define nine tables, including the required `session_steps` fields.
+- **Done — Shared validation correction:** The 15-minute minimum block and study-window capacity rules were added without weakening existing settings validation.
+- **Done — Boundary coverage:** Tests reject a 14-minute minimum and accept 15 minutes; equality and one-minute-below cases cover the other greater-than-or-equal relationships.
+- **Done — Migration safety guard:** The new migration refuses to restructure `sessions` if any session row exists. Manual confirmation established that the table was empty before migration.
+- **Done — Session restructuring:** The migration removes per-step fields from `sessions` and creates the constrained, owner-scoped `session_steps` table.
+- **Done — Database settings constraints:** The four settings relationships are enforced in the database with named checks.
+- **Done — Rollback-only database verification:** The SQL Editor check reported every rejection and acceptance as expected, including rejection when ending progress was lower than starting progress.
+- **Done — Generated types:** Types regenerated from the deployed schema contain all nine tables and match the corrected session design.
+- **Done — Application compatibility:** No application source reads or writes the removed session fields, and all automated checks pass.
+- **Done — Phase 1 correction record:** This addendum explicitly records the prior report's contradiction and the completed correction.
+
+## Settings rules
+
+| Rule | Shared validation | Database | Boundary cases |
+| --- | --- | --- | --- |
+| Minimum block is at least 15 minutes | Zod schema | Named check constraint | 14 rejected; 15 accepted; a 10-minute value was also rejected manually in the app |
+| Maximum block is at least the minimum block | Zod schema | Named check constraint | Equal accepted; one minute below rejected |
+| Daily maximum is at least the maximum block | Zod schema | Named check constraint | Equal accepted; one minute below rejected |
+| Study window is at least the minimum block | Zod schema | Named check constraint | Exactly equal accepted; one minute shorter rejected |
+
+## Test output
+
+- `npm run typecheck`: passed with zero TypeScript errors.
+- `npm run lint`: passed with zero lint errors.
+- `npm test`: passed; 4 test files passed, 73 tests passed, and 0 tests failed.
+- `npm run build`: passed; the production build compiled successfully and generated all 9 application routes.
+- `npm audit`: 9 high-severity findings overall and 0 critical findings.
+- `npm audit --omit=dev`: 0 high-severity runtime findings and 0 total runtime findings.
+
+Machine-specific paths and package banners are intentionally omitted from this public addendum. The audit findings remain confined to development tooling and still have no non-breaking fix.
+
+## Supabase confirmation
+
+- `sessions` contained zero rows before the restructuring.
+- The new migration was applied without errors.
+- The Table Editor shows nine tables, all with Row Level Security enabled.
+- Every rollback-only SQL Editor check produced the expected accepted or rejected result, including rejection of decreasing step progress.
+- A 10-minute minimum block is rejected by the app and is not saved.
+- Authentication contains exactly one user.
+- New sign-ups are disabled.
+- Owner sign-in continues to work with sign-ups disabled.
+- No problems were reported during the manual checks.

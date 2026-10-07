@@ -238,6 +238,54 @@ export type Database = {
         }
         Relationships: []
       }
+      session_steps: {
+        Row: {
+          created_at: string
+          id: string
+          percent_after: number
+          percent_before: number
+          session_id: string
+          step_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          percent_after: number
+          percent_before: number
+          session_id: string
+          step_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          percent_after?: number
+          percent_before?: number
+          session_id?: string
+          step_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_steps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_steps_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           actual_minutes: number
@@ -245,9 +293,6 @@ export type Database = {
           created_at: string
           date: string
           id: string
-          percent_after: number
-          percent_before: number
-          step_id: string
           updated_at: string
           user_id: string
         }
@@ -257,9 +302,6 @@ export type Database = {
           created_at?: string
           date: string
           id?: string
-          percent_after: number
-          percent_before: number
-          step_id: string
           updated_at?: string
           user_id: string
         }
@@ -269,9 +311,6 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
-          percent_after?: number
-          percent_before?: number
-          step_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -281,13 +320,6 @@ export type Database = {
             columns: ["assignment_id"]
             isOneToOne: false
             referencedRelation: "assignments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sessions_step_id_fkey"
-            columns: ["step_id"]
-            isOneToOne: false
-            referencedRelation: "steps"
             referencedColumns: ["id"]
           },
         ]

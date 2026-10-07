@@ -186,3 +186,10 @@
 - Decisions: used the existing shared timestamp trigger function and kept every foreign key non-cascading; the migration refuses to run if any session row exists.
 - Manual step: Mufaddal will apply the migration and regenerate database types by hand; Codex did neither.
 - Known issues: the migration and rollback-only verification script have not yet been run against the linked database.
+
+### P1-FIX-c — Regenerated types and Phase 1 addendum
+
+- Verified the regenerated database types contain all nine contract tables, give `session_steps` its session, step, and progress fields, and remove per-step fields from `sessions`.
+- Confirmed application source does not read or write the removed session fields and appended the P1-FIX correction addendum to the Phase 1 report.
+- Decisions: the sessions and `session_steps` design recorded above remains the authoritative design; earlier log entries are preserved as historical records.
+- Known issues: none introduced by this task.
