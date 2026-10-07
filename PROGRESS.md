@@ -270,3 +270,10 @@
 - Added a pure fixed-event diff planner for inserts, changed-field updates, removed-event deletes, and deselected-calendar deletes using calendar-and-event composite keys and instant-based time comparisons.
 - Decisions: the planner assumes the upcoming database uniqueness constraint prevents duplicate keys and contains no duplicate-healing behavior.
 - Known issues: none introduced by this task.
+
+### P2-T3-c — Fixed-event delete policy and unique key
+
+- Wrote one new migration that rejects pre-existing duplicate Google event keys before adding the fixed-event composite unique constraint.
+- Added the only delete policy in the schema, scoped to the authenticated owner's fixed events; assignments, sessions, and every other table still have no delete policy.
+- Decisions: the migration is written but has not been applied; Mufaddal will push it by hand.
+- Known issues: none introduced by this task.
