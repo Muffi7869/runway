@@ -355,3 +355,10 @@
 - Added protected add and edit pages with one controlled shared form, class ownership checks, the medium create default, stored-value edit prefilling, and preserved submitted values on validation failure.
 - Decisions: blank spec text is stored as null, new assignments leave the AI estimate unset, and unchanged past deadlines retain their stored instant through the shared validator.
 - Known issues: the add and edit flows still require browser confirmation by Mufaddal.
+
+### P3-T1-c — Assignments list page
+
+- Replaced the Assignments placeholder with an owner-scoped list of active, done, and dropped assignments using the tested sorting and formatting helpers without selecting assignment spec text.
+- Added class palette swatches, edit links for active rows, collapsed native Done and Dropped sections, and one controlled status-button component for Done, Drop, and Restore actions.
+- Decisions: used scoped responsive styles for layout-critical wrapping so assignment rows remain usable without horizontal page scrolling on phone widths.
+- Known issues: the visual layout and status-button flows require browser confirmation by Mufaddal.
