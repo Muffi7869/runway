@@ -61,6 +61,7 @@ PROGRESS.md           running log (see below)
 | sessions | assignment | assignment_id, date, actual_minutes |
 | session_steps | session | session_id, step_id, percent_before, percent_after (both 0/25/50/75/100, after ≥ before) |
 | blocked_days | user | date, reason |
+| google_connection | user | refresh_token_encrypted, granted_scopes, fixed_calendar_ids (list), runway_calendar_id, last_synced_at, status (connected/needs_reconnect). One row per user |
 
 Every table has `id`, `user_id`, `created_at`, `updated_at`. Link columns (`*_id`) are foreign keys to the table named in "Belongs to" (`session_steps.step_id` links to steps). No foreign key cascades deletes.
 
@@ -68,8 +69,8 @@ Every table has `id`, `user_id`, `created_at`, `updated_at`. Link columns (`*_id
 
 1. **Times:** store all timestamps in UTC. Display in `America/Los_Angeles`. Never use local-time getters for logic. Test across the Nov 1, 2026 DST change.
 2. **Minutes are integers.** No fractional hours in the database.
-3. **Never write, edit, or delete events on any Google calendar except "Runway".** Fixed events are read-only.
-4. **Secrets:** API keys, OAuth secrets, and the Canvas feed URL never appear in code, logs, or commits. Use `.env.local` (git-ignored) and Vercel environment variables. Keep `.env.example` updated with variable names only.
+3. **Never write, edit, or delete events on any Google calendar except "Runway".** Fixed events are read-only. This is enforced by OAuth scopes: the app requests only `calendar.calendarlist.readonly`, `calendar.events.readonly`, and `calendar.app.created`. Never request the full `calendar` or `calendar.events` scope.
+4. **Secrets:** API keys, OAuth secrets, and the Canvas feed URL never appear in code, logs, or commits. Use `.env.local` (git-ignored) and Vercel environment variables. Keep `.env.example` updated with variable names only. The Google refresh token is encrypted (AES-256-GCM, key in `TOKEN_ENCRYPTION_KEY`) before it touches the database, and is never sent to the browser.
 5. **AI and Google calls run server-side only.**
 6. **Never hard-delete** assignments or sessions. Assignments get `status = dropped`. Sessions are permanent.
 7. **AI output is untrusted.** Validate every OpenAI response against a strict schema (zod). Retry once on bad output, then show a clear error.

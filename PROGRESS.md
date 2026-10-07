@@ -193,3 +193,13 @@
 - Confirmed application source does not read or write the removed session fields and appended the P1-FIX correction addendum to the Phase 1 report.
 - Decisions: the sessions and `session_steps` design recorded above remains the authoritative design; earlier log entries are preserved as historical records.
 - Known issues: none introduced by this task.
+
+### P2-T1-a — Google scopes and token encryption helpers
+
+- Confirmed the ten-table contract includes `google_connection`, the exact three allowed Calendar scope names, encrypted refresh-token storage, and a field for granted scopes.
+- Verified the three scope URLs, descriptions, and sensitivity classifications against Google's official Calendar and OAuth documentation.
+- Added the readonly Calendar scope list and missing-scope helper with unit coverage for absent, partial, duplicate, whitespace-padded, and extra scopes.
+- Added AES-256-GCM token encryption helpers using a call-time environment key, randomized IVs, authenticated versioned payloads, generic decryption failures, and unit coverage for round trips, tampering, key failures, and secret-free errors.
+- Added the token-encryption variable name to the environment template without a value.
+- Decisions: used only Node's built-in cryptography and requested no scope beyond the three allowed by the contract.
+- Known issues: none introduced by this task.
