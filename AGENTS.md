@@ -55,7 +55,7 @@ PROGRESS.md           running log (see below)
 | settings | user | study window start/end, max study minutes per day, min/max block minutes, buffer days, timezone, check-in time (default 23:30), Canvas feed URL (treat as secret) |
 | classes | user | name, color, pace_ratio (default 1.0) |
 | fixed_events | user | title, start, end, google_event_id, source_calendar_id |
-| assignments | class | class_id, title, type (assignment/exam), deadline, spec_text, weight (low/medium/high), status (active/done/dropped), ai_total_estimate_minutes, recurrence_rule (v2, nullable), canvas_uid (nullable, unique per user) |
+| assignments | class | class_id, title, type (assignment/exam), deadline, spec_text (nullable: null = no spec yet), weight (low/medium/high), status (active/done/dropped), ai_total_estimate_minutes (nullable: null = not broken down yet), recurrence_rule (v2, nullable), canvas_uid (nullable, unique per user) |
 | steps | assignment | assignment_id, name, order, estimated_minutes, percent_done (0/25/50/75/100) |
 | blocks | step | step_id, start, end, planned_minutes, google_event_id, status (planned/checked_in/missed) |
 | sessions | assignment | assignment_id, date, actual_minutes |
