@@ -347,3 +347,11 @@
 - Decisions: null represents no spec yet and not broken down yet; no defaults or placeholder values were added.
 - Manual step: Mufaddal will apply the migration by hand; Codex did not apply it or regenerate database types.
 - Known issues: the migration is not yet applied.
+
+### P3-T1-b — Assignment form and actions
+
+- Regenerated database types from the linked live schema and confirmed assignment spec text and AI total estimates are nullable and optional on insert.
+- Added owner-scoped server actions to create and edit active assignments, mark active assignments done or dropped, and restore done or dropped assignments without deleting rows.
+- Added protected add and edit pages with one controlled shared form, class ownership checks, the medium create default, stored-value edit prefilling, and preserved submitted values on validation failure.
+- Decisions: blank spec text is stored as null, new assignments leave the AI estimate unset, and unchanged past deadlines retain their stored instant through the shared validator.
+- Known issues: the add and edit flows still require browser confirmation by Mufaddal.

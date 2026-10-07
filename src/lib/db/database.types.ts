@@ -41,14 +41,14 @@ export type Database = {
     Tables: {
       assignments: {
         Row: {
-          ai_total_estimate_minutes: number
+          ai_total_estimate_minutes: number | null
           canvas_uid: string | null
           class_id: string
           created_at: string
           deadline: string
           id: string
           recurrence_rule: string | null
-          spec_text: string
+          spec_text: string | null
           status: string
           title: string
           type: string
@@ -57,14 +57,14 @@ export type Database = {
           weight: string
         }
         Insert: {
-          ai_total_estimate_minutes: number
+          ai_total_estimate_minutes?: number | null
           canvas_uid?: string | null
           class_id: string
           created_at?: string
           deadline: string
           id?: string
           recurrence_rule?: string | null
-          spec_text: string
+          spec_text?: string | null
           status: string
           title: string
           type: string
@@ -73,14 +73,14 @@ export type Database = {
           weight: string
         }
         Update: {
-          ai_total_estimate_minutes?: number
+          ai_total_estimate_minutes?: number | null
           canvas_uid?: string | null
           class_id?: string
           created_at?: string
           deadline?: string
           id?: string
           recurrence_rule?: string | null
-          spec_text?: string
+          spec_text?: string | null
           status?: string
           title?: string
           type?: string
