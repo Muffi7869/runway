@@ -231,3 +231,11 @@
 - Stored the actual granted scopes on every successful account check, marking incomplete grants as `needs_reconnect` and reporting only missing scope names.
 - Decisions: Google client credentials are set locally and in Vercel. The token-encryption key must have the same value in both environments because they use one database; losing it requires reconnecting Google.
 - Known issues: the real Google OAuth flow requires browser testing by Mufaddal.
+
+### P2-T1-d — Google connection status UI
+
+- Added a separate Google Calendar section to Settings that displays not connected, connected, or reconnect-required status from an explicit status-only database query.
+- Added plain anchor actions for connecting or reconnecting without route prefetching.
+- Added fixed callback-result messages and filtered missing permissions against only the three approved scope names before display.
+- Decisions: the Settings page remains reachable before settings are complete, and no encrypted token data is selected or sent to the browser.
+- Known issues: none introduced by this task.
