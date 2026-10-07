@@ -78,6 +78,7 @@ Every table has `id`, `user_id`, `created_at`, `updated_at`. Link columns (`*_id
 9. **Re-planning only touches future blocks that aren't checked in.** Past and checked-in blocks are history.
 10. **The repo is PUBLIC.** Nothing personal goes in code, commits, docs, `PROGRESS.md`, `reports/`, or test fixtures: no real calendar events, class schedules, emails, assignment specs, Canvas feed URLs, or local machine paths. His name, GitHub username, and the fact that he's a UCSD student are fine to show; they're already public through the LICENSE and commits. Tests use made-up data. Anything that needs a real value goes in an environment variable.
 11. **Only one person may use the deployed app.** Sign-in is restricted to the email in the `ALLOWED_EMAIL` environment variable. Every other account is rejected before it can reach any data or trigger any OpenAI call.
+12. **Google Calendar data is never sent to OpenAI or any other AI service.** Only text the user pastes or types (assignment specs, exam topics) and Runway's own records (assignment names, step names, minutes) may be sent. The public /privacy page promises this.
 
 ## Scheduler rules (summary)
 

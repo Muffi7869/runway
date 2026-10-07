@@ -2,13 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { getOwnerStatus } from "@/lib/auth/server";
+import { getRouteAction, skipsOwnerCheck } from "@/lib/auth/routing";
 import type { Database } from "@/lib/db/database.types";
-
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/private"] as const;
-
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some((path) => pathname === path);
-}
 
 function redirectWithCookies(
   request: NextRequest,
@@ -29,6 +24,12 @@ function redirectWithCookies(
 }
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  if (skipsOwnerCheck(pathname)) {
+    return NextResponse.next({ request });
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -64,15 +65,6 @@ export async function proxy(request: NextRequest) {
   });
 
   const ownerStatus = await getOwnerStatus(supabase);
-  const pathname = request.nextUrl.pathname;
-
-  if (pathname === "/login") {
-    if (ownerStatus.status === "owner") {
-      return redirectWithCookies(request, response, "/");
-    }
-
-    return response;
-  }
 
   if (pathname === "/private") {
     if (ownerStatus.status === "not_owner") {
@@ -86,15 +78,17 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (isPublicPath(pathname)) {
-    return response;
-  }
+  const action = getRouteAction(pathname, ownerStatus.status);
 
-  if (ownerStatus.status === "anonymous") {
+  if (action === "redirect_login") {
     return redirectWithCookies(request, response, "/login");
   }
 
-  if (ownerStatus.status === "not_owner") {
+  if (action === "redirect_root") {
+    return redirectWithCookies(request, response, "/");
+  }
+
+  if (action === "sign_out_and_redirect_private") {
     try {
       await supabase.auth.signOut();
     } catch {

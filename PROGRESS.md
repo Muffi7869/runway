@@ -203,3 +203,13 @@
 - Added the token-encryption variable name to the environment template without a value.
 - Decisions: used only Node's built-in cryptography and requested no scope beyond the three allowed by the contract.
 - Known issues: none introduced by this task.
+
+### P2-T1b-a — Public privacy page and landing page
+
+- Confirmed hard rule 12 prohibits sending Google Calendar data to any AI service and preserved the updated instruction file unchanged.
+- Added exactly matched public routes for `/` and `/privacy` while keeping every nested or similarly named route protected.
+- Moved `/` out of the protected route group into the root page, where anonymous visitors see the landing page, the owner continues to Week, and signed-in non-owners remain denied.
+- Added a static privacy page with no authentication code or data access and linked it from both the landing and sign-in pages.
+- Added pure routing-decision tests covering public routes, protected routes, exact matching, owner and non-owner outcomes, and existing public-route behavior, plus required privacy-source checks.
+- Decisions: `/privacy` bypasses owner lookup entirely; all other existing session refresh and cookie-copying behavior remains unchanged.
+- Known issues: none introduced by this task.
