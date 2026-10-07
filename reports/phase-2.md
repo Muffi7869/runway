@@ -179,7 +179,6 @@ Runtime dependencies: 0 high, 0 critical
 
 - Working-location, out-of-office, and focus-time behavior cannot be tested with a personal Gmail account. Their skip-or-keep behavior is covered by unit tests only.
 - A simultaneous first-time find-or-create race can create an additional Runway calendar. The database winner is deterministic, extras are reported, and the app deliberately never deletes calendars.
-- The site-wide sans-font CSS variable is self-referential, so browsers can fall back to a serif font. The Week-grid repair intentionally did not change global styling.
 - npm reports 9 high-severity development-tooling findings and 0 runtime findings. The available fixes require breaking forced changes and were not applied.
 - No Phase 2 calendar event is editable or clickable; this is intentional because fixed commitments are read-only.
 
@@ -232,4 +231,4 @@ Runtime dependencies: 0 high, 0 critical
 
 ## 11. Questions
 
-1. The global font variable in the base styles is self-referential, so the browser falls back to a serif font on every page. The Week-grid fix intentionally did not touch global styling. Should this be corrected in a small separate maintenance task?
+None.

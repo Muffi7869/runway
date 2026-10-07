@@ -326,3 +326,10 @@
 - Corrected the Phase 2 report to match the supplied real manual results: every testable check is confirmed, while three special event types remain untestable with a personal Gmail account and are covered by unit tests.
 - Decisions: removed the resolved manual-results question and retained the separate global-font maintenance question.
 - Known issues: no manual check remains open; the report still documents the event-type testing limitation, development-only audit findings, first-time calendar race behavior, and global font fallback.
+
+### P2-FIX — Global font variable
+
+- Fixed the global sans-font mapping, which referenced itself and left the browser to use its serif default, by pointing it to the loaded Geist sans variable with a system sans fallback stack.
+- Confirmed the root layout already applies the Geist sans and mono variable classes to the document root and the Week grid uses fixed pixel geometry and percentage lane widths rather than font-dependent sizing.
+- Decisions: retained the existing Geist and Geist Mono fonts and changed no other theme or layout value.
+- Known issues: none introduced by this task.
