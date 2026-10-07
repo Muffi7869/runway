@@ -362,3 +362,11 @@
 - Added class palette swatches, edit links for active rows, collapsed native Done and Dropped sections, and one controlled status-button component for Done, Drop, and Restore actions.
 - Decisions: used scoped responsive styles for layout-critical wrapping so assignment rows remain usable without horizontal page scrolling on phone widths.
 - Known issues: the visual layout and status-button flows require browser confirmation by Mufaddal.
+
+### P3-T2-a — PDF text extraction helper
+
+- Added unpdf 1.8.1 and a server-side PDF text extraction helper with content-signature, 4 MB, 50-page, empty-text, password, parser-error, cleanup, and shared 100,000-character checks.
+- Added tests using generated fictional PDFs for normal extraction, page boundaries, image-only content, invalid and truncated files, early size rejection, locked files, text cleanup, and over-limit extracted text.
+- Decisions: document page count is checked before extraction, parser errors are replaced with fixed safe messages, and every successfully opened document is destroyed in a finally block.
+- Audit: npm reports the unchanged 9 high development-only findings and 0 runtime vulnerabilities; unpdf added no high or critical runtime finding.
+- Known issues: scanned image-only PDFs contain no extractable text and are intentionally rejected with the paste-text message.

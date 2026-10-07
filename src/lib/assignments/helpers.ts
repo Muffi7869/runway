@@ -3,6 +3,9 @@ import { z } from "zod";
 import { APP_TIMEZONE, zonedParts } from "../time/zoned";
 
 export const DEFAULT_DEADLINE_TIME = "23:59";
+export const MAX_SPEC_TEXT_CHARACTERS = 100_000;
+export const SPEC_TEXT_TOO_LONG_MESSAGE =
+  "Spec text must be 100,000 characters or fewer.";
 
 const CLOCK_CHANGE_ERROR =
   "That date and time doesn't exist because of the clock change. Pick another time.";
@@ -26,7 +29,7 @@ const assignmentInputSchema = z.object({
   specText: z
     .string()
     .trim()
-    .max(100_000, "Spec text must be 100,000 characters or fewer."),
+    .max(MAX_SPEC_TEXT_CHARACTERS, SPEC_TEXT_TOO_LONG_MESSAGE),
 });
 
 export type AssignmentInput = {
