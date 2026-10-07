@@ -262,3 +262,11 @@
 - Added focused coverage across the November 2026 daylight-saving transition, recurring instances, non-Los-Angeles offsets, all skip rules, and the required out-of-office and focus-time retention.
 - Decisions: working-location events are skipped, while out-of-office and focus-time events remain fixed commitments; no descriptions or attendee identities are represented by the mapper input type.
 - Known issues: none introduced by this task.
+
+### P2-T3-b — Events fetcher and sync planner
+
+- Added a paginated Google events fetcher with encoded calendar identifiers, the fixed UTC query window, expanded occurrences, deleted-event exclusion, and a strict fields list that omits descriptions and attendee emails.
+- Normalized responses into the mapper's minimal event type so unexpected response fields cannot be retained.
+- Added a pure fixed-event diff planner for inserts, changed-field updates, removed-event deletes, and deselected-calendar deletes using calendar-and-event composite keys and instant-based time comparisons.
+- Decisions: the planner assumes the upcoming database uniqueness constraint prevents duplicate keys and contains no duplicate-healing behavior.
+- Known issues: none introduced by this task.
