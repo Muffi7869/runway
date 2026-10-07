@@ -163,3 +163,9 @@
 - Added plain-English required-field messages and regression tests for valid, malformed, empty, and round-trip time values.
 - Decisions: kept minutes since midnight as the form and validation representation and retained database time strings only at the database boundary.
 - Known issues: none introduced by this task.
+
+### P1-T4-e — Phase 1 report
+
+- Wrote the Phase 1 report with implementation status, database decisions, changed files, fresh verification output, audit totals, manual checks, setup status, and testing instructions.
+- Decisions: applied the established public-safety substitutions to machine-specific verification output without changing results or pass counts.
+- Known issues: the development-only audit findings remain documented in the report.
