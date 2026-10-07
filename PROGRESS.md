@@ -246,3 +246,11 @@
 - Added a server-only coordinator that verifies the connected state, obtains a fresh access token, and deterministically returns, adopts, or creates the Runway calendar while reporting extras.
 - Decisions: deliberately store no placeholder value. The coordinator lists before creating and saves with a compare-and-set update so a concurrent request cannot overwrite the winning calendar identifier.
 - Known issues: extra Runway calendars are reported but never deleted.
+
+### P2-T2-b — Calendar picker
+
+- Added the connected-only Settings calendar picker, which ensures the Runway calendar exists, loads calendars server-side, and filters the selected Runway calendar plus every other Runway candidate before rendering.
+- Added controlled checkbox state, primary-calendar labels, the extra-Runway-calendar notice, and graceful reconnect or temporary Google failure states.
+- Added shared selection validation and a server action that re-fetches Google calendars, rebuilds the allowed identifier set, and updates only `fixed_calendar_ids` for the authenticated owner.
+- Decisions: browser-submitted calendar identifiers are never trusted; empty, duplicate, excessive, stale, and Runway-calendar selections are rejected before any save.
+- Known issues: none introduced by this task.

@@ -1,5 +1,11 @@
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
+import { getAccessToken, GoogleAuthError } from "@/lib/google/access-token";
+import {
+  isRunwayCalendarCandidate,
+  listCalendars,
+} from "@/lib/google/calendar-api";
+import { ensureRunwayCalendar } from "@/lib/google/runway-calendar";
 import { GOOGLE_CALENDAR_SCOPES } from "@/lib/google/scopes";
 import {
   formatTimeOfDay,
@@ -7,6 +13,10 @@ import {
   totalMinutesToHoursAndMinutes,
 } from "@/lib/settings/schema";
 
+import {
+  CalendarPicker,
+  type CalendarOption,
+} from "./calendar-picker";
 import { SettingsForm, type SettingsFormValues } from "./settings-form";
 
 type SearchParams = Promise<{
@@ -89,7 +99,7 @@ export default async function SettingsPage({
   const { data: googleConnection, error: googleConnectionError } =
     await supabase
       .from("google_connection")
-      .select("status")
+      .select("status,fixed_calendar_ids")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -97,12 +107,50 @@ export default async function SettingsPage({
     throw new Error("Unable to load settings.");
   }
 
-  const googleStatus: GoogleConnectionStatus =
+  let googleStatus: GoogleConnectionStatus =
     googleConnection?.status === "connected" ||
     googleConnection?.status === "needs_reconnect"
       ? googleConnection.status
       : "none";
   const googleMessage = getGoogleMessage(query);
+  let calendarOptions: CalendarOption[] | undefined;
+  let selectedCalendarIds: string[] = [];
+  let extraRunwayCalendars = 0;
+  let googleLoadError: string | undefined;
+
+  if (googleStatus === "connected") {
+    try {
+      const runwayCalendar = await ensureRunwayCalendar(supabase, user.id);
+      const token = await getAccessToken(supabase, user.id);
+      const calendars = await listCalendars(token);
+      const selectableCalendars = calendars.filter(
+        (calendar) =>
+          calendar.id !== runwayCalendar.calendarId &&
+          !isRunwayCalendarCandidate(calendar),
+      );
+      const selectableIds = new Set(
+        selectableCalendars.map((calendar) => calendar.id),
+      );
+
+      calendarOptions = selectableCalendars.map(
+        ({ id, name, primary }): CalendarOption => ({ id, name, primary }),
+      );
+      selectedCalendarIds = (googleConnection?.fixed_calendar_ids ?? []).filter(
+        (id) => selectableIds.has(id),
+      );
+      extraRunwayCalendars = runwayCalendar.extraRunwayCalendars;
+    } catch (error) {
+      if (
+        error instanceof GoogleAuthError &&
+        error.code === "needs_reconnect"
+      ) {
+        googleStatus = "needs_reconnect";
+      } else {
+        googleLoadError =
+          "Couldn't load your Google calendars. Try again in a moment.";
+      }
+    }
+  }
 
   let initialValues: SettingsFormValues = {
     study_window_start: "",
@@ -153,7 +201,23 @@ export default async function SettingsPage({
         <h2 className="text-xl font-semibold">Google Calendar</h2>
         {googleMessage ? <p className="mt-3">{googleMessage}</p> : null}
         {googleStatus === "connected" ? (
-          <p className="mt-3">Connected</p>
+          <>
+            <p className="mt-3">Connected</p>
+            {googleLoadError ? (
+              <p className="mt-3 text-red-700">{googleLoadError}</p>
+            ) : null}
+            {extraRunwayCalendars > 0 ? (
+              <p className="mt-3">
+                {`Found ${extraRunwayCalendars} extra calendars named "Runway" in your Google account. Runway uses one of them. You can delete the others in Google Calendar.`}
+              </p>
+            ) : null}
+            {calendarOptions ? (
+              <CalendarPicker
+                calendars={calendarOptions}
+                initialSelectedIds={selectedCalendarIds}
+              />
+            ) : null}
+          </>
         ) : null}
         {googleStatus === "needs_reconnect" ? (
           <>
