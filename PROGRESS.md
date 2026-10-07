@@ -314,3 +314,9 @@
 - Added static-markup tests proving that all seven day columns render, hour lines and event blocks share each day container, reported event times receive the expected top offsets, overlapping lanes differ horizontally, and an empty weekend remains empty.
 - Decisions: retained the 768-pixel phone-to-desktop switch, swipe controls, Week logic, and placement math unchanged.
 - Known issues: the site-wide sans font variable is self-referential, so the body falls back to the browser's serif font. The smallest fix is to point the global sans variable at the existing Geist sans variable; this task intentionally did not change global styling.
+
+### P2-T4-c — Phase 2 report
+
+- Wrote the Phase 2 report with implementation requirements, all ten Orchestrator decisions, database changes, fresh verification and audit results, manual checks, setup status, testing steps, and Phase 2 commits.
+- Decisions: treated the six manual checks supplied as “YES/NO” as open rather than assuming completion; checks explicitly supplied as “YES” are recorded as done.
+- Known issues: the unconfirmed manual checks, development-only audit findings, first-time calendar race behavior, and global font fallback are documented in the report.
