@@ -10,6 +10,7 @@
 - Configured production builds to use Next.js webpack mode because Turbopack's CSS worker cannot bind its internal port in the project environment.
 - `agentRules: false` in `next.config.ts` is kept on purpose. It stops `next dev` from modifying the required `AGENTS.md` or generating `CLAUDE.md`. It does not affect the deployed app. The Orchestrator confirmed keeping it.
 - Supabase browser and server clients live in `src/lib/db`, matching the project layout. The Supabase CLI installed and ran without requiring install-script approval, so no package scripts were approved.
+- Sessions store assignment-level work totals, while `session_steps` stores each step touched in that session with its before-and-after progress. This preserves one session across multiple steps without duplicating session totals.
 - Live Vercel URL: https://runway-xi-ten.vercel.app
 
 ## Known issues
@@ -177,3 +178,11 @@
 - Rules audit: Zod already enforced maximum block versus minimum block and daily maximum versus maximum block; the two new rules were missing. The current migration has none of the four relationship constraints.
 - Decisions: used the explicit `session_id` now present in the updated contract; no fallback to the brief was needed.
 - Known issues: database enforcement for these four rules remains for the separate database-fix task.
+
+### P1-FIX-b — Session steps and database settings rules
+
+- Wrote a new, unapplied migration that removes per-step progress columns from `sessions` and creates `session_steps` with progress checks, uniqueness, timestamps, Row Level Security, and owner-scoped policies.
+- Added the four settings relationship rules as named database constraints and included a rollback-only SQL Editor verification script.
+- Decisions: used the existing shared timestamp trigger function and kept every foreign key non-cascading; the migration refuses to run if any session row exists.
+- Manual step: Mufaddal will apply the migration and regenerate database types by hand; Codex did neither.
+- Known issues: the migration and rollback-only verification script have not yet been run against the linked database.
