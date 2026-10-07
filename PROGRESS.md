@@ -213,3 +213,12 @@
 - Added pure routing-decision tests covering public routes, protected routes, exact matching, owner and non-owner outcomes, and existing public-route behavior, plus required privacy-source checks.
 - Decisions: `/privacy` bypasses owner lookup entirely; all other existing session refresh and cookie-copying behavior remains unchanged.
 - Known issues: none introduced by this task.
+
+### P2-T1-b — Google connection migration
+
+- Wrote one new migration for `google_connection` with encrypted-token storage, granted scopes, chosen calendar identifiers, sync state, the two approved connection statuses, and one row per user.
+- Reused the shared timestamp trigger, enabled Row Level Security, and added only owner-scoped select, insert, and update policies for authenticated users.
+- Added a rollback-only SQL Editor verification script for ten-table Row Level Security, valid insertion, per-user uniqueness, and status enforcement.
+- Decisions: used the prompt's fallback database types and defaults where the contract did not specify them; every foreign key remains non-cascading.
+- Manual step: the migration has not been applied; Mufaddal will push it and regenerate database types by hand.
+- Known issues: none introduced by this task.
