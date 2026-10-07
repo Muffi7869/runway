@@ -320,3 +320,9 @@
 - Wrote the Phase 2 report with implementation requirements, all ten Orchestrator decisions, database changes, fresh verification and audit results, manual checks, setup status, testing steps, and Phase 2 commits.
 - Decisions: treated the six manual checks supplied as “YES/NO” as open rather than assuming completion; checks explicitly supplied as “YES” are recorded as done.
 - Known issues: the unconfirmed manual checks, development-only audit findings, first-time calendar race behavior, and global font fallback are documented in the report.
+
+### P2-T4-c-fix1 — Phase 2 report correction
+
+- Corrected the Phase 2 report to match the supplied real manual results: every testable check is confirmed, while three special event types remain untestable with a personal Gmail account and are covered by unit tests.
+- Decisions: removed the resolved manual-results question and retained the separate global-font maintenance question.
+- Known issues: no manual check remains open; the report still documents the event-type testing limitation, development-only audit findings, first-time calendar race behavior, and global font fallback.

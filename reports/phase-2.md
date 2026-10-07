@@ -2,7 +2,7 @@
 
 ## 1. Summary
 
-Phase 2 added a server-only Google Calendar connection with encrypted refresh-token storage, narrow read and app-created-calendar permissions, and wrong-account protections. Runway can find or create its dedicated calendar, let the owner choose fixed calendars, and synchronize six weeks of read-only fixed commitments into Supabase without duplicates. The Week page displays those commitments in Los Angeles time across desktop and phone layouts, including the November 2026 daylight-saving transition. Automated checks pass, and the supplied manual results confirm calendar selection, synchronization, idempotency, Week accuracy, mobile behavior, and live deployment; six OAuth and account-security checks remain open because their supplied status was not resolved beyond “YES/NO.”
+Phase 2 added a server-only Google Calendar connection with encrypted refresh-token storage, narrow read and app-created-calendar permissions, and wrong-account protections. Runway can find or create its dedicated calendar, let the owner choose fixed calendars, and synchronize six weeks of read-only fixed commitments into Supabase without duplicates. The Week page displays those commitments in Los Angeles time across desktop and phone layouts, including the November 2026 daylight-saving transition. Automated checks pass, all 19 testable manual checks are confirmed, and no manual check remains open; one check covering three special Google event types cannot be performed with a personal Gmail account and is covered by unit tests instead.
 
 ## 2. Requirement check
 
@@ -13,41 +13,43 @@ Phase 2 added a server-only Google Calendar connection with encrypted refresh-to
 - **Done — Public privacy information:** The public privacy page states how calendar data is used and that it is not sent to an AI service.
 - **Done — Google connection schema:** The tenth table stores encrypted token material, granted scopes, selected calendars, the Runway calendar reference, sync time, and connection status with owner-scoped Row Level Security.
 - **Done — Connect and callback implementation:** Owner-only routes implement state validation, code exchange, scope checks, encrypted storage, reconnect status, and safe user-facing outcomes.
-- **Open — Consent-screen publication:** The supplied manual status for the exact three scopes and “In production” publication is “YES/NO,” so completion is not confirmed.
-- **Open — Redirect URI configuration:** The supplied manual status for local and live redirect URIs is “YES/NO,” so completion is not confirmed.
-- **Open — Connection UI end-to-end check:** The supplied manual status for Connect then Connected, locally and live, is “YES/NO,” so completion is not confirmed.
-- **Open — Wrong-account end-to-end check:** The code revokes and refuses mismatched accounts, but the supplied manual status is “YES/NO,” so the real flow is not confirmed.
-- **Open — Stored connection inspection:** The supplied manual status for one connection row, unreadable ciphertext, and all three stored scopes is “YES/NO,” so the database inspection is not confirmed.
-- **Open — Revoke and reconnect check:** The supplied manual status for detecting revoked access and reconnecting is “YES/NO,” so completion is not confirmed.
-- **Done — Calendar listing and selection:** The picker lists eligible calendars without exposing the Runway calendar, validates selections against a fresh server-side list, and confirmed selections survive refresh.
-- **Done — Dedicated Runway calendar:** Find-or-create adopts an existing owned non-primary calendar named Runway or creates one; manual checks confirm exactly one remains after connection and reconnection.
-- **Done — Deleted Runway calendar recovery:** Manual checks confirm reopening Settings recreates a missing calendar once or adopts a suitable manually created one.
-- **Done — Event mapping:** Cancelled, working-location, all-day, declined, and free events are skipped; out-of-office and focus-time events are retained; malformed events are counted rather than silently hidden.
+- **Done — Consent-screen publication:** The exact three scopes and “In production” publication are configuration requirements and are manually confirmed.
+- **Done — Redirect URI configuration:** Local and live redirect URIs are configuration requirements and are manually confirmed.
+- **Done — Connection UI end-to-end check:** The Connect and Connected states are built; their full flow is manually confirmed locally and on the live site.
+- **Done — Wrong-account end-to-end check:** The code revokes and refuses mismatched accounts, the comparison is unit tested with made-up accounts, and the real flow is manually confirmed to show the required message and store nothing.
+- **Done — Stored connection inspection:** Encryption and granted-scope persistence are built and unit tested where applicable; one row, unreadable ciphertext, and all three stored scopes are manually confirmed.
+- **Done — Revoke and reconnect check:** Reconnect handling is built and its access-token paths are unit tested; revoking access, seeing Reconnect, and reconnecting are manually confirmed.
+- **Done — Calendar listing and selection:** The picker lists eligible calendars without exposing the Runway calendar and validates selections against a fresh server-side list; calendar display and the saved choice are manually confirmed.
+- **Done — Dedicated Runway calendar:** Find-or-create adopts an existing owned non-primary calendar named Runway or creates one and is unit tested; exactly one calendar after connection and reconnection is manually confirmed.
+- **Done — Extra Runway calendar handling:** Extra-calendar detection, filtering, and no-delete behavior are built and unit tested; the notice, picker exclusion, and absence of deletion are manually confirmed.
+- **Done — Deleted Runway calendar recovery:** Recovery and adoption paths are unit tested; reopening Settings after deletion is manually confirmed to recreate one calendar or adopt a suitable manually created one.
+- **Done — Event mapping:** Cancelled, working-location, all-day, declined, and free events are skipped; out-of-office and focus-time events are retained; malformed events are counted rather than silently hidden. These rules are unit tested. All-day and free exclusions are manually confirmed; working-location, out-of-office, and focus-time cannot be tested on a personal Gmail account and are covered by unit tests only.
 - **Done — Event fetch and sync planning:** Event pages are fetched with a narrow field list, mapped, and planned into inserts, updates, unchanged rows, and deletes.
 - **Done — Synchronization engine:** The owner-only service fetches every chosen calendar before database writes, upserts fixed events, removes stale rows last, and records a successful sync time.
-- **Done — Six-week data accuracy:** Manual checks confirm fixed events match real commitments for the next six weeks.
-- **Done — Add and delete propagation:** Manual checks confirm a newly added event appears after sync and a removed event disappears.
-- **Done — Event-type behavior:** Manual checks confirm all-day and working-location entries are absent while focus-time and out-of-office entries remain.
-- **Done — Idempotency:** The composite database key and upsert logic prevent duplicate rows; manual checks confirm two consecutive synchronizations create no duplicates.
+- **Done — Six-week data accuracy:** The six-week window is built and unit tested; fixed events matching real commitments for that window is manually confirmed.
+- **Done — Add and delete propagation:** Insert and delete planning and synchronization are unit tested; a newly added event appearing and a removed event disappearing are manually confirmed.
+- **Done — Event-type behavior:** The mapper is built and unit tested for all skip and retention rules. All-day and free exclusions are manually confirmed. Working-location, out-of-office, and focus-time cannot be tested on a personal Gmail account and are covered by unit tests only.
+- **Done — Idempotency:** The composite database key and upsert logic are covered by automated tests; two consecutive synchronizations creating no duplicate rows is manually confirmed.
 - **Done — Time-zone and DST logic:** Pure time helpers use Los Angeles calendar days and UTC instants, with tests around the November 2026 fall-back week.
 - **Done — Week-view logic:** Week selection, bounds, day segmentation, overlap lanes, hour range, relative sync text, and time labels are pure and unit tested.
 - **Done — Week page:** The protected page provides week navigation, sync controls, connection states, event blocks, overlap lanes, today highlighting, and read-only display.
-- **Done — Desktop and phone layout:** Scoped layout rules show seven days on wider screens and one swipeable day on phones; manual checks confirm the phone view works.
-- **Done — Week accuracy:** Manual checks confirm this week and next match Google Calendar and the week of November 1 displays at the correct times.
-- **Done — Live parity:** Manual checks confirm completed Phase 2 behavior works on the live Vercel deployment.
+- **Done — Desktop and phone layout:** Scoped layout rules show seven days on wider screens and one swipeable day on phones, with component and placement tests; the phone-width view is manually confirmed.
+- **Done — Week accuracy:** Week and daylight-saving behavior are unit tested; this week, next week, and the week of November 1 are manually confirmed against Google Calendar.
+- **Done — Not-connected Week banner:** The disconnected and reconnect-required Week states are built; the banner appearing after access is revoked is manually confirmed.
+- **Done — Live parity:** Completed Phase 2 behavior on the live Vercel deployment is manually confirmed.
 - **Done — Automated verification:** Typecheck, lint, 263 unit tests, and the production build pass.
 
 ### Orchestrator decisions
 
 1. **Done — Google credentials:** `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are recorded as configured locally and in Vercel; only their names appear in the repository.
 2. **Done — Shared encryption key:** PROGRESS records that local and Vercel deployments use the same `TOKEN_ENCRYPTION_KEY`; only the variable name appears in the repository.
-3. **Open — Wrong-account protection:** The connect request provides a sign-in hint, the callback compares the primary calendar account case-insensitively, mismatches are revoked and never stored, the required message is present, and made-up-account tests pass. The supplied real-flow status is “YES/NO,” so end-to-end confirmation remains open.
+3. **Done — Wrong-account protection:** The connect request provides a sign-in hint, the callback compares the primary calendar account case-insensitively, mismatches are revoked and never stored, the required message is present, and made-up-account tests pass. The real wrong-account flow and absence of storage are manually confirmed.
 4. **Done — Sync window and deselection cleanup:** Synchronization covers Monday of the current Los Angeles week through the Monday 42 days later and deletes local fixed events belonging to deselected calendars.
 5. **Done — Fixed-event uniqueness:** The P2-T3 migration adds uniqueness across owner, source calendar, and Google event identifiers, and synchronization upserts against that key.
-6. **Done — Event-type policy:** Working-location entries are skipped, while out-of-office and focus-time entries are kept; all three cases are unit tested and manually confirmed.
-7. **Done — No Runway-calendar placeholder:** The application lists first, deterministically adopts the first eligible owned Runway calendar, reports extras without deleting them, and creates only when no candidate exists.
-8. **Open — Revoke test timing:** The test was correctly moved after P2-T2, but the supplied manual result remains “YES/NO.”
-9. **Done — Granted scopes persistence:** Every successful connection write includes the granted-scope string; the remaining open item is the unconfirmed manual database inspection above.
+6. **Done — Event-type policy:** Working-location entries are skipped, while out-of-office and focus-time entries are kept; all three cases are built and unit tested. They cannot be tested on a personal Gmail account and are covered by unit tests only.
+7. **Done — No Runway-calendar placeholder:** The application lists first, deterministically adopts the first eligible owned Runway calendar, reports extras without deleting them, and creates only when no candidate exists. Exact-one, recovery, extra-notice, picker-exclusion, and no-delete behavior are manually confirmed.
+8. **Done — Revoke test timing:** The test was correctly moved after P2-T2, and revoking access, seeing Reconnect, and reconnecting are manually confirmed.
+9. **Done — Granted scopes persistence:** Every successful connection write includes the granted-scope string; the stored three-scope value is manually confirmed.
 10. **Done — No empty-selection banner:** A connected account with no chosen fixed calendars does not receive an extra Week banner.
 
 ## 3. Files changed
@@ -175,7 +177,7 @@ Runtime dependencies: 0 high, 0 critical
 
 ## 7. Known issues and shortcuts
 
-- Six manual OAuth and account-security checks remain unconfirmed because their supplied status is “YES/NO”: consent-screen publication, redirect URIs, Connect-to-Connected behavior, wrong-account rejection, stored connection inspection, and revoke/reconnect behavior.
+- Working-location, out-of-office, and focus-time behavior cannot be tested with a personal Gmail account. Their skip-or-keep behavior is covered by unit tests only.
 - A simultaneous first-time find-or-create race can create an additional Runway calendar. The database winner is deterministic, extras are reported, and the app deliberately never deletes calendars.
 - The site-wide sans-font CSS variable is self-referential, so browsers can fall back to a serif font. The Week-grid repair intentionally did not change global styling.
 - npm reports 9 high-severity development-tooling findings and 0 runtime findings. The available fixes require breaking forced changes and were not applied.
@@ -184,13 +186,14 @@ Runtime dependencies: 0 high, 0 critical
 ## 8. Setup needed from Mufaddal
 
 - **Complete:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and the same `TOKEN_ENCRYPTION_KEY` are recorded as configured locally and in Vercel.
-- **Open:** Confirm the consent screen contains exactly the three approved Calendar permissions and is published “In production.”
-- **Open:** Confirm both the local and live callback addresses are configured as authorized redirect URIs.
-- **Open:** Confirm Settings changes from Connect Google Calendar to Connected after authorization, locally and live.
-- **Open:** Confirm connecting a different Google account shows the required private-account message and stores nothing.
-- **Open:** Confirm the database has one connection row, its token value is unreadable ciphertext, and its granted scopes contain all three approved scope names.
-- **Open:** Revoke Runway access from the Google account page, confirm the app shows Reconnect, and confirm reconnecting restores access.
-- **Complete:** Calendar selection, Runway-calendar recovery, six-week synchronization, event filtering, duplicate prevention, Week accuracy, mobile layout, and live parity are manually confirmed.
+- **Complete:** The consent screen contains exactly the three approved Calendar permissions and is published “In production.”
+- **Complete:** Both local and live callback addresses are configured as authorized redirect URIs.
+- **Complete:** Settings changes from Connect Google Calendar to Connected after authorization, locally and live.
+- **Complete:** Connecting a different Google account shows the required private-account message and stores nothing.
+- **Complete:** The database has one connection row, its token value is unreadable ciphertext, and its granted scopes contain all three approved scope names.
+- **Complete:** Revoking access makes the app show Reconnect, and reconnecting restores access.
+- **Complete:** Calendar selection, extra-calendar handling, Runway-calendar recovery, six-week synchronization, testable event filtering, duplicate prevention, the disconnected banner, Week accuracy, mobile layout, and live parity are manually confirmed.
+- **Not testable with this account:** Working-location, out-of-office, and focus-time entries cannot be created by a personal Gmail account; their behavior is covered by unit tests.
 
 ## 9. How to test it
 
@@ -229,5 +232,4 @@ Runtime dependencies: 0 high, 0 critical
 
 ## 11. Questions
 
-1. Are the six setup and security checks currently Yes or No: consent-screen publication, redirect URIs, Connect-to-Connected behavior, wrong-account rejection, stored connection inspection, and revoke/reconnect behavior?
-2. Should the site-wide sans-font variable be corrected in a separate maintenance task?
+1. The global font variable in the base styles is self-referential, so the browser falls back to a serif font on every page. The Week-grid fix intentionally did not touch global styling. Should this be corrected in a small separate maintenance task?
