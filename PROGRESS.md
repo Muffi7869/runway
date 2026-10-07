@@ -139,3 +139,11 @@
 - Added a shared server gate that authenticates the owner, reads only the required non-secret settings columns, and redirects incomplete settings to the Settings page.
 - Decisions: every protected page calls the gate directly except Settings, which calls the owner check directly to avoid a redirect loop.
 - Known issues: none introduced by this task.
+
+### P1-T4-c — Settings page
+
+- Added the owner-only Settings form with shared client and server validation, controlled inputs, and field-level errors.
+- Added settings upsert behavior using the authenticated user ID and the fixed `America/Los_Angeles` timezone.
+- Kept the Canvas feed URL secret by reading only a server-side saved-status count, returning only a boolean, and preserving an existing value when no replacement is submitted.
+- Decisions: existing non-secret settings are prefilled; a new form starts empty except for the required 23:30 check-in default.
+- Known issues: none introduced by this task.
