@@ -222,3 +222,12 @@
 - Decisions: used the prompt's fallback database types and defaults where the contract did not specify them; every foreign key remains non-cascading.
 - Manual step: the migration has not been applied; Mufaddal will push it and regenerate database types by hand.
 - Known issues: none introduced by this task.
+
+### P2-T1-c — Google connect flow and token helper
+
+- Added the owner-only Google Calendar connect and callback routes with a short-lived state cookie, code exchange, encrypted refresh-token storage, and explicit connection status handling.
+- Added the server-only access-token helper, which returns refreshed access tokens without storing them and distinguishes reconnect, unreadable-token, and temporary Google failures.
+- Protected against connecting the wrong account with both a sign-in hint and a primary-calendar account comparison; mismatched or unverifiable tokens are revoked and never saved.
+- Stored the actual granted scopes on every successful account check, marking incomplete grants as `needs_reconnect` and reporting only missing scope names.
+- Decisions: Google client credentials are set locally and in Vercel. The token-encryption key must have the same value in both environments because they use one database; losing it requires reconnecting Google.
+- Known issues: the real Google OAuth flow requires browser testing by Mufaddal.
