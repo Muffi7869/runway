@@ -254,3 +254,11 @@
 - Added shared selection validation and a server action that re-fetches Google calendars, rebuilds the allowed identifier set, and updates only `fixed_calendar_ids` for the authenticated owner.
 - Decisions: browser-submitted calendar identifiers are never trusted; empty, duplicate, excessive, stale, and Runway-calendar selections are rejected before any save.
 - Known issues: none introduced by this task.
+
+### P2-T3-a — Time helper and event mapper
+
+- Added pure `Intl.DateTimeFormat`-based Los Angeles time helpers for zoned parts, local-to-UTC conversion, calendar-day arithmetic, Monday selection, and the six-week synchronization window.
+- Added a pure Google event mapper that keeps only the fixed-event fields, converts explicitly offset timed events to UTC, and reports each excluded or unparseable event with a fixed skip reason.
+- Added focused coverage across the November 2026 daylight-saving transition, recurring instances, non-Los-Angeles offsets, all skip rules, and the required out-of-office and focus-time retention.
+- Decisions: working-location events are skipped, while out-of-office and focus-time events remain fixed commitments; no descriptions or attendee identities are represented by the mapper input type.
+- Known issues: none introduced by this task.
