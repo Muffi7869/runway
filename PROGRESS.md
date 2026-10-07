@@ -340,3 +340,10 @@
 - Added boundary coverage for field limits, future-deadline rules, daylight-saving gaps and overlaps, formatting, and list ordering.
 - Decisions: ambiguous fall-back deadlines resolve to the earlier instant; an unchanged past deadline may be retained during edit and preserves its exact stored instant, while a changed past deadline is rejected.
 - Known issues: none introduced by this task.
+
+### P3-T1-M — Nullable assignment spec and estimate migration
+
+- Added a new, unapplied migration that makes assignment spec text and AI total estimate nullable, converts blank specs to null, and prevents blank specs or negative estimates.
+- Decisions: null represents no spec yet and not broken down yet; no defaults or placeholder values were added.
+- Manual step: Mufaddal will apply the migration by hand; Codex did not apply it or regenerate database types.
+- Known issues: the migration is not yet applied.
