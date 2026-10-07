@@ -333,3 +333,10 @@
 - Confirmed the root layout already applies the Geist sans and mono variable classes to the document root and the Week grid uses fixed pixel geometry and percentage lane widths rather than font-dependent sizing.
 - Decisions: retained the existing Geist and Geist Mono fonts and changed no other theme or layout value.
 - Known issues: none introduced by this task.
+
+### P3-T1-a — Assignment validation and helpers
+
+- Added pure assignment input validation, Los Angeles deadline parsing and display helpers, estimate formatting, and status-grouped list sorting.
+- Added boundary coverage for field limits, future-deadline rules, daylight-saving gaps and overlaps, formatting, and list ordering.
+- Decisions: ambiguous fall-back deadlines resolve to the earlier instant; an unchanged past deadline may be retained during edit and preserves its exact stored instant, while a changed past deadline is rejected.
+- Known issues: none introduced by this task.
