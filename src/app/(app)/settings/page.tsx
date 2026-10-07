@@ -1,11 +1,16 @@
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
-import { totalMinutesToHoursAndMinutes } from "@/lib/settings/schema";
+import {
+  formatTimeOfDay,
+  parseTimeOfDay,
+  totalMinutesToHoursAndMinutes,
+} from "@/lib/settings/schema";
 
 import { SettingsForm, type SettingsFormValues } from "./settings-form";
 
 function formatTimeInput(value: string) {
-  return value.slice(0, 5);
+  const totalMinutes = parseTimeOfDay(value);
+  return totalMinutes === null ? "" : formatTimeOfDay(totalMinutes);
 }
 
 export default async function SettingsPage() {

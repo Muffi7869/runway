@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatTimeOfDay,
   hoursAndMinutesToTotalMinutes,
+  parseTimeOfDay,
   settingsSchema,
   totalMinutesToHoursAndMinutes,
   type SettingsInput,
@@ -141,6 +143,23 @@ describe("settingsSchema", () => {
       submittedUrl,
     );
   });
+
+  it.each([
+    ["study_window_start", "Enter a start time."],
+    ["study_window_end", "Enter an end time."],
+    ["max_study_minutes_per_day", "Enter a maximum study time."],
+    ["min_block_minutes", "Enter a minimum block length."],
+    ["max_block_minutes", "Enter a maximum block length."],
+    ["buffer_days", "Enter buffer days."],
+    ["timezone", "Enter a timezone."],
+    ["check_in_time", "Enter a check-in time."],
+  ] as const)("uses a plain required message for %s", (field, message) => {
+    const issues = expectInvalid({ [field]: null });
+
+    expect(issues.find((issue) => issue.path[0] === field)?.message).toBe(
+      message,
+    );
+  });
 });
 
 describe("minute conversion helpers", () => {
@@ -155,5 +174,87 @@ describe("minute conversion helpers", () => {
       hours,
       minutes,
     });
+  });
+});
+
+describe("time-of-day conversion", () => {
+  it.each([
+    ["00:00", 0],
+    ["12:00", 720],
+    ["23:59", 1439],
+    ["12:00:00", 720],
+  ])("parses %s as %i minutes", (value, expectedMinutes) => {
+    expect(parseTimeOfDay(value)).toBe(expectedMinutes);
+  });
+
+  it.each(["", "garbage", "24:00", "12:60"])(
+    "rejects %j without returning NaN",
+    (value) => {
+      const result = parseTimeOfDay(value);
+
+      expect(result).toBeNull();
+      expect(Number.isNaN(result)).toBe(false);
+    },
+  );
+
+  it.each([0, 720, 1439])(
+    "round trips %i minutes through the form format",
+    (totalMinutes) => {
+      expect(parseTimeOfDay(formatTimeOfDay(totalMinutes))).toBe(totalMinutes);
+    },
+  );
+
+  it("validates a complete object built from form-style strings", () => {
+    const formValues = {
+      studyWindowStart: "12:00",
+      studyWindowEnd: "12:30",
+      maximumStudyHours: "5",
+      maximumStudyMinutes: "30",
+      minimumBlockHours: "1",
+      minimumBlockMinutes: "0",
+      maximumBlockHours: "2",
+      maximumBlockMinutes: "0",
+      bufferDays: "5",
+      checkInTime: "23:30",
+    };
+    const result = settingsSchema.safeParse({
+      study_window_start: parseTimeOfDay(formValues.studyWindowStart),
+      study_window_end: parseTimeOfDay(formValues.studyWindowEnd),
+      max_study_minutes_per_day: hoursAndMinutesToTotalMinutes(
+        Number(formValues.maximumStudyHours),
+        Number(formValues.maximumStudyMinutes),
+      ),
+      min_block_minutes: hoursAndMinutesToTotalMinutes(
+        Number(formValues.minimumBlockHours),
+        Number(formValues.minimumBlockMinutes),
+      ),
+      max_block_minutes: hoursAndMinutesToTotalMinutes(
+        Number(formValues.maximumBlockHours),
+        Number(formValues.maximumBlockMinutes),
+      ),
+      buffer_days: Number(formValues.bufferDays),
+      timezone: "America/Los_Angeles",
+      check_in_time: parseTimeOfDay(formValues.checkInTime),
+      canvas_feed_url: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("uses a plain message when the form start time is empty", () => {
+    const result = settingsSchema.safeParse({
+      ...validSettings,
+      study_window_start: parseTimeOfDay(""),
+    });
+
+    expect(result.success).toBe(false);
+
+    if (result.success) {
+      throw new Error("Expected settings validation to fail.");
+    }
+
+    const message = result.error.flatten().fieldErrors.study_window_start?.[0];
+    expect(message).toBe("Enter a start time.");
+    expect(message).not.toMatch(/NaN|expected|received/i);
   });
 });

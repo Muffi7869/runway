@@ -1,16 +1,16 @@
 import { z } from "zod";
 
-function minutesSinceMidnight(label: string) {
+function minutesSinceMidnight(label: string, requiredMessage: string) {
   return z
-    .number()
+    .number({ error: requiredMessage })
     .int(`${label} must be a whole number of minutes.`)
     .min(0, `${label} must be between 0 and 1439 minutes.`)
     .max(1439, `${label} must be between 0 and 1439 minutes.`);
 }
 
-function nonnegativeMinutes(label: string) {
+function nonnegativeMinutes(label: string, requiredMessage: string) {
   return z
-    .number()
+    .number({ error: requiredMessage })
     .int(`${label} must be a whole number of minutes.`)
     .min(0, `${label} must be zero or more minutes.`);
 }
@@ -35,20 +35,36 @@ const optionalCanvasFeedUrl = z.preprocess(
 
 export const settingsSchema = z
   .object({
-    study_window_start: minutesSinceMidnight("Study window start"),
-    study_window_end: minutesSinceMidnight("Study window end"),
+    study_window_start: minutesSinceMidnight(
+      "Study window start",
+      "Enter a start time.",
+    ),
+    study_window_end: minutesSinceMidnight(
+      "Study window end",
+      "Enter an end time.",
+    ),
     max_study_minutes_per_day: nonnegativeMinutes(
       "Maximum study time per day",
+      "Enter a maximum study time.",
     ),
-    min_block_minutes: nonnegativeMinutes("Minimum block time"),
-    max_block_minutes: nonnegativeMinutes("Maximum block time"),
+    min_block_minutes: nonnegativeMinutes(
+      "Minimum block time",
+      "Enter a minimum block length.",
+    ),
+    max_block_minutes: nonnegativeMinutes(
+      "Maximum block time",
+      "Enter a maximum block length.",
+    ),
     buffer_days: z
-      .number()
+      .number({ error: "Enter buffer days." })
       .int("Buffer days must be a whole number.")
       .min(0, "Buffer days must be between 0 and 7.")
       .max(7, "Buffer days must be between 0 and 7."),
-    timezone: z.string(),
-    check_in_time: minutesSinceMidnight("Check-in time"),
+    timezone: z.string({ error: "Enter a timezone." }),
+    check_in_time: minutesSinceMidnight(
+      "Check-in time",
+      "Enter a check-in time.",
+    ),
     canvas_feed_url: optionalCanvasFeedUrl,
   })
   .superRefine((settings, context) => {
@@ -96,4 +112,27 @@ export function totalMinutesToHoursAndMinutes(totalMinutes: number): {
     hours: Math.floor(totalMinutes / 60),
     minutes: totalMinutes % 60,
   };
+}
+
+export function parseTimeOfDay(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);
+
+  if (!match) {
+    return null;
+  }
+
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const seconds = match[3] === undefined ? 0 : Number(match[3]);
+
+  if (hours > 23 || minutes > 59 || seconds > 59) {
+    return null;
+  }
+
+  return hoursAndMinutesToTotalMinutes(hours, minutes);
+}
+
+export function formatTimeOfDay(totalMinutes: number): string {
+  const { hours, minutes } = totalMinutesToHoursAndMinutes(totalMinutes);
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }

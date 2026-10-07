@@ -155,3 +155,11 @@
 - Displayed each class pace ratio read-only to one decimal place and added unit coverage for class validation.
 - Decisions: `classes.color` stores the stable palette key; pace ratios are never accepted from or written by the client actions.
 - Known issues: none introduced by this task.
+
+### P1-T4-c-fix1 — Settings time parsing
+
+- Fixed the settings time parsing failure caused by representing unparseable time strings as `NaN`, which exposed technical Zod errors and prevented saving.
+- Added one shared parser for form and database time strings plus one shared formatter for form and database boundaries.
+- Added plain-English required-field messages and regression tests for valid, malformed, empty, and round-trip time values.
+- Decisions: kept minutes since midnight as the form and validation representation and retained database time strings only at the database boundary.
+- Known issues: none introduced by this task.

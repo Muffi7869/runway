@@ -4,6 +4,7 @@ import { useActionState, useState, type FormEvent } from "react";
 
 import {
   hoursAndMinutesToTotalMinutes,
+  parseTimeOfDay,
   settingsSchema,
   type SettingsInput,
 } from "@/lib/settings/schema";
@@ -31,17 +32,23 @@ type SettingsFormProps = {
 };
 
 function numericValue(value: string) {
-  return value.trim() === "" ? Number.NaN : Number(value);
-}
-
-function timeValue(value: string) {
-  const match = /^(\d{2}):(\d{2})$/.exec(value);
-
-  if (!match) {
-    return Number.NaN;
+  if (value.trim() === "") {
+    return null;
   }
 
-  return hoursAndMinutesToTotalMinutes(Number(match[1]), Number(match[2]));
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function durationValue(hours: string, minutes: string) {
+  const parsedHours = numericValue(hours);
+  const parsedMinutes = numericValue(minutes);
+
+  if (parsedHours === null || parsedMinutes === null) {
+    return null;
+  }
+
+  return hoursAndMinutesToTotalMinutes(parsedHours, parsedMinutes);
 }
 
 function ErrorMessage({ errors }: { errors?: string[] }) {
@@ -84,23 +91,23 @@ export function SettingsForm({
 
   function validateBeforeSubmit(event: FormEvent<HTMLFormElement>) {
     const result = settingsSchema.safeParse({
-      study_window_start: timeValue(values.study_window_start),
-      study_window_end: timeValue(values.study_window_end),
-      max_study_minutes_per_day: hoursAndMinutesToTotalMinutes(
-        numericValue(values.max_study_hours),
-        numericValue(values.max_study_minutes),
+      study_window_start: parseTimeOfDay(values.study_window_start),
+      study_window_end: parseTimeOfDay(values.study_window_end),
+      max_study_minutes_per_day: durationValue(
+        values.max_study_hours,
+        values.max_study_minutes,
       ),
-      min_block_minutes: hoursAndMinutesToTotalMinutes(
-        numericValue(values.min_block_hours),
-        numericValue(values.min_block_minutes),
+      min_block_minutes: durationValue(
+        values.min_block_hours,
+        values.min_block_minutes,
       ),
-      max_block_minutes: hoursAndMinutesToTotalMinutes(
-        numericValue(values.max_block_hours),
-        numericValue(values.max_block_minutes),
+      max_block_minutes: durationValue(
+        values.max_block_hours,
+        values.max_block_minutes,
       ),
       buffer_days: numericValue(values.buffer_days),
       timezone: "America/Los_Angeles",
-      check_in_time: timeValue(values.check_in_time),
+      check_in_time: parseTimeOfDay(values.check_in_time),
       canvas_feed_url: canvasFeedUrl.trim(),
     });
 
