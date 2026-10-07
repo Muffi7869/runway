@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { syncNowAction } from "@/app/(app)/week/actions";
 import type { SyncFixedEventsResult } from "@/lib/google/sync-service";
-import { APP_TIMEZONE } from "@/lib/time/zoned";
+import { formatLastSynced } from "@/lib/week/view";
 
 function resultMessage(result: SyncFixedEventsResult): string {
   if (result.ok) {
@@ -29,19 +29,13 @@ function resultMessage(result: SyncFixedEventsResult): string {
   }
 }
 
-function formatLastSynced(value: string | null): string {
-  if (!value) {
-    return "Never synced";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: APP_TIMEZONE,
-  }).format(new Date(value));
-}
-
-export function SyncControls({ lastSyncedAt }: { lastSyncedAt: string | null }) {
+export function SyncControls({
+  lastSyncedAt,
+  now,
+}: {
+  lastSyncedAt: string | null;
+  now: string;
+}) {
   const router = useRouter();
   const [isRunning, setIsRunning] = useState(false);
   const [message, setMessage] = useState<string>();
@@ -61,7 +55,7 @@ export function SyncControls({ lastSyncedAt }: { lastSyncedAt: string | null }) 
 
   return (
     <section className="mt-6 space-y-3" aria-label="Calendar sync">
-      <p>Last synced: {formatLastSynced(lastSyncedAt)}</p>
+      <p>Last synced: {formatLastSynced(lastSyncedAt, new Date(now))}</p>
       <button
         className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
         disabled={isRunning}

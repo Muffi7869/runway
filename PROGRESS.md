@@ -292,3 +292,11 @@
 - Added boundary coverage for invalid week parameters, events crossing week and day edges, lane grouping, study-window expansion, and relative-time wording.
 - Decisions: week bounds use Los Angeles midnights while segment positions use wall-clock minutes, so the fall-back week spans 169 real hours without shifting displayed event times.
 - Known issues: none introduced by this task.
+
+### P2-T4-b — Week view
+
+- Replaced the Week placeholder with an owner-only weekly calendar that loads explicit fixed-event fields, uses the saved study window, and supports previous, current, and next-week navigation.
+- Added a responsive seven-day grid with Los Angeles wall-clock positioning, overlap lanes, neutral read-only event blocks, today highlighting, and relative last-sync text.
+- Added a one-day phone view with bounded arrow navigation and swipe gestures while keeping all seven day columns visible at larger breakpoints.
+- Decisions: disconnected and reconnect-required states show a Settings banner instead of calendar data or sync controls; automatic sync retains the established 30-minute rule.
+- Known issues: none introduced by this task.
