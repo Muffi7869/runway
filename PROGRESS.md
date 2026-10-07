@@ -277,3 +277,11 @@
 - Added the only delete policy in the schema, scoped to the authenticated owner's fixed events; assignments, sessions, and every other table still have no delete policy.
 - Decisions: the migration is written but has not been applied; Mufaddal will push it by hand.
 - Known issues: none introduced by this task.
+
+### P2-T3-d — Fixed-event sync engine
+
+- Added the owner-only fixed-event sync service, manual sync action and controls, and stale-data automatic sync on the Week placeholder page.
+- Fetches and maps every selected calendar before any fixed-event write, combines inserts and updates into full-row unique-key upserts, and performs deletions last in bounded batches.
+- Added service coverage for successful diffs, repeat synchronization, reconnect and calendar failures, write failures, empty selections, unreadable-event counts, and busy-event filtering.
+- Decisions: automatic synchronization runs only when connected calendars exist and the last successful sync is missing or more than 30 minutes old; the Week grid remains deferred to the next task.
+- Known issues: none introduced by this task.
