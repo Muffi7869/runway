@@ -4,10 +4,9 @@ import {
   MAX_SPEC_TEXT_CHARACTERS,
   SPEC_TEXT_TOO_LONG_MESSAGE,
 } from "./helpers";
+import { MAX_PDF_BYTES, PDF_TOO_BIG_MESSAGE } from "./pdf-constants";
 
-export const MAX_PDF_BYTES = 4 * 1024 * 1024;
-export const PDF_TOO_BIG_MESSAGE =
-  "This PDF is over 4 MB. Paste the text instead.";
+export { MAX_PDF_BYTES, PDF_TOO_BIG_MESSAGE } from "./pdf-constants";
 export const MAX_PDF_PAGES = 50;
 export const PDF_TOO_MANY_PAGES_MESSAGE =
   "This PDF is over 50 pages. Paste just the relevant part instead.";

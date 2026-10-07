@@ -370,3 +370,11 @@
 - Decisions: document page count is checked before extraction, parser errors are replaced with fixed safe messages, and every successfully opened document is destroyed in a finally block.
 - Audit: npm reports the unchanged 9 high development-only findings and 0 runtime vulnerabilities; unpdf added no high or critical runtime finding.
 - Known issues: scanned image-only PDFs contain no extractable text and are intentionally rejected with the paste-text message.
+
+### P3-T2-b — PDF upload on assignment form
+
+- Added authenticated, server-side PDF text extraction to the shared assignment form without storing the uploaded file or writing to the database.
+- Added matching browser and server size checks with a 4 MB PDF limit, keeping the extracted text in the controlled spec field for review before Save.
+- Set the Server Action request limit to 4.5 MB because the deployment platform rejects requests above roughly that size before the application can validate them.
+- Decisions: kept upload feedback separate from assignment validation, and kept PDF parser code out of the client bundle through shared client-safe limit constants.
+- Known issues: browser confirmation of the upload interaction remains manual.

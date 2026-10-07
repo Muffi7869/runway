@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
+
+import {
+  MAX_PDF_BYTES,
+  PDF_TOO_BIG_MESSAGE,
+} from "@/lib/assignments/pdf-constants";
 
 import {
   createAssignmentAction,
@@ -9,6 +14,7 @@ import {
   type AssignmentActionState,
   type AssignmentFormValues,
 } from "./actions";
+import { extractSpecFromPdfAction } from "./pdf-actions";
 
 type AssignmentClass = {
   id: string;
@@ -36,6 +42,12 @@ export function AssignmentForm({
   mode,
 }: AssignmentFormProps) {
   const [values, setValues] = useState(initialValues);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [isReadingPdf, startPdfTransition] = useTransition();
+  const [pdfMessage, setPdfMessage] = useState<{
+    kind: "error" | "success";
+    text: string;
+  }>();
   const serverAction =
     mode === "create" ? createAssignmentAction : updateAssignmentAction;
   const [state, formAction, isPending] = useActionState(
@@ -53,6 +65,60 @@ export function AssignmentForm({
 
   function updateValue(name: keyof AssignmentFormValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
+  }
+
+  function handlePdfSelection(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
+    setPdfMessage(undefined);
+
+    if (file.size > MAX_PDF_BYTES) {
+      setPdfMessage({ kind: "error", text: PDF_TOO_BIG_MESSAGE });
+      if (pdfInputRef.current) {
+        pdfInputRef.current.value = "";
+      }
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("pdf", file);
+
+    startPdfTransition(async () => {
+      try {
+        const result = await extractSpecFromPdfAction(formData);
+
+        if (!result.ok) {
+          setPdfMessage({ kind: "error", text: result.error });
+          return;
+        }
+
+        if (
+          values.specText !== "" &&
+          !window.confirm(
+            "Replace the current spec text with the text from this PDF?",
+          )
+        ) {
+          return;
+        }
+
+        updateValue("specText", result.text);
+        setPdfMessage({
+          kind: "success",
+          text: "Text added from the PDF. Review it, then save.",
+        });
+      } catch {
+        setPdfMessage({
+          kind: "error",
+          text: "Couldn't read text from this PDF. Paste the text instead.",
+        });
+      } finally {
+        if (pdfInputRef.current) {
+          pdfInputRef.current.value = "";
+        }
+      }
+    });
   }
 
   return (
@@ -149,6 +215,36 @@ export function AssignmentForm({
         </span>
         <FieldError message={state.fieldErrors?.specText} />
       </label>
+
+      <div className="grid gap-1">
+        <label htmlFor="assignment-pdf">
+          Upload a PDF (optional, up to 4 MB)
+        </label>
+        <input
+          accept=".pdf,application/pdf"
+          className="rounded border px-3 py-2"
+          disabled={isReadingPdf}
+          id="assignment-pdf"
+          onChange={(event) => handlePdfSelection(event.target.files?.[0])}
+          ref={pdfInputRef}
+          type="file"
+        />
+        {isReadingPdf ? (
+          <p className="text-sm text-gray-600">Reading PDF...</p>
+        ) : null}
+        {pdfMessage ? (
+          <p
+            aria-live="polite"
+            className={
+              pdfMessage.kind === "error"
+                ? "text-sm text-red-700"
+                : "text-sm text-gray-600"
+            }
+          >
+            {pdfMessage.text}
+          </p>
+        ) : null}
+      </div>
 
       {state.formError ? (
         <p className="text-sm text-red-700">{state.formError}</p>

@@ -6,6 +6,11 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "4.5mb",
+    },
+  },
   outputFileTracingRoot: projectRoot,
   turbopack: {
     root: projectRoot,
