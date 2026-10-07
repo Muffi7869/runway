@@ -3,8 +3,10 @@
 import { useRef, useState, type TouchEvent } from "react";
 
 import type { WeekEventLayout } from "@/lib/week/view";
+import { eventPlacement } from "@/lib/week/placement";
 
-const PIXELS_PER_HOUR = 64;
+const ROW_HEIGHT_PX = 64;
+const MIN_EVENT_HEIGHT_PX = 20;
 const SWIPE_THRESHOLD = 50;
 
 export type WeekGridDay = {
@@ -42,7 +44,7 @@ export function WeekGrid({
     { length: Math.max(0, endHour - startHour) },
     (_, index) => startHour + index,
   );
-  const gridHeight = Math.max(1, endHour - startHour) * PIXELS_PER_HOUR;
+  const gridHeight = Math.max(1, endHour - startHour) * ROW_HEIGHT_PX;
 
   function moveDay(direction: -1 | 1) {
     setActiveDayIndex((current) =>
@@ -128,14 +130,17 @@ export function WeekGrid({
       <div className="grid min-w-0 grid-cols-[3.5rem_minmax(0,1fr)] bg-white md:grid-cols-[4rem_repeat(7,minmax(0,1fr))]">
         <div
           aria-hidden="true"
-          className="relative border-r bg-white text-xs text-gray-600"
-          style={{ height: gridHeight }}
+          className="border-r bg-white text-xs text-gray-600"
+          style={{ height: gridHeight, position: "relative" }}
         >
           {hours.map((hour) => (
             <span
-              className="absolute right-2 top-1"
+              className="right-2"
               key={hour}
-              style={{ transform: `translateY(${(hour - startHour) * PIXELS_PER_HOUR}px)` }}
+              style={{
+                position: "absolute",
+                top: (hour - startHour) * ROW_HEIGHT_PX,
+              }}
             >
               {formatHour(hour)}
             </span>
@@ -146,41 +151,46 @@ export function WeekGrid({
           <div
             aria-label={day.longLabel}
             className={`${
-              activeDayIndex === dayIndex ? "relative block" : "relative hidden"
+              activeDayIndex === dayIndex ? "block" : "hidden"
             } min-w-0 border-r md:block ${day.isToday ? "bg-blue-50/40" : "bg-white"}`}
             key={day.longLabel}
-            style={{ height: gridHeight }}
+            style={{ height: gridHeight, position: "relative" }}
           >
             {hours.map((hour) => (
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 border-t border-gray-200"
+                className="pointer-events-none inset-x-0 border-t border-gray-200"
                 key={hour}
-                style={{ top: (hour - startHour) * PIXELS_PER_HOUR }}
+                style={{
+                  position: "absolute",
+                  top: (hour - startHour) * ROW_HEIGHT_PX,
+                  zIndex: 0,
+                }}
               />
             ))}
 
             {events
               .filter((event) => event.dayIndex === dayIndex)
               .map((event) => {
-                const top =
-                  ((event.startMinute - startHour * 60) / 60) *
-                  PIXELS_PER_HOUR;
-                const height = Math.max(
-                  1,
-                  ((event.endMinute - event.startMinute) / 60) *
-                    PIXELS_PER_HOUR,
-                );
+                const placement = eventPlacement({
+                  startMinute: event.startMinute,
+                  endMinute: event.endMinute,
+                  startHour,
+                  rowHeightPx: ROW_HEIGHT_PX,
+                  minHeightPx: MIN_EVENT_HEIGHT_PX,
+                });
 
                 return (
                   <div
-                    className="absolute px-0.5"
+                    className="overflow-hidden px-0.5"
                     key={`${event.id}-${event.dayIndex}-${event.startMinute}-${event.endMinute}`}
                     style={{
-                      height,
+                      height: placement.heightPx,
                       left: `${(event.lane / event.laneCount) * 100}%`,
-                      top,
+                      position: "absolute",
+                      top: placement.topPx,
                       width: `${100 / event.laneCount}%`,
+                      zIndex: 10,
                     }}
                   >
                     <div className="h-full overflow-hidden rounded border border-gray-400 bg-gray-200 px-2 py-1 text-gray-900">

@@ -300,3 +300,10 @@
 - Added a one-day phone view with bounded arrow navigation and swipe gestures while keeping all seven day columns visible at larger breakpoints.
 - Decisions: disconnected and reconnect-required states show a Settings banner instead of calendar data or sync controls; automatic sync retains the established 30-minute rule.
 - Known issues: none introduced by this task.
+
+### P2-T4-b-fix1 — Week event positioning
+
+- Fixed event blocks appearing after the hour grid by giving each day one explicit relative-positioned coordinate box shared by its absolute grid lines and event layer.
+- Added a pure pixel-placement helper with tests for row offsets, proportional duration height, minimum short-event height, pre-grid clamping, and the reported multi-hour positions.
+- Decisions: the hour gutter and every responsive day column use the same total pixel height and top origin; event blocks render above grid lines with clipped overflow.
+- Known issues: none introduced by this task.
