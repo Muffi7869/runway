@@ -285,3 +285,10 @@
 - Added service coverage for successful diffs, repeat synchronization, reconnect and calendar failures, write failures, empty selections, unreadable-event counts, and busy-event filtering.
 - Decisions: automatic synchronization runs only when connected calendars exist and the last successful sync is missing or more than 30 minutes old; the Week grid remains deferred to the next task.
 - Known issues: none introduced by this task.
+
+### P2-T4-a — Week-view layout logic
+
+- Added pure Week-view helpers for Los Angeles week selection and bounds, seven-day generation, per-day event segmentation, overlap lanes, visible hour ranges, relative sync text, and time-range labels.
+- Added boundary coverage for invalid week parameters, events crossing week and day edges, lane grouping, study-window expansion, and relative-time wording.
+- Decisions: week bounds use Los Angeles midnights while segment positions use wall-clock minutes, so the fall-back week spans 169 real hours without shifting displayed event times.
+- Known issues: none introduced by this task.
