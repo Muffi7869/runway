@@ -147,3 +147,11 @@
 - Kept the Canvas feed URL secret by reading only a server-side saved-status count, returning only a boolean, and preserving an existing value when no replacement is submitted.
 - Decisions: existing non-secret settings are prefilled; a new form starts empty except for the required 23:30 check-in default.
 - Known issues: none introduced by this task.
+
+### P1-T4-d — Classes page
+
+- Added the owner-scoped Classes page with controlled forms for adding, renaming, and recoloring classes.
+- Added one fixed eight-color palette and pure server-side validation for trimmed non-empty names and palette colors.
+- Displayed each class pace ratio read-only to one decimal place and added unit coverage for class validation.
+- Decisions: `classes.color` stores the stable palette key; pace ratios are never accepted from or written by the client actions.
+- Known issues: none introduced by this task.
