@@ -460,7 +460,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_assignment_steps: {
+        Args: { p_ai_total?: number; p_assignment_id: string; p_steps: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

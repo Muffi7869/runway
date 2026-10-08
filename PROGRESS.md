@@ -413,3 +413,12 @@
 - Added unit coverage for editor boundaries, immutable list operations, totals, progress, payload shape, draft conversion, and secret-free save errors; the existing AI breakdown tests remain unchanged.
 - Decisions: current totals are always calculated from step minutes, AI totals remain separate, and logged-work steps cannot be removed by the editor helper.
 - Known issues: none introduced by this task.
+
+### P3-T4-b — Step editor and save
+
+- Regenerated linked database types and confirmed the atomic `save_assignment_steps` function exposes the assignment, JSON steps, and optional original AI-total arguments.
+- Replaced the read-only breakdown result with a controlled, phone-safe step editor for adding, renaming, estimating, reordering, and safely removing steps while keeping progress read-only.
+- Added an owner-first save action that validates the browser payload and writes only through the atomic database function, with safe messages for logged-work, scheduled-step, ownership, and validation failures.
+- Added a server-side regeneration lock for saved progress or logged work, kept fresh AI totals separate from calculated current totals, and showed calculated totals for active, done, and dropped assignments without selecting spec text.
+- Decisions: fresh AI totals are sent only with a newly generated draft; ordinary edits leave the stored original estimate unchanged, and saving steps does not schedule work.
+- Known issues: the full editor, AI regeneration, and save flow require browser confirmation by Mufaddal.

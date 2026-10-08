@@ -9,6 +9,7 @@ import { requireOwner } from "@/lib/auth/server";
 import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
 import { requireSettingsComplete } from "@/lib/settings/server";
+import { currentTotalsByAssignment } from "@/lib/steps/totals";
 
 import styles from "./assignments.module.css";
 import { AssignmentStatusButton } from "./status-button";
@@ -20,7 +21,6 @@ type AssignmentRow = {
   deadline: string;
   weight: "low" | "medium" | "high";
   status: "active" | "done" | "dropped";
-  ai_total_estimate_minutes: number | null;
 };
 
 type ClassRow = {
@@ -39,7 +39,6 @@ function isAssignmentRow(value: {
   deadline: string;
   weight: string;
   status: string;
-  ai_total_estimate_minutes: number | null;
 }): value is AssignmentRow {
   return (
     assignmentStatuses.includes(
@@ -61,11 +60,13 @@ function paletteValue(colorKey: string): string {
 function AssignmentRows({
   assignments,
   classesById,
+  currentTotals,
   now,
   variant,
 }: {
   assignments: AssignmentRow[];
   classesById: Map<string, ClassRow>;
+  currentTotals: Map<string, number>;
   now: Date;
   variant: "active" | "done" | "dropped";
 }) {
@@ -73,6 +74,7 @@ function AssignmentRows({
     <div className={styles.list}>
       {assignments.map((assignment) => {
         const classRow = classesById.get(assignment.class_id);
+        const currentTotal = currentTotals.get(assignment.id);
 
         return (
           <article className={styles.row} key={assignment.id}>
@@ -94,7 +96,10 @@ function AssignmentRows({
                 <span>Due {formatDeadline(assignment.deadline, now)}</span>
                 <span>Weight: {assignment.weight}</span>
                 <span>
-                  Total: {formatEstimate(assignment.ai_total_estimate_minutes)}
+                  Total:{" "}
+                  {currentTotal === undefined
+                    ? "Not broken down yet"
+                    : formatEstimate(currentTotal)}
                 </span>
               </div>
             </div>
@@ -148,9 +153,7 @@ export default async function AssignmentsPage() {
       .eq("user_id", user.id),
     supabase
       .from("assignments")
-      .select(
-        "id,class_id,title,deadline,weight,status,ai_total_estimate_minutes",
-      )
+      .select("id,class_id,title,deadline,weight,status")
       .eq("user_id", user.id),
   ]);
 
@@ -162,10 +165,28 @@ export default async function AssignmentsPage() {
     throw new Error("An assignment has an unsupported status or weight.");
   }
 
+  const assignmentIds = assignmentsResult.data.map((assignment) => assignment.id);
+  let stepRows: { assignment_id: string; estimated_minutes: number }[] = [];
+
+  if (assignmentIds.length > 0) {
+    const { data, error } = await supabase
+      .from("steps")
+      .select("assignment_id,estimated_minutes")
+      .eq("user_id", user.id)
+      .in("assignment_id", assignmentIds);
+
+    if (error) {
+      throw new Error("Unable to load assignment totals.");
+    }
+
+    stepRows = data;
+  }
+
   const classesById = new Map(
     classesResult.data.map((classRow) => [classRow.id, classRow]),
   );
   const assignments = splitAssignments(assignmentsResult.data);
+  const currentTotals = currentTotalsByAssignment(stepRows);
   const now = new Date();
 
   return (
@@ -185,6 +206,7 @@ export default async function AssignmentsPage() {
           <AssignmentRows
             assignments={assignments.active}
             classesById={classesById}
+            currentTotals={currentTotals}
             now={now}
             variant="active"
           />
@@ -201,6 +223,7 @@ export default async function AssignmentsPage() {
           <AssignmentRows
             assignments={assignments.done}
             classesById={classesById}
+            currentTotals={currentTotals}
             now={now}
             variant="done"
           />
@@ -217,6 +240,7 @@ export default async function AssignmentsPage() {
           <AssignmentRows
             assignments={assignments.dropped}
             classesById={classesById}
+            currentTotals={currentTotals}
             now={now}
             variant="dropped"
           />
