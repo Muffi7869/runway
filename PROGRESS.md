@@ -378,3 +378,12 @@
 - Set the Server Action request limit to 4.5 MB because the deployment platform rejects requests above roughly that size before the application can validate them.
 - Decisions: kept upload feedback separate from assignment validation, and kept PDF parser code out of the client bundle through shared client-safe limit constants.
 - Known issues: browser confirmation of the upload interaction remains manual.
+
+### P3-T3-a — AI step breakdown module
+
+- Confirmed in official OpenAI documentation that the configured model supports the Responses API, Structured Outputs, and low reasoning effort.
+- Added OpenAI SDK 7.30.1 and a server-only breakdown module that builds bounded assignment input, requests a strict step schema, validates all output with Zod, and retries once with fixed safe errors.
+- Added unit coverage for Los Angeles deadline formatting, blank and truncated specs, every step boundary, retry behavior, environment setup, request configuration, and error secrecy; tests use only a mock client.
+- Audit: npm reports the unchanged 9 high development-only findings and 0 runtime vulnerabilities after adding the SDK.
+- Decisions: the model is read only from `OPENAI_MODEL`, the real client is created only inside the generation function, and the input type has no calendar-data field.
+- Known issues: no UI or server action uses the module yet, as required for this task.
