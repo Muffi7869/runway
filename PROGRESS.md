@@ -387,3 +387,11 @@
 - Audit: npm reports the unchanged 9 high development-only findings and 0 runtime vulnerabilities after adding the SDK.
 - Decisions: the model is read only from `OPENAI_MODEL`, the real client is created only inside the generation function, and the input type has no calendar-data field.
 - Known issues: no UI or server action uses the module yet, as required for this task.
+
+### P3-T3-b — Breakdown action and page
+
+- Added an owner-scoped, read-only server action that loads one active assignment and its class with explicit columns before requesting a validated AI breakdown.
+- Added a protected breakdown page with a pending state, plain errors, read-only draft steps, a formatted total, and notices that nothing is saved and when the spec was shortened for the AI call.
+- Added an active-only Break down link to the assignments list without changing its existing column selection.
+- Decisions: draft steps remain only in client action state; the action performs no inserts, updates, deletes, Google reads, or fixed-event reads.
+- Known issues: the real AI flow requires browser confirmation with the API key and model configured.

@@ -104,6 +104,12 @@ function AssignmentRows({
                 <>
                   <Link
                     className={styles.linkButton}
+                    href={`/assignments/${assignment.id}/breakdown`}
+                  >
+                    Break down
+                  </Link>
+                  <Link
+                    className={styles.linkButton}
                     href={`/assignments/${assignment.id}/edit`}
                   >
                     Edit
