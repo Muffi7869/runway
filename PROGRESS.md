@@ -422,3 +422,11 @@
 - Added a server-side regeneration lock for saved progress or logged work, kept fresh AI totals separate from calculated current totals, and showed calculated totals for active, done, and dropped assignments without selecting spec text.
 - Decisions: fresh AI totals are sent only with a newly generated draft; ordinary edits leave the stored original estimate unchanged, and saving steps does not schedule work.
 - Known issues: the full editor, AI regeneration, and save flow require browser confirmation by Mufaddal.
+
+### P3-T5-b — Canvas feed logic
+
+- Added `ical.js` 2.2.1 and pure modules for Canvas feed URL validation, bounded server-side fetching, iCalendar parsing, class matching, deadline resolution, import-window checks, import planning, and skipped-item summaries.
+- Added unit coverage for both allowed hosts, unsafe URL forms, redirects and failures, streamed 2 MB enforcement, assignment parsing and skip counts, course-code matching, daylight-saving boundaries, import-plan categories, and skipped-item wording.
+- Audit: npm reports the unchanged 9 high development-only findings and 0 runtime vulnerabilities; `ical.js` has no runtime dependencies and introduced no high or critical runtime finding.
+- Decisions: titles longer than 120 characters become their first 119 trimmed characters plus an ellipsis; every omitted feed item is counted as outside the window, unsupported time, unreadable, or not an assignment.
+- Known issues: none introduced by this task.
