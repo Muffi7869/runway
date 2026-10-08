@@ -395,3 +395,12 @@
 - Added an active-only Break down link to the assignments list without changing its existing column selection.
 - Decisions: draft steps remain only in client action state; the action performs no inserts, updates, deletes, Google reads, or fixed-event reads.
 - Known issues: the real AI flow requires browser confirmation with the API key and model configured.
+
+### P3-T4-M — Steps delete policy and atomic save function
+
+- Added one unapplied migration with the owner-scoped steps delete policy and a SECURITY INVOKER function that atomically validates and saves one active assignment's ordered steps.
+- Added explicit ownership, JSON shape, count, name, estimate, identifier, original AI total, logged-work, and scheduled-block checks with the required application SQLSTATEs.
+- Added a rollback-only SQL Editor test for the scheduled-step guard and a successful save that keeps both fictional steps.
+- Decisions: the original AI total changes only when supplied, existing progress is preserved, and no order uniqueness constraint was added.
+- Manual step: Mufaddal will apply the migration and may run the separate rollback-only test in the SQL Editor; Codex did neither.
+- Known issues: blocked step deletion remains intentionally unavailable until replanning can clear its blocks.
