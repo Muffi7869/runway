@@ -430,3 +430,10 @@
 - Audit: npm reports the unchanged 9 high development-only findings and 0 runtime vulnerabilities; `ical.js` has no runtime dependencies and introduced no high or critical runtime finding.
 - Decisions: titles longer than 120 characters become their first 119 trimmed characters plus an ellipsis; every omitted feed item is counted as outside the window, unsupported time, unreadable, or not an assignment.
 - Known issues: none introduced by this task.
+
+### P3-T5-M — Encrypted Canvas URL column
+
+- Added one unapplied migration that adds the nullable encrypted Canvas feed URL column without a default and drops the former plaintext column.
+- Decisions: the application produces encrypted values with AES-256-GCM; the previous plaintext value is intentionally discarded, and the user re-enters the link after the application update.
+- Manual step: Mufaddal will apply the migration by hand and then run the follow-up application prompt immediately because the live Settings page is incompatible until that deployment completes.
+- Known issues: the migration is not yet applied, and generated database types intentionally remain unchanged until the follow-up task.
