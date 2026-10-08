@@ -4,14 +4,17 @@ import OpenAI from "openai";
 import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
 import { z } from "zod";
 
+import {
+  MAX_STEP_MINUTES,
+  MAX_STEP_NAME,
+  MIN_STEP_MINUTES,
+} from "../steps/limits";
 import { APP_TIMEZONE } from "../time/zoned";
 
 export const MAX_SPEC_CHARS_FOR_AI = 30_000;
 export const MIN_STEPS = 3;
 export const MAX_STEPS = 10;
-export const MAX_STEP_NAME = 60;
-export const MIN_STEP_MINUTES = 15;
-export const MAX_STEP_MINUTES = 600;
+export { MAX_STEP_MINUTES, MAX_STEP_NAME, MIN_STEP_MINUTES };
 
 export const BREAKDOWN_SYSTEM_PROMPT = `Break a college assignment into 3 to 10 concrete steps that one student can complete in order.
 Each step name must start with a verb and be 60 characters or fewer.

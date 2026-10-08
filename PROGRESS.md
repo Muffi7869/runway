@@ -404,3 +404,12 @@
 - Decisions: the original AI total changes only when supplied, existing progress is preserved, and no order uniqueness constraint was added.
 - Manual step: Mufaddal will apply the migration and may run the separate rollback-only test in the SQL Editor; Codex did neither.
 - Known issues: blocked step deletion remains intentionally unavailable until replanning can clear its blocks.
+
+### P3-T4-a — Step editor logic
+
+- Added client-safe shared step limits, pure immutable editor operations, validation, save-payload conversion, progress detection, and AI-draft conversion.
+- Added current-plan total aggregation and display helpers plus safe mappings for every step-save database error code.
+- Reused the shared name and minute limits in the server-only AI breakdown module while preserving its AI-specific step-count rules and exports.
+- Added unit coverage for editor boundaries, immutable list operations, totals, progress, payload shape, draft conversion, and secret-free save errors; the existing AI breakdown tests remain unchanged.
+- Decisions: current totals are always calculated from step minutes, AI totals remain separate, and logged-work steps cannot be removed by the editor helper.
+- Known issues: none introduced by this task.
