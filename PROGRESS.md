@@ -17,6 +17,14 @@
 
 - npm audit reports 9 high findings from one braces advisory. No non-breaking fix exists. The only fixes are forced major downgrades of shadcn and eslint-config-next, which were not applied. Moving shadcn to devDependencies reduced the runtime audit result to 0 high findings.
 
+## Manual checks
+
+- [ ] Live Canvas import: fetch, import selected, fetch again shows Already imported, changed date shows Update and is never auto-applied.
+- [ ] Canvas link stored as ciphertext in settings.canvas_feed_url_encrypted (looks like gibberish, plain column gone).
+- [ ] Planned blocks appear on the phone's Google Calendar (Runway calendar).
+- [ ] Replanning 3 times live leaves no duplicate events.
+- [ ] Main (primary) calendar is untouched.
+
 ## Log
 
 ### P0-T1 — Project skeleton
@@ -462,3 +470,12 @@
 - Recorded the live PDF, AI, and Canvas pre-check results reported by Mufaddal and left the live Canvas import and encrypted-link checks explicitly unconfirmed.
 - Decisions: kept the exact eleven-section report format by placing New dependencies under Files changed and Live checks under Tests.
 - Known issues: the development-only audit findings, pending Canvas live checks, and Phase 4 dependency of the real scheduled-step guard check are documented in the report.
+
+### P4-1 — Scheduler engine and Phase 4 migration
+
+- Added a pure, deterministic scheduler that plans active-assignment steps into Los Angeles study windows around fixed events, protected blocks, blocked days, daily limits, working deadlines, buffers, horizons, pace ratios, and progress.
+- Added exhaustive unit coverage for capacity, ordering, warnings, spreading, blocks and padding, step progress, pace, minimum and maximum block behavior, overdue and horizon handling, both daylight-saving transitions, overlaps, and shuffled-input determinism.
+- Added one unapplied migration with planning metadata, the owner-scoped blocks delete policy, atomic future-planned-block replacement, and the updated step-save behavior that removes future planned blocks while protecting history.
+- Updated and added rollback-only SQL checks for checked-in-step rejection, future-planned-step removal, block diffing, history preservation, and non-active assignment rejection; these checks were reviewed but not run, as required.
+- Decisions: block ownership uses the table's direct user identifier; the existing Google connection status constraint already permits reconnect-required state, so it was unchanged.
+- Known issues: the migration requires Mufaddal's manual database push; the rollback-only checks were deliberately not run against a database in this task.
