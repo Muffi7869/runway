@@ -454,3 +454,11 @@
 - Added an ID-only null-spec query and an active-only Needs spec tag to the Assignments list, plus pure tests for preview shaping, row availability, and status-safe tag decisions.
 - Decisions: Canvas fetching remains manual-only; client titles and dates are never trusted, and done or dropped Canvas assignments remain read-only under Already imported.
 - Known issues: the real preview, import, and due-date update flows require browser confirmation by Mufaddal with the saved Canvas link.
+
+### P3-T5-e — Phase 3 report
+
+- Wrote the Phase 3 report with an evidence-linked requirement check covering assignments, PDF extraction, AI breakdown, step editing, and Canvas import.
+- Recorded fresh typecheck, lint, test, build, full-audit, runtime-audit, Phase 3 commit-log, and working-tree status output.
+- Recorded the live PDF, AI, and Canvas pre-check results reported by Mufaddal and left the live Canvas import and encrypted-link checks explicitly unconfirmed.
+- Decisions: kept the exact eleven-section report format by placing New dependencies under Files changed and Live checks under Tests.
+- Known issues: the development-only audit findings, pending Canvas live checks, and Phase 4 dependency of the real scheduled-step guard check are documented in the report.
