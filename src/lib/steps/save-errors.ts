@@ -23,10 +23,7 @@ export function mapSaveStepsError(
   }
 
   if (error?.code === "RS004") {
-    const name = detailName(error);
-    return name
-      ? `This step is already scheduled: ${name}. It can be removed after the next replan.`
-      : STEP_SCHEDULED_MESSAGE;
+    return STEP_SCHEDULED_MESSAGE;
   }
 
   if (error?.code === "RS002") {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ReplanControls } from "@/components/replan-controls";
 import { SyncControls, AutoSync } from "@/components/sync-controls";
 import {
   WeekGrid,
@@ -7,6 +8,7 @@ import {
   type WeekGridEvent,
 } from "@/components/week-grid";
 import { requireOwner } from "@/lib/auth/server";
+import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
 import { parseTimeOfDay } from "@/lib/settings/schema";
 import { requireSettingsComplete } from "@/lib/settings/server";
@@ -20,6 +22,10 @@ import {
   weekBounds,
   weekDays,
 } from "@/lib/week/view";
+import {
+  buildPlannedBlockLabel,
+  buildWarningSentences,
+} from "@/lib/week/presentation";
 
 export const maxDuration = 30;
 
@@ -94,7 +100,13 @@ export default async function WeekPage({
   const bounds = weekBounds(monday);
   const user = await requireOwner();
   const supabase = await createClient();
-  const [connectionResult, fixedEventsResult] = await Promise.all([
+  const [
+    connectionResult,
+    fixedEventsResult,
+    blocksResult,
+    planningResult,
+    activeAssignmentsResult,
+  ] = await Promise.all([
     supabase
       .from("google_connection")
       .select("status,fixed_calendar_ids,last_synced_at")
@@ -107,14 +119,41 @@ export default async function WeekPage({
       .lt("start", bounds.end.toISOString())
       .gt("end", bounds.start.toISOString())
       .order("start", { ascending: true }),
+    supabase
+      .from("blocks")
+      .select(
+        "id,start,end,step:steps!inner(id,name,assignment:assignments!inner(id,title,status,class:classes!inner(id,name,color)))",
+      )
+      .eq("user_id", user.id)
+      .eq("status", "planned")
+      .lt("start", bounds.end.toISOString())
+      .gt("end", bounds.start.toISOString())
+      .order("start", { ascending: true }),
+    supabase
+      .from("settings")
+      .select("last_plan_warnings,last_planned_at")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("assignments")
+      .select("id,title")
+      .eq("user_id", user.id)
+      .eq("status", "active"),
   ]);
 
-  if (connectionResult.error || fixedEventsResult.error) {
+  if (
+    connectionResult.error ||
+    fixedEventsResult.error ||
+    blocksResult.error ||
+    planningResult.error ||
+    activeAssignmentsResult.error
+  ) {
     throw new Error("Unable to load the week.");
   }
 
   const connection = connectionResult.data;
   const fixedEvents = fixedEventsResult.data;
+  const plannedBlocks = blocksResult.data;
   const isConnected = connection?.status === "connected";
   const lastSyncedTime = connection?.last_synced_at
     ? Date.parse(connection.last_synced_at)
@@ -157,7 +196,26 @@ export default async function WeekPage({
     throw new Error("Unable to read the study window.");
   }
 
-  const segments = segmentEventsByDay(fixedEvents, monday);
+  const colorByKey = new Map<string, string>(
+    CLASS_COLOR_PALETTE.map((color) => [color.key, color.value]),
+  );
+  const fixedGridEvents = fixedEvents.map((event) => ({
+    ...event,
+    id: `fixed:${event.id}`,
+  }));
+  const plannedGridEvents = plannedBlocks.map((block) => ({
+    id: `block:${block.id}`,
+    title: buildPlannedBlockLabel({
+      className: block.step.assignment.class.name,
+      assignmentTitle: block.step.assignment.title,
+      stepName: block.step.name,
+    }),
+    start: block.start,
+    end: block.end,
+    color: colorByKey.get(block.step.assignment.class.color) ?? "#4B5563",
+  }));
+  const allEvents = [...fixedGridEvents, ...plannedGridEvents];
+  const segments = segmentEventsByDay(allEvents, monday);
   const layouts = assignLanes(segments);
   const range = hourRange({
     segments,
@@ -165,15 +223,32 @@ export default async function WeekPage({
     studyWindowEndMinutes,
   });
   const eventTimes = new Map(
-    fixedEvents.map((event) => [
+    allEvents.map((event) => [
       event.id,
       formatTimeRange(event.start, event.end),
     ]),
   );
-  const gridEvents: WeekGridEvent[] = layouts.map((event) => ({
-    ...event,
-    timeRange: eventTimes.get(event.id) ?? "",
-  }));
+  const plannedColors = new Map(
+    plannedGridEvents.map((event) => [event.id, event.color]),
+  );
+  const gridEvents: WeekGridEvent[] = layouts.map((event) => {
+    const backgroundColor = plannedColors.get(event.id);
+
+    return {
+      ...event,
+      timeRange: eventTimes.get(event.id) ?? "",
+      ...(backgroundColor
+        ? {
+            backgroundColor,
+            textColor: backgroundColor === "#CA8A04" ? "#111827" : "#FFFFFF",
+          }
+        : {}),
+    };
+  });
+  const warningSentences = buildWarningSentences(
+    planningResult.data?.last_plan_warnings ?? null,
+    activeAssignmentsResult.data,
+  );
   const today = zonedParts(now, APP_TIMEZONE);
   const todayIndex = days.findIndex((day) => sameDate(day, today));
   const gridDays: WeekGridDay[] = days.map((day) => {
@@ -215,11 +290,28 @@ export default async function WeekPage({
             </Link>
           </nav>
         </div>
-        <SyncControls
-          lastSyncedAt={connection.last_synced_at}
-          now={now.toISOString()}
-        />
+        <div className="space-y-6">
+          <SyncControls
+            lastSyncedAt={connection.last_synced_at}
+            now={now.toISOString()}
+          />
+          <ReplanControls
+            lastPlannedAt={planningResult.data?.last_planned_at ?? null}
+            now={now.toISOString()}
+          />
+        </div>
       </div>
+
+      {warningSentences.length > 0 ? (
+        <section
+          aria-label="Planning warnings"
+          className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4"
+        >
+          {warningSentences.map((warning) => (
+            <p key={warning}>{warning}</p>
+          ))}
+        </section>
+      ) : null}
 
       <div className="mt-6 min-w-0">
         <WeekGrid

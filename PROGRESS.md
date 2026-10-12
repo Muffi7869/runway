@@ -24,6 +24,11 @@
 - [ ] Planned blocks appear on the phone's Google Calendar (Runway calendar).
 - [ ] Replanning 3 times live leaves no duplicate events.
 - [ ] Main (primary) calendar is untouched.
+- [ ] Week page shows planned blocks in class colors next to gray events.
+- [ ] Replan button works and the warning banner reads in plain words.
+- [ ] Saving steps, adding/editing/done/drop/restore, and Canvas import each trigger a replan.
+- [ ] Regenerate is disabled once steps are scheduled.
+- [ ] Deleting a step that has only future planned blocks works.
 
 ## Log
 
@@ -479,3 +484,12 @@
 - Updated and added rollback-only SQL checks for checked-in-step rejection, future-planned-step removal, block diffing, history preservation, and non-active assignment rejection; these checks were reviewed but not run, as required.
 - Decisions: block ownership uses the table's direct user identifier; the existing Google connection status constraint already permits reconnect-required state, so it was unchanged.
 - Known issues: the migration requires Mufaddal's manual database push; the rollback-only checks were deliberately not run against a database in this task.
+
+### P4-2 — Replan service, Week blocks, and triggers
+
+- Regenerated the linked database types and connected the pure scheduler to an owner-scoped, server-only replan service with stale fixed-event refresh, atomic planned-block replacement, stored warnings, and per-owner in-flight serialization.
+- Added the Week Replan control, relative planning time, active-assignment warning banner, and class-colored planned blocks sharing the existing overlap layout with gray fixed events.
+- Triggered best-effort replanning after successful step saves, assignment create/edit/status changes, Canvas imports, and Canvas due-date updates without allowing planning failures to undo the primary action.
+- Locked AI regeneration when any saved step has a block, and updated the protected-step removal message while allowing the database function to remove steps that have only future planned work.
+- Decisions: stale sync failures fall back to stored fixed events; planned-block writes occur only through `replace_planned_blocks`; warning text is built only for assignments that remain active.
+- Known issues: the browser behavior listed under Manual checks remains for Mufaddal to confirm in fast mode.

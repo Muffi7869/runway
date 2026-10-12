@@ -370,6 +370,8 @@ export type Database = {
           check_in_time: string
           created_at: string
           id: string
+          last_plan_warnings: Json | null
+          last_planned_at: string | null
           max_block_minutes: number
           max_study_minutes_per_day: number
           min_block_minutes: number
@@ -385,6 +387,8 @@ export type Database = {
           check_in_time?: string
           created_at?: string
           id?: string
+          last_plan_warnings?: Json | null
+          last_planned_at?: string | null
           max_block_minutes: number
           max_study_minutes_per_day: number
           min_block_minutes: number
@@ -400,6 +404,8 @@ export type Database = {
           check_in_time?: string
           created_at?: string
           id?: string
+          last_plan_warnings?: Json | null
+          last_planned_at?: string | null
           max_block_minutes?: number
           max_study_minutes_per_day?: number
           min_block_minutes?: number
@@ -460,6 +466,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      replace_planned_blocks: {
+        Args: { p_blocks: Json; p_now: string }
+        Returns: undefined
+      }
       save_assignment_steps: {
         Args: { p_ai_total?: number; p_assignment_id: string; p_steps: Json }
         Returns: undefined

@@ -19,6 +19,8 @@ export type WeekGridDay = {
 
 export type WeekGridEvent = WeekEventLayout & {
   timeRange: string;
+  backgroundColor?: string;
+  textColor?: string;
 };
 
 type WeekGridPresentationProps = {
@@ -162,7 +164,14 @@ export function WeekGridPresentation({
                       width: `${100 / event.laneCount}%`,
                     }}
                   >
-                    <div className={styles.eventBlock}>
+                    <div
+                      className={styles.eventBlock}
+                      style={{
+                        backgroundColor: event.backgroundColor,
+                        borderColor: event.backgroundColor,
+                        color: event.textColor,
+                      }}
+                    >
                       <p className={styles.eventTitle} title={event.title}>
                         {event.title}
                       </p>

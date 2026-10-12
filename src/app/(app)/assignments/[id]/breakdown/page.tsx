@@ -57,21 +57,32 @@ export default async function AssignmentBreakdownPage({
 
   const stepIds = savedSteps.map((step) => step.id);
   const loggedStepIds = new Set<string>();
+  let hasScheduledBlocks = false;
 
   if (stepIds.length > 0) {
-    const { data: loggedSteps, error: loggedStepsError } = await supabase
-      .from("session_steps")
-      .select("step_id")
-      .eq("user_id", user.id)
-      .in("step_id", stepIds);
+    const [loggedStepsResult, scheduledStepsResult] = await Promise.all([
+      supabase
+        .from("session_steps")
+        .select("step_id")
+        .eq("user_id", user.id)
+        .in("step_id", stepIds),
+      supabase
+        .from("blocks")
+        .select("step_id")
+        .eq("user_id", user.id)
+        .in("step_id", stepIds)
+        .limit(1),
+    ]);
 
-    if (loggedStepsError) {
+    if (loggedStepsResult.error || scheduledStepsResult.error) {
       throw new Error("Unable to load step history.");
     }
 
-    for (const loggedStep of loggedSteps) {
+    for (const loggedStep of loggedStepsResult.data) {
       loggedStepIds.add(loggedStep.step_id);
     }
+
+    hasScheduledBlocks = scheduledStepsResult.data.length > 0;
   }
 
   const editorSteps: EditorStep[] = savedSteps.map((step) => ({
@@ -88,6 +99,7 @@ export default async function AssignmentBreakdownPage({
       <h1 className={styles.heading}>{assignment.title}</h1>
       <StepEditor
         assignmentId={assignment.id}
+        hasScheduledBlocks={hasScheduledBlocks}
         initialAiTotal={assignment.ai_total_estimate_minutes}
         initialSteps={editorSteps}
       />

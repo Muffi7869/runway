@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
+import { replanQuietly } from "@/lib/scheduler/replan";
 import {
   validateEditorSteps,
   type EditorStep,
@@ -39,7 +40,7 @@ export async function saveStepsAction(
   _previousState: SaveStepsActionState,
   formData: FormData,
 ): Promise<SaveStepsActionState> {
-  await requireOwner();
+  const user = await requireOwner();
   const assignmentId = assignmentIdSchema.safeParse(
     textValue(formData, "assignmentId"),
   );
@@ -115,5 +116,6 @@ export async function saveStepsAction(
     };
   }
 
+  await replanQuietly(supabase, user.id);
   redirect("/assignments");
 }

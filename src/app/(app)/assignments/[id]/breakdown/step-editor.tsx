@@ -26,6 +26,7 @@ import {
   type EditorValidationResult,
 } from "@/lib/steps/editor";
 import { MAX_EDITOR_STEPS, STEP_LOGGED_WORK_MESSAGE } from "@/lib/steps/limits";
+import { isRegenerationLocked } from "@/lib/steps/regeneration";
 import { describeTotals } from "@/lib/steps/totals";
 
 import {
@@ -43,10 +44,12 @@ const emptySaveState: SaveStepsActionState = {};
 
 export function StepEditor({
   assignmentId,
+  hasScheduledBlocks,
   initialAiTotal,
   initialSteps,
 }: {
   assignmentId: string;
+  hasScheduledBlocks: boolean;
   initialAiTotal: number | null;
   initialSteps: EditorStep[];
 }) {
@@ -54,10 +57,14 @@ export function StepEditor({
     () => JSON.stringify(toSavePayload(initialSteps)),
     [initialSteps],
   );
-  const regenerationLocked = useMemo(
+  const hasSavedProgress = useMemo(
     () => hasProgress(initialSteps),
     [initialSteps],
   );
+  const regenerationLocked = isRegenerationLocked({
+    hasProgress: hasSavedProgress,
+    hasBlocks: hasScheduledBlocks,
+  });
   const [steps, setSteps] = useState(initialSteps);
   const [validation, setValidation] = useState<EditorValidationResult | null>(
     null,
@@ -319,7 +326,9 @@ export function StepEditor({
 
       {regenerationLocked ? (
         <p className={styles.readOnly}>
-          This breakdown has progress, so it can&apos;t be regenerated.
+          {hasScheduledBlocks
+            ? "This breakdown is already scheduled, so it can't be regenerated."
+            : "This breakdown has progress, so it can't be regenerated."}
         </p>
       ) : null}
       {breakdownError ? (

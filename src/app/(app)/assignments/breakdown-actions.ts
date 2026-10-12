@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai/breakdown";
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
+import { isRegenerationLocked } from "@/lib/steps/regeneration";
 
 const assignmentIdSchema = z.string().uuid();
 const assignmentWeightSchema = z.enum(["low", "medium", "high"]);
@@ -70,8 +71,32 @@ export async function generateBreakdownAction(
 
   const stepIds = savedSteps.map((step) => step.id);
   let hasLoggedWork = false;
+  let hasBlocks = false;
 
   if (stepIds.length > 0) {
+    const { data: scheduledSteps, error: scheduledStepsError } = await supabase
+      .from("blocks")
+      .select("step_id")
+      .eq("user_id", user.id)
+      .in("step_id", stepIds)
+      .limit(1);
+
+    if (scheduledStepsError) {
+      return {
+        ok: false,
+        error: "Couldn't break this down right now. Try again in a moment.",
+      };
+    }
+
+    hasBlocks = scheduledSteps.length > 0;
+
+    if (hasBlocks) {
+      return {
+        ok: false,
+        error: "This breakdown is already scheduled, so it can't be regenerated.",
+      };
+    }
+
     const { data: loggedSteps, error: loggedStepsError } = await supabase
       .from("session_steps")
       .select("step_id")
@@ -90,8 +115,11 @@ export async function generateBreakdownAction(
   }
 
   if (
-    hasLoggedWork ||
-    savedSteps.some((step) => step.percent_done > 0)
+    isRegenerationLocked({
+      hasProgress:
+        hasLoggedWork || savedSteps.some((step) => step.percent_done > 0),
+      hasBlocks,
+    })
   ) {
     return {
       ok: false,

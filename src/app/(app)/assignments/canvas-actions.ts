@@ -13,6 +13,7 @@ import { loadCanvasPlan } from "@/lib/canvas/load";
 import { toCanvasPreview, type CanvasPreview } from "@/lib/canvas/preview";
 import { isInImportWindow, resolveDueIso } from "@/lib/canvas/window";
 import { createClient } from "@/lib/db/server";
+import { replanQuietly } from "@/lib/scheduler/replan";
 
 const importRowSchema = z.object({
   uid: z.string().min(1),
@@ -215,6 +216,10 @@ export async function importCanvasAction(
     }
   }
 
+  if (summary.imported > 0) {
+    await replanQuietly(supabase, user.id);
+  }
+
   revalidatePath("/assignments");
   return { summary };
 }
@@ -281,6 +286,7 @@ export async function updateCanvasDueDateAction(
     return { error: "That assignment changed. Refresh and try again." };
   }
 
+  await replanQuietly(supabase, user.id);
   revalidatePath("/assignments");
   return { ok: true };
 }

@@ -7,4 +7,4 @@ export const STEP_MINUTES_INCREMENT = 5;
 export const DEFAULT_NEW_STEP_MINUTES = 30;
 export const STEP_LOGGED_WORK_MESSAGE = "This step has logged work.";
 export const STEP_SCHEDULED_MESSAGE =
-  "This step is already scheduled. It can be removed after the next replan.";
+  "This step has work that was already done or started. It can't be removed.";

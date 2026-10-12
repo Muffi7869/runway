@@ -10,6 +10,7 @@ import {
 } from "@/lib/assignments/helpers";
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
+import { replanQuietly } from "@/lib/scheduler/replan";
 
 const assignmentIdSchema = z.string().uuid();
 
@@ -116,6 +117,7 @@ export async function createAssignmentAction(
     };
   }
 
+  await replanQuietly(supabase, user.id);
   redirect("/assignments");
 }
 
@@ -214,6 +216,7 @@ export async function updateAssignmentAction(
     };
   }
 
+  await replanQuietly(supabase, user.id);
   redirect("/assignments");
 }
 
@@ -245,6 +248,7 @@ async function updateAssignmentStatus(
     return { error: "That assignment changed. Refresh and try again." };
   }
 
+  await replanQuietly(supabase, userId);
   revalidatePath("/assignments");
   return { ok: true };
 }

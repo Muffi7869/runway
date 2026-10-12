@@ -11,11 +11,11 @@ describe("mapSaveStepsError", () => {
     [{ code: "RS001", details: "" }, "This step has logged work."],
     [
       { code: "RS004", details: "Test Step B" },
-      "This step is already scheduled: Test Step B. It can be removed after the next replan.",
+      "This step has work that was already done or started. It can't be removed.",
     ],
     [
       { code: "RS004", details: null },
-      "This step is already scheduled. It can be removed after the next replan.",
+      "This step has work that was already done or started. It can't be removed.",
     ],
     [
       { code: "RS002" },
