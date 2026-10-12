@@ -6,6 +6,7 @@ import {
   isRunwayCalendarCandidate,
   listCalendars,
   listEvents,
+  listRunwayEvents,
   type GoogleCalendar,
 } from "./calendar-api";
 
@@ -270,6 +271,60 @@ describe("listEvents", () => {
       status: 404,
       reason: "notFound",
     });
+  });
+});
+
+describe("listRunwayEvents", () => {
+  it("paginates future events and reads only private block metadata", async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          items: [
+            {
+              id: "event-a",
+              summary: "CSE 12 · PA3 · Write methods",
+              description: "Planned by Runway",
+              start: { dateTime: "2026-10-21T17:00:00Z" },
+              end: { dateTime: "2026-10-21T18:00:00Z" },
+              created: "2026-10-20T17:00:00Z",
+              extendedProperties: {
+                private: { runway_block_id: "block-a" },
+              },
+            },
+          ],
+          nextPageToken: "next-page",
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ items: [] }));
+    const timeMin = new Date("2026-10-20T17:00:00.000Z");
+
+    await expect(
+      listRunwayEvents(
+        "test-token",
+        "runway-calendar@example.com",
+        timeMin,
+        fetchImpl,
+      ),
+    ).resolves.toEqual([
+      {
+        id: "event-a",
+        summary: "CSE 12 · PA3 · Write methods",
+        description: "Planned by Runway",
+        start: "2026-10-21T17:00:00Z",
+        end: "2026-10-21T18:00:00Z",
+        created: "2026-10-20T17:00:00Z",
+        runwayBlockId: "block-a",
+      },
+    ]);
+    const firstUrl = new URL(String(fetchImpl.mock.calls[0][0]));
+    const secondUrl = new URL(String(fetchImpl.mock.calls[1][0]));
+    expect(firstUrl.searchParams.get("singleEvents")).toBe("true");
+    expect(firstUrl.searchParams.get("timeMin")).toBe(timeMin.toISOString());
+    expect(firstUrl.searchParams.get("fields")).toContain(
+      "extendedProperties(private)",
+    );
+    expect(secondUrl.searchParams.get("pageToken")).toBe("next-page");
   });
 });
 

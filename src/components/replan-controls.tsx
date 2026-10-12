@@ -28,11 +28,19 @@ export function ReplanControls({
           return;
         }
 
-        setMessage(
-          result.syncFailed
-            ? "Plan updated using saved calendar events. Calendar sync needs attention."
-            : "Plan updated.",
-        );
+        if (result.mirrorFailed) {
+          setMessage(
+            "Couldn't update Google Calendar, will retry on next replan.",
+          );
+        } else if (result.mirrorNeedsReconnect) {
+          setMessage("Reconnect Google Calendar in Settings.");
+        } else {
+          setMessage(
+            result.syncFailed
+              ? "Plan updated using saved calendar events. Calendar sync needs attention."
+              : "Plan updated.",
+          );
+        }
         router.refresh();
       } catch {
         setMessage("Couldn't update the plan. Try again.");

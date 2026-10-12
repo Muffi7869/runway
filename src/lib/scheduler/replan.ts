@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, Json } from "@/lib/db/database.types";
+import { mirrorBlocks } from "@/lib/google/block-mirror";
 import { syncFixedEvents } from "@/lib/google/sync-service";
 import { parseTimeOfDay } from "@/lib/settings/schema";
 import { syncWindow } from "@/lib/time/zoned";
@@ -20,6 +21,8 @@ export type ReplanResult =
       planned: number;
       warnings: number;
       syncFailed: boolean;
+      mirrorFailed: boolean;
+      mirrorNeedsReconnect: boolean;
     }
   | { ok: false; error: string };
 
@@ -229,11 +232,24 @@ async function performReplan(
     return { ok: false, error: "Couldn't save planning details. Try again." };
   }
 
+  let mirrorFailed = false;
+  let mirrorNeedsReconnect = false;
+
+  try {
+    const mirrorResult = await mirrorBlocks(supabase, ownerId);
+    mirrorNeedsReconnect = !mirrorResult.ok;
+    mirrorFailed = mirrorResult.ok && mirrorResult.failed > 0;
+  } catch {
+    mirrorFailed = true;
+  }
+
   return {
     ok: true,
     planned: plan.blocks.length,
     warnings: plan.warnings.length,
     syncFailed,
+    mirrorFailed,
+    mirrorNeedsReconnect,
   };
 }
 

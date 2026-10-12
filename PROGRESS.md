@@ -21,7 +21,7 @@
 
 - [ ] Live Canvas import: fetch, import selected, fetch again shows Already imported, changed date shows Update and is never auto-applied.
 - [ ] Canvas link stored as ciphertext in settings.canvas_feed_url_encrypted (looks like gibberish, plain column gone).
-- [ ] Planned blocks appear on the phone's Google Calendar (Runway calendar).
+- [ ] Blocks appear on the phone's Google Calendar (Runway calendar).
 - [ ] Replanning 3 times live leaves no duplicate events.
 - [ ] Main (primary) calendar is untouched.
 - [ ] Week page shows planned blocks in class colors next to gray events.
@@ -493,3 +493,13 @@
 - Locked AI regeneration when any saved step has a block, and updated the protected-step removal message while allowing the database function to remove steps that have only future planned work.
 - Decisions: stale sync failures fall back to stored fixed events; planned-block writes occur only through `replace_planned_blocks`; warning text is built only for assignments that remain active.
 - Known issues: the browser behavior listed under Manual checks remains for Mufaddal to confirm in fast mode.
+
+### P4-3 — Google Calendar block mirror and Phase 4 report
+
+- Added a server-only, idempotent mirror that reconciles future planned blocks with private block-tagged events on the verified Runway calendar, including create, update, orphan removal, duplicate collapse, database event-id repair, bounded concurrency, and one retry for rate limits or server failures.
+- Integrated mirroring at the successful end of every replan, so the Replan button and every existing assignment, step, and Canvas trigger share the same path without allowing Google failures to undo the database plan.
+- Added reconnect handling for authorization failures and a quiet Replan result message for other Google failures that will be retried on the next replan.
+- Added mocked Google and in-memory database tests for event formatting, Runway-calendar targeting, three-run idempotence, moved and removed blocks, orphan and untagged events, duplicates, partial failure recovery, authorization handling, server failures, paging, and gone-event deletion.
+- Wrote the Phase 4 report with the full scheduler, replan, database, Week view, trigger, carryover, and Google mirror requirement check plus fresh verification and audit output.
+- Decisions: event reconciliation lists future events from the Runway calendar and inspects the private `runway_block_id`; untagged events are never changed, and no new dependency or migration was needed.
+- Known issues: the live Google Calendar and phone behavior listed under Manual checks remains for Mufaddal to confirm.

@@ -5,6 +5,8 @@ const CALENDAR_LIST_FIELDS =
   "items(id,summary,summaryOverride,primary,accessRole,deleted),nextPageToken";
 const EVENT_LIST_FIELDS =
   "items(id,status,summary,eventType,start,end,transparency,attendees(self,responseStatus)),nextPageToken";
+const RUNWAY_EVENT_LIST_FIELDS =
+  "items(id,summary,description,start(dateTime),end(dateTime),created,extendedProperties(private)),nextPageToken";
 const MAX_CALENDAR_LIST_PAGES = 10;
 const MAX_EVENT_LIST_PAGES = 20;
 
@@ -14,6 +16,24 @@ export type GoogleCalendar = {
   summary: string;
   primary: boolean;
   accessRole: string;
+};
+
+export type RunwayEventBody = {
+  summary: string;
+  description: "Planned by Runway";
+  start: { dateTime: string; timeZone: "UTC" };
+  end: { dateTime: string; timeZone: "UTC" };
+  extendedProperties: { private: { runway_block_id: string } };
+};
+
+export type RunwayCalendarEvent = {
+  id: string;
+  summary: string;
+  description: string;
+  start: string;
+  end: string;
+  created: string;
+  runwayBlockId: string | null;
 };
 
 export class GoogleApiError extends Error {
@@ -309,4 +329,181 @@ export function isRunwayCalendarCandidate(calendar: GoogleCalendar): boolean {
     !calendar.primary &&
     calendar.summary.trim() === "Runway"
   );
+}
+
+function runwayCalendarEvent(value: unknown): RunwayCalendarEvent | null {
+  if (typeof value !== "object" || value === null) {
+    return null;
+  }
+
+  const source = value as {
+    id?: unknown;
+    summary?: unknown;
+    description?: unknown;
+    start?: { dateTime?: unknown };
+    end?: { dateTime?: unknown };
+    created?: unknown;
+    extendedProperties?: { private?: { runway_block_id?: unknown } };
+  };
+
+  if (
+    typeof source.id !== "string" ||
+    typeof source.start?.dateTime !== "string" ||
+    typeof source.end?.dateTime !== "string"
+  ) {
+    return null;
+  }
+
+  const blockId = source.extendedProperties?.private?.runway_block_id;
+
+  return {
+    id: source.id,
+    summary: typeof source.summary === "string" ? source.summary : "",
+    description:
+      typeof source.description === "string" ? source.description : "",
+    start: source.start.dateTime,
+    end: source.end.dateTime,
+    created: typeof source.created === "string" ? source.created : "",
+    runwayBlockId: typeof blockId === "string" && blockId ? blockId : null,
+  };
+}
+
+export async function listRunwayEvents(
+  token: string,
+  calendarId: string,
+  timeMin: Date,
+  fetchImpl: typeof fetch = fetch,
+): Promise<RunwayCalendarEvent[]> {
+  const events: RunwayCalendarEvent[] = [];
+  let pageToken: string | undefined;
+
+  for (let page = 0; page < MAX_EVENT_LIST_PAGES; page += 1) {
+    const encodedCalendarId = encodeURIComponent(calendarId);
+    const url = new URL(
+      `${CALENDAR_API_ROOT}/calendars/${encodedCalendarId}/events`,
+    );
+    url.searchParams.set("singleEvents", "true");
+    url.searchParams.set("orderBy", "startTime");
+    url.searchParams.set("timeMin", timeMin.toISOString());
+    url.searchParams.set("maxResults", "2500");
+    url.searchParams.set("timeZone", "UTC");
+    url.searchParams.set("showDeleted", "false");
+    url.searchParams.set("fields", RUNWAY_EVENT_LIST_FIELDS);
+
+    if (pageToken) {
+      url.searchParams.set("pageToken", pageToken);
+    }
+
+    const response = await fetchImpl(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!response.ok) {
+      await throwGoogleApiError(response);
+    }
+
+    const body = await readJson(response);
+    const data =
+      typeof body === "object" && body !== null
+        ? (body as { items?: unknown; nextPageToken?: unknown })
+        : {};
+
+    for (const item of Array.isArray(data.items) ? data.items : []) {
+      const event = runwayCalendarEvent(item);
+
+      if (event) {
+        events.push(event);
+      }
+    }
+
+    pageToken =
+      typeof data.nextPageToken === "string" && data.nextPageToken
+        ? data.nextPageToken
+        : undefined;
+
+    if (!pageToken) {
+      break;
+    }
+  }
+
+  return events;
+}
+
+async function writeRunwayEvent(
+  method: "POST" | "PATCH",
+  token: string,
+  calendarId: string,
+  body: RunwayEventBody,
+  eventId?: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string> {
+  const encodedCalendarId = encodeURIComponent(calendarId);
+  const encodedEventId = eventId ? `/${encodeURIComponent(eventId)}` : "";
+  const response = await fetchImpl(
+    `${CALENDAR_API_ROOT}/calendars/${encodedCalendarId}/events${encodedEventId}`,
+    {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    },
+  );
+
+  if (!response.ok) {
+    await throwGoogleApiError(response);
+  }
+
+  const result = await readJson(response);
+  const id =
+    typeof result === "object" && result !== null && "id" in result
+      ? (result as { id?: unknown }).id
+      : undefined;
+
+  if (typeof id !== "string" || !id) {
+    throw new GoogleApiError(response.status, undefined);
+  }
+
+  return id;
+}
+
+export function createRunwayEvent(
+  token: string,
+  calendarId: string,
+  body: RunwayEventBody,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string> {
+  return writeRunwayEvent("POST", token, calendarId, body, undefined, fetchImpl);
+}
+
+export function updateRunwayEvent(
+  token: string,
+  calendarId: string,
+  eventId: string,
+  body: RunwayEventBody,
+  fetchImpl: typeof fetch = fetch,
+): Promise<string> {
+  return writeRunwayEvent("PATCH", token, calendarId, body, eventId, fetchImpl);
+}
+
+export async function deleteRunwayEvent(
+  token: string,
+  calendarId: string,
+  eventId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<void> {
+  const encodedCalendarId = encodeURIComponent(calendarId);
+  const encodedEventId = encodeURIComponent(eventId);
+  const response = await fetchImpl(
+    `${CALENDAR_API_ROOT}/calendars/${encodedCalendarId}/events/${encodedEventId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+
+  if (!response.ok) {
+    await throwGoogleApiError(response);
+  }
 }
