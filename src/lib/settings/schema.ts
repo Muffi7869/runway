@@ -15,24 +15,6 @@ function nonnegativeMinutes(label: string, requiredMessage: string) {
     .min(0, `${label} must be zero or more minutes.`);
 }
 
-function isHttpsUrl(value: string) {
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-const optionalCanvasFeedUrl = z.preprocess(
-  (value) => (value === "" ? undefined : value),
-  z
-    .string()
-    .refine(isHttpsUrl, {
-      message: "Canvas feed URL must be a valid HTTPS URL.",
-    })
-    .optional(),
-);
-
 export const settingsSchema = z
   .object({
     study_window_start: minutesSinceMidnight(
@@ -65,7 +47,6 @@ export const settingsSchema = z
       "Check-in time",
       "Enter a check-in time.",
     ),
-    canvas_feed_url: optionalCanvasFeedUrl,
   })
   .superRefine((settings, context) => {
     if (settings.study_window_start >= settings.study_window_end) {

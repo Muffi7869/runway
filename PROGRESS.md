@@ -437,3 +437,11 @@
 - Decisions: the application produces encrypted values with AES-256-GCM; the previous plaintext value is intentionally discarded, and the user re-enters the link after the application update.
 - Manual step: Mufaddal will apply the migration by hand and then run the follow-up application prompt immediately because the live Settings page is incompatible until that deployment completes.
 - Known issues: the migration is not yet applied, and generated database types intentionally remain unchanged until the follow-up task.
+
+### P3-T5-c — Encrypted Canvas link in Settings
+
+- Regenerated linked database types and confirmed Settings exposes only the nullable encrypted Canvas feed URL column.
+- Moved Canvas link management out of the main Settings schema and save action into owner-scoped Save, Replace, and Remove actions that validate the feed host and path and encrypt values with AES-256-GCM before storage.
+- Added a server-only decrypting reader, a boolean-only saved state for the Settings client, and unit coverage proving valid fictional links are encrypted while disallowed links are neither encrypted nor echoed.
+- Decisions: Settings never sends the saved link or ciphertext to the browser; removing the link stores null, and ordinary Settings saves never read, write, or clear the encrypted column.
+- Known issues: the Save, Replace, and Remove interactions require browser confirmation by Mufaddal.

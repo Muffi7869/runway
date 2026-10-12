@@ -18,7 +18,6 @@ const validSettings: SettingsInput = {
   buffer_days: 2,
   timezone: "Test/Zone",
   check_in_time: 1380,
-  canvas_feed_url: undefined,
 };
 
 function expectValid(overrides: Partial<SettingsInput> = {}) {
@@ -159,40 +158,6 @@ describe("settingsSchema", () => {
     expectInvalid({ buffer_days: bufferDays });
   });
 
-  it("accepts a valid HTTPS Canvas feed URL", () => {
-    expectValid({ canvas_feed_url: "https://example.com/calendar" });
-  });
-
-  it("rejects an HTTP Canvas feed URL", () => {
-    expectInvalid({ canvas_feed_url: "http://example.com/calendar" });
-  });
-
-  it("accepts an empty Canvas feed URL as not provided", () => {
-    expect(settingsSchema.safeParse({ ...validSettings, canvas_feed_url: "" }).success).toBe(
-      true,
-    );
-  });
-
-  it("accepts a missing Canvas feed URL", () => {
-    const settingsWithoutCanvas = { ...validSettings };
-    Reflect.deleteProperty(settingsWithoutCanvas, "canvas_feed_url");
-
-    expect(settingsSchema.safeParse(settingsWithoutCanvas).success).toBe(true);
-  });
-
-  it("rejects a malformed Canvas feed URL", () => {
-    expectInvalid({ canvas_feed_url: "not-a-url" });
-  });
-
-  it("does not include a rejected Canvas feed URL in its errors", () => {
-    const submittedUrl = "http://example.com/private-calendar";
-    const issues = expectInvalid({ canvas_feed_url: submittedUrl });
-
-    expect(issues.map((issue) => issue.message).join(" ")).not.toContain(
-      submittedUrl,
-    );
-  });
-
   it.each([
     ["study_window_start", "Enter a start time."],
     ["study_window_end", "Enter an end time."],
@@ -284,7 +249,6 @@ describe("time-of-day conversion", () => {
       buffer_days: Number(formValues.bufferDays),
       timezone: "America/Los_Angeles",
       check_in_time: parseTimeOfDay(formValues.checkInTime),
-      canvas_feed_url: "",
     });
 
     expect(result.success).toBe(true);

@@ -28,7 +28,6 @@ type FieldErrors = Partial<Record<keyof SettingsInput, string[]>>;
 
 type SettingsFormProps = {
   initialValues: SettingsFormValues;
-  hasSavedCanvasUrl: boolean;
 };
 
 function numericValue(value: string) {
@@ -59,30 +58,14 @@ function ErrorMessage({ errors }: { errors?: string[] }) {
   return <p className="text-sm text-red-700">{errors[0]}</p>;
 }
 
-export function SettingsForm({
-  initialValues,
-  hasSavedCanvasUrl,
-}: SettingsFormProps) {
-  const initialState: SettingsActionState = { hasSavedCanvasUrl };
+export function SettingsForm({ initialValues }: SettingsFormProps) {
+  const initialState: SettingsActionState = {};
   const [values, setValues] = useState(initialValues);
-  const [canvasFeedUrl, setCanvasFeedUrl] = useState("");
-  const [replacingCanvasUrl, setReplacingCanvasUrl] = useState(false);
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
   const [state, formAction, isPending] = useActionState(
-    async (previousState: SettingsActionState, formData: FormData) => {
-      const nextState = await saveSettings(previousState, formData);
-
-      if (nextState.successMessage) {
-        setCanvasFeedUrl("");
-        setReplacingCanvasUrl(false);
-      }
-
-      return nextState;
-    },
+    saveSettings,
     initialState,
   );
-  const canvasUrlIsSaved = state.hasSavedCanvasUrl;
-  const showCanvasInput = !canvasUrlIsSaved || replacingCanvasUrl;
   const errors = Object.keys(clientErrors).length ? clientErrors : state.errors;
 
   function updateValue(name: keyof SettingsFormValues, value: string) {
@@ -108,7 +91,6 @@ export function SettingsForm({
       buffer_days: numericValue(values.buffer_days),
       timezone: "America/Los_Angeles",
       check_in_time: parseTimeOfDay(values.check_in_time),
-      canvas_feed_url: canvasFeedUrl.trim(),
     });
 
     if (!result.success) {
@@ -295,36 +277,6 @@ export function SettingsForm({
         <p className="rounded border bg-neutral-50 px-3 py-2">
           America/Los_Angeles
         </p>
-      </div>
-
-      <div className="space-y-2">
-        <span className="block">Canvas feed URL</span>
-        {canvasUrlIsSaved && !replacingCanvasUrl ? (
-          <div className="flex items-center gap-3">
-            <span>Saved ••••</span>
-            <button
-              className="rounded border px-3 py-2"
-              onClick={() => {
-                setCanvasFeedUrl("");
-                setReplacingCanvasUrl(true);
-              }}
-              type="button"
-            >
-              Replace
-            </button>
-          </div>
-        ) : null}
-        {showCanvasInput ? (
-          <input
-            autoComplete="off"
-            className="w-full rounded border px-3 py-2"
-            name="canvas_feed_url"
-            onChange={(event) => setCanvasFeedUrl(event.target.value)}
-            type="url"
-            value={canvasFeedUrl}
-          />
-        ) : null}
-        <ErrorMessage errors={errors?.canvas_feed_url} />
       </div>
 
       {state.formError ? (

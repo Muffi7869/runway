@@ -16,7 +16,6 @@ import {
 export type SettingsActionState = {
   errors?: Partial<Record<keyof SettingsInput, string[]>>;
   formError?: string;
-  hasSavedCanvasUrl: boolean;
   successMessage?: string;
 };
 
@@ -48,11 +47,10 @@ function durationValue(formData: FormData, hoursName: string, minutesName: strin
 }
 
 export async function saveSettings(
-  previousState: SettingsActionState,
+  _previousState: SettingsActionState,
   formData: FormData,
 ): Promise<SettingsActionState> {
   const user = await requireOwner();
-  const submittedCanvasUrl = textValue(formData, "canvas_feed_url").trim();
   const result = settingsSchema.safeParse({
     study_window_start: parseTimeOfDay(
       textValue(formData, "study_window_start"),
@@ -76,13 +74,11 @@ export async function saveSettings(
     buffer_days: numberValue(formData, "buffer_days"),
     timezone: "America/Los_Angeles",
     check_in_time: parseTimeOfDay(textValue(formData, "check_in_time")),
-    canvas_feed_url: submittedCanvasUrl,
   });
 
   if (!result.success) {
     return {
       errors: result.error.flatten().fieldErrors,
-      hasSavedCanvasUrl: previousState.hasSavedCanvasUrl,
     };
   }
 
@@ -98,10 +94,6 @@ export async function saveSettings(
     check_in_time: formatTimeOfDay(result.data.check_in_time),
   };
 
-  if (result.data.canvas_feed_url) {
-    settingsToSave.canvas_feed_url = result.data.canvas_feed_url;
-  }
-
   const supabase = await createClient();
   const { error } = await supabase.from("settings").upsert(settingsToSave, {
     onConflict: "user_id",
@@ -110,15 +102,12 @@ export async function saveSettings(
   if (error) {
     return {
       formError: "Settings could not be saved. Please try again.",
-      hasSavedCanvasUrl: previousState.hasSavedCanvasUrl,
     };
   }
 
   revalidatePath("/", "layout");
 
   return {
-    hasSavedCanvasUrl:
-      previousState.hasSavedCanvasUrl || Boolean(result.data.canvas_feed_url),
     successMessage: "Settings saved.",
   };
 }

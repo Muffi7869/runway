@@ -366,7 +366,7 @@ export type Database = {
       settings: {
         Row: {
           buffer_days: number
-          canvas_feed_url: string | null
+          canvas_feed_url_encrypted: string | null
           check_in_time: string
           created_at: string
           id: string
@@ -381,7 +381,7 @@ export type Database = {
         }
         Insert: {
           buffer_days: number
-          canvas_feed_url?: string | null
+          canvas_feed_url_encrypted?: string | null
           check_in_time?: string
           created_at?: string
           id?: string
@@ -396,7 +396,7 @@ export type Database = {
         }
         Update: {
           buffer_days?: number
-          canvas_feed_url?: string | null
+          canvas_feed_url_encrypted?: string | null
           check_in_time?: string
           created_at?: string
           id?: string

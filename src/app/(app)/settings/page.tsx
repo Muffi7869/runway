@@ -17,6 +17,7 @@ import {
   CalendarPicker,
   type CalendarOption,
 } from "./calendar-picker";
+import { CanvasFeedUrlSection } from "./canvas-feed-url-section";
 import { SettingsForm, type SettingsFormValues } from "./settings-form";
 
 type SearchParams = Promise<{
@@ -90,12 +91,11 @@ export default async function SettingsPage({
     )
     .eq("user_id", user.id)
     .maybeSingle();
-  const { count: savedCanvasUrlCount, error: canvasStatusError } = await supabase
+  const { data: canvasSettings, error: canvasStatusError } = await supabase
     .from("settings")
-    .select("id", { count: "exact", head: true })
+    .select("canvas_feed_url_encrypted")
     .eq("user_id", user.id)
-    .not("canvas_feed_url", "is", null)
-    .neq("canvas_feed_url", "");
+    .maybeSingle();
   const { data: googleConnection, error: googleConnectionError } =
     await supabase
       .from("google_connection")
@@ -193,9 +193,9 @@ export default async function SettingsPage({
   return (
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="text-2xl font-semibold">Settings</h1>
-      <SettingsForm
-        hasSavedCanvasUrl={(savedCanvasUrlCount ?? 0) > 0}
-        initialValues={initialValues}
+      <SettingsForm initialValues={initialValues} />
+      <CanvasFeedUrlSection
+        hasSavedUrl={Boolean(canvasSettings?.canvas_feed_url_encrypted)}
       />
       <section className="mt-10 border-t pt-6">
         <h2 className="text-xl font-semibold">Google Calendar</h2>
