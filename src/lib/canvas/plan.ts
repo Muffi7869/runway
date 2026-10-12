@@ -32,6 +32,7 @@ type AlreadyImported = {
   id: string;
   uid: string;
   title: string;
+  deadline: string;
   status: "active" | "done" | "dropped";
 };
 
@@ -112,6 +113,7 @@ export function planImport(
         id: stored.id,
         uid: item.uid,
         title: item.title,
+        deadline: stored.deadline,
         status: stored.status,
       });
       continue;

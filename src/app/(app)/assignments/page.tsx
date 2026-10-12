@@ -5,6 +5,7 @@ import {
   formatEstimate,
   splitAssignments,
 } from "@/lib/assignments/helpers";
+import { shouldShowNeedsSpec } from "@/lib/assignments/needs-spec";
 import { requireOwner } from "@/lib/auth/server";
 import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
@@ -61,12 +62,14 @@ function AssignmentRows({
   assignments,
   classesById,
   currentTotals,
+  needsSpecIds,
   now,
   variant,
 }: {
   assignments: AssignmentRow[];
   classesById: Map<string, ClassRow>;
   currentTotals: Map<string, number>;
+  needsSpecIds: ReadonlySet<string>;
   now: Date;
   variant: "active" | "done" | "dropped";
 }) {
@@ -90,7 +93,12 @@ function AssignmentRows({
                 <span>{classRow?.name ?? "Unknown class"}</span>
               </div>
 
-              <h3 className={styles.title}>{assignment.title}</h3>
+              <div className={styles.titleLine}>
+                <h3 className={styles.title}>{assignment.title}</h3>
+                {shouldShowNeedsSpec(assignment, needsSpecIds) ? (
+                  <span className={styles.tag}>Needs spec</span>
+                ) : null}
+              </div>
 
               <div className={styles.facts}>
                 <span>Due {formatDeadline(assignment.deadline, now)}</span>
@@ -167,19 +175,30 @@ export default async function AssignmentsPage() {
 
   const assignmentIds = assignmentsResult.data.map((assignment) => assignment.id);
   let stepRows: { assignment_id: string; estimated_minutes: number }[] = [];
+  let needsSpecRows: { id: string }[] = [];
 
   if (assignmentIds.length > 0) {
-    const { data, error } = await supabase
-      .from("steps")
-      .select("assignment_id,estimated_minutes")
-      .eq("user_id", user.id)
-      .in("assignment_id", assignmentIds);
+    const [stepsResult, needsSpecResult] = await Promise.all([
+      supabase
+        .from("steps")
+        .select("assignment_id,estimated_minutes")
+        .eq("user_id", user.id)
+        .in("assignment_id", assignmentIds),
+      supabase
+        .from("assignments")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .in("id", assignmentIds)
+        .is("spec_text", null),
+    ]);
 
-    if (error) {
-      throw new Error("Unable to load assignment totals.");
+    if (stepsResult.error || needsSpecResult.error) {
+      throw new Error("Unable to load assignment details.");
     }
 
-    stepRows = data;
+    stepRows = stepsResult.data;
+    needsSpecRows = needsSpecResult.data;
   }
 
   const classesById = new Map(
@@ -187,15 +206,21 @@ export default async function AssignmentsPage() {
   );
   const assignments = splitAssignments(assignmentsResult.data);
   const currentTotals = currentTotalsByAssignment(stepRows);
+  const needsSpecIds = new Set(needsSpecRows.map((row) => row.id));
   const now = new Date();
 
   return (
     <main className={styles.page}>
       <div className={styles.headingRow}>
         <h1 className={styles.heading}>Assignments</h1>
-        <Link className={styles.addLink} href="/assignments/new">
-          Add assignment
-        </Link>
+        <div className={styles.headingActions}>
+          <Link className={styles.linkButton} href="/assignments/import">
+            Import from Canvas
+          </Link>
+          <Link className={styles.addLink} href="/assignments/new">
+            Add assignment
+          </Link>
+        </div>
       </div>
 
       <section aria-labelledby="active-assignments" className={styles.section}>
@@ -207,6 +232,7 @@ export default async function AssignmentsPage() {
             assignments={assignments.active}
             classesById={classesById}
             currentTotals={currentTotals}
+            needsSpecIds={needsSpecIds}
             now={now}
             variant="active"
           />
@@ -224,6 +250,7 @@ export default async function AssignmentsPage() {
             assignments={assignments.done}
             classesById={classesById}
             currentTotals={currentTotals}
+            needsSpecIds={needsSpecIds}
             now={now}
             variant="done"
           />
@@ -241,6 +268,7 @@ export default async function AssignmentsPage() {
             assignments={assignments.dropped}
             classesById={classesById}
             currentTotals={currentTotals}
+            needsSpecIds={needsSpecIds}
             now={now}
             variant="dropped"
           />

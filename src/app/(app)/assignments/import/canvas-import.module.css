@@ -1,0 +1,151 @@
+.page {
+  width: min(100%, 64rem);
+  margin: 0 auto;
+  padding: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.headingRow,
+.titleLine,
+.dueFields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.headingRow {
+  justify-content: space-between;
+}
+
+.headingRow h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.flow,
+.section,
+.list,
+.field,
+.rowAction {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.flow,
+.section,
+.details {
+  margin-top: 1.5rem;
+}
+
+.section h2,
+.details summary {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.details summary {
+  cursor: pointer;
+}
+
+.details[open] summary {
+  margin-bottom: 0.75rem;
+}
+
+.row {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+  border: 1px solid #d4d4d4;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.rowContent {
+  min-width: 0;
+}
+
+.rowContent h3 {
+  font-weight: 600;
+}
+
+.rowContent p,
+.field,
+.note {
+  margin-top: 0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field select,
+.field input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #a3a3a3;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  background: #ffffff;
+}
+
+.tag {
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 0.2rem 0.55rem;
+  background: #e5e5e5;
+  color: #262626;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.primaryButton,
+.rowAction button {
+  width: fit-content;
+  min-height: 2.5rem;
+  border: 1px solid #171717;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  background: #171717;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.primaryButton:disabled,
+.rowAction button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.counts,
+.skipped,
+.note {
+  color: #525252;
+}
+
+.skipped {
+  padding: 0.75rem;
+  border: 1px solid #d4d4d4;
+  border-radius: 0.375rem;
+}
+
+.error {
+  color: #b91c1c;
+}
+
+.success {
+  color: #166534;
+}
+
+@media (min-width: 48rem) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .rowAction {
+    justify-items: end;
+  }
+}

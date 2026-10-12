@@ -445,3 +445,12 @@
 - Added a server-only decrypting reader, a boolean-only saved state for the Settings client, and unit coverage proving valid fictional links are encrypted while disallowed links are neither encrypted nor echoed.
 - Decisions: Settings never sends the saved link or ciphertext to the browser; removing the link stores null, and ordinary Settings saves never read, write, or clear the encrypted column.
 - Known issues: the Save, Replace, and Remove interactions require browser confirmation by Mufaddal.
+
+### P3-T5-d — Canvas import page
+
+- Added a manual, stateless Canvas preview flow with New, Due date changed, and Already imported sections; imports and per-row due-date updates re-fetch and re-plan server-side using only submitted UIDs and editable choices.
+- Added partial import summaries, owner-scoped class verification, fresh window checks, medium-weight assignments with null specs, date-only time editing, and individual confirmation for every changed due date.
+- Added the required always-visible skipped-items line so omitted feed entries are counted by date window, unsupported time, unreadable data, or non-assignment UID.
+- Added an ID-only null-spec query and an active-only Needs spec tag to the Assignments list, plus pure tests for preview shaping, row availability, and status-safe tag decisions.
+- Decisions: Canvas fetching remains manual-only; client titles and dates are never trusted, and done or dropped Canvas assignments remain read-only under Already imported.
+- Known issues: the real preview, import, and due-date update flows require browser confirmation by Mufaddal with the saved Canvas link.
