@@ -29,6 +29,9 @@
 - [x] Saving steps, adding/editing/done/drop/restore, and Canvas import each trigger a replan. (verified by Mufaddal, 2026-10-12)
 - [x] Regenerate is disabled once steps are scheduled. (verified by Mufaddal, 2026-10-12)
 - [x] Deleting a step that has only future planned blocks works. (verified by Mufaddal, 2026-10-12)
+- [ ] Second check-in the same day updates the session instead of duplicating.
+- [ ] Slow progress at check-in pushes remaining work later.
+- [ ] Classes page shows live pace.
 
 ## Log
 
@@ -503,3 +506,11 @@
 - Wrote the Phase 4 report with the full scheduler, replan, database, Week view, trigger, carryover, and Google mirror requirement check plus fresh verification and audit output.
 - Decisions: event reconciliation lists future events from the Runway calendar and inspects the private `runway_block_id`; untagged events are never changed, and no new dependency or migration was needed.
 - Known issues: the live Google Calendar and phone behavior listed under Manual checks remains for Mufaddal to confirm.
+
+### P6-1 — Phase 6 schema, advisory lock, and pace engine
+
+- Added one unapplied Phase 6 migration that serializes per-owner replans across instances, permits an explicit owner only for service-role replans, adds the missing session and blocked-day uniqueness rules, enables owner-scoped blocked-day deletion, and provides an atomic owner-only check-in function.
+- Added pure pace calculation and description helpers with coverage for fast, slow, clamped, zero-progress, multi-step, combined-session, rounded, and invalid numeric inputs.
+- Added rollback-only SQL checks for the advisory lock, owner identity paths, same-day session replacement, earliest progress preservation, block check-in, progress regression, assignment ownership, and active status.
+- Decisions: check-in dates always use the current Los Angeles date; same-day minutes replace rather than accumulate; unchanged step progress creates no session-step row; the existing session-step uniqueness constraint was retained.
+- Known issues: the migration is not applied to the remote database; the rollback-only SQL tests could not run because Docker and Podman are unavailable and remain for P6-4; the live check-in and pace behaviors remain under Manual checks.
