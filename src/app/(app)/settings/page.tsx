@@ -12,12 +12,14 @@ import {
   parseTimeOfDay,
   totalMinutesToHoursAndMinutes,
 } from "@/lib/settings/schema";
+import { laDateKey } from "@/lib/settings/day-off";
 
 import {
   CalendarPicker,
   type CalendarOption,
 } from "./calendar-picker";
 import { CanvasFeedUrlSection } from "./canvas-feed-url-section";
+import { DaysOffSection } from "./days-off-section";
 import { SettingsForm, type SettingsFormValues } from "./settings-form";
 
 type SearchParams = Promise<{
@@ -84,6 +86,7 @@ export default async function SettingsPage({
   const user = await requireOwner();
   const supabase = await createClient();
   const query = await searchParams;
+  const today = laDateKey(new Date());
   const { data: settings, error: settingsError } = await supabase
     .from("settings")
     .select(
@@ -102,8 +105,19 @@ export default async function SettingsPage({
       .select("status,fixed_calendar_ids")
       .eq("user_id", user.id)
       .maybeSingle();
+  const { data: blockedDays, error: blockedDaysError } = await supabase
+    .from("blocked_days")
+    .select("id,date,reason")
+    .eq("user_id", user.id)
+    .gte("date", today)
+    .order("date", { ascending: true });
 
-  if (settingsError || canvasStatusError || googleConnectionError) {
+  if (
+    settingsError ||
+    canvasStatusError ||
+    googleConnectionError ||
+    blockedDaysError
+  ) {
     throw new Error("Unable to load settings.");
   }
 
@@ -197,6 +211,7 @@ export default async function SettingsPage({
       <CanvasFeedUrlSection
         hasSavedUrl={Boolean(canvasSettings?.canvas_feed_url_encrypted)}
       />
+      <DaysOffSection days={blockedDays} today={today} />
       <section className="mt-10 border-t pt-6">
         <h2 className="text-xl font-semibold">Google Calendar</h2>
         {googleMessage ? <p className="mt-3">{googleMessage}</p> : null}

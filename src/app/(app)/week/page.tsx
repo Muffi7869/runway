@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ReplanControls } from "@/components/replan-controls";
+import { RoughDayControls } from "@/components/rough-day-controls";
 import { SyncControls, AutoSync } from "@/components/sync-controls";
 import {
   WeekGrid,
@@ -11,6 +12,7 @@ import { requireOwner } from "@/lib/auth/server";
 import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
 import { parseTimeOfDay } from "@/lib/settings/schema";
+import { laDateKey } from "@/lib/settings/day-off";
 import { requireSettingsComplete } from "@/lib/settings/server";
 import { addDays, APP_TIMEZONE, type CalendarDate, zonedParts } from "@/lib/time/zoned";
 import {
@@ -106,6 +108,7 @@ export default async function WeekPage({
     blocksResult,
     planningResult,
     activeAssignmentsResult,
+    roughDayResult,
   ] = await Promise.all([
     supabase
       .from("google_connection")
@@ -139,6 +142,13 @@ export default async function WeekPage({
       .select("id,title")
       .eq("user_id", user.id)
       .eq("status", "active"),
+    supabase
+      .from("blocked_days")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("date", laDateKey(now))
+      .eq("reason", "rough day")
+      .maybeSingle(),
   ]);
 
   if (
@@ -146,7 +156,8 @@ export default async function WeekPage({
     fixedEventsResult.error ||
     blocksResult.error ||
     planningResult.error ||
-    activeAssignmentsResult.error
+    activeAssignmentsResult.error ||
+    roughDayResult.error
   ) {
     throw new Error("Unable to load the week.");
   }
@@ -295,10 +306,13 @@ export default async function WeekPage({
             lastSyncedAt={connection.last_synced_at}
             now={now.toISOString()}
           />
-          <ReplanControls
-            lastPlannedAt={planningResult.data?.last_planned_at ?? null}
-            now={now.toISOString()}
-          />
+          <div className="flex flex-wrap items-start gap-6">
+            <ReplanControls
+              lastPlannedAt={planningResult.data?.last_planned_at ?? null}
+              now={now.toISOString()}
+            />
+            <RoughDayControls initiallyActive={Boolean(roughDayResult.data)} />
+          </div>
         </div>
       </div>
 

@@ -40,6 +40,8 @@
 - [ ] Next morning an unchecked day shows as missed and the work moved to later days.
 - [ ] Cron route without the secret returns 401 on the live site.
 - [ ] Vercel Cron jobs listed in the project dashboard.
+- [ ] Rough day shows "Moved ... to later days" and Undo restores the plan live.
+- [ ] Days off: add a travel day, blocks move off it; remove it, plan returns.
 
 ## Log
 
@@ -541,3 +543,14 @@
 - Decisions: scheduled the reminder at `0 6 * * *` and morning processing at `0 15 * * *` because the plan has hourly precision; these remain on the intended side of Los Angeles midnight in both daylight and standard time.
 - Decisions: the default Resend onboarding sender can deliver only to the email belonging to the Resend account, so that account email must equal the configured allowed owner email unless a verified sender is configured.
 - Known issues: the live delivery timing and Vercel dashboard registration remain in Manual checks.
+
+### P6-4 — Rough day, days off, and Phase 6 report
+
+- Added the one-tap Week rough-day control with owner-scoped save and Undo actions, automatic replanning, a pure moved-minutes summary, and newly introduced or worsened shortfall messages.
+- Added the Settings Days off section with upcoming dates, validated travel, sick, and other reasons, owner-scoped add and remove actions, and automatic replanning after each change.
+- Added pure tests for Los Angeles date handling, moved planned minutes, warning comparisons, valid calendar dates, allowed reasons, and past-date rejection.
+- Confirmed the applied Phase 6 migration defines the blocked-day uniqueness rule and owner delete policy and regenerated linked database types without a resulting type-file change.
+- Attempted the full local rollback SQL suite, but the Supabase local stack could not start because neither Docker nor Podman is installed; no database reset or SQL test ran.
+- Wrote the evidence-based Phase 6 report with fresh application checks, audits, commit history, schema evidence, and the current manual-check list.
+- Decisions: a saved rough day remains saved when replanning fails and shows a quiet retry note; Days off lists only today and future rows in Los Angeles; all database mutations remain owner-scoped.
+- Known issues: the local SQL rollback suite remains unexecuted until Docker or Podman is available, and the live interactions listed under Manual checks remain for Mufaddal.
