@@ -19,16 +19,16 @@
 
 ## Manual checks
 
-- [ ] Live Canvas import: fetch, import selected, fetch again shows Already imported, changed date shows Update and is never auto-applied.
-- [ ] Canvas link stored as ciphertext in settings.canvas_feed_url_encrypted (looks like gibberish, plain column gone).
-- [ ] Blocks appear on the phone's Google Calendar (Runway calendar).
-- [ ] Replanning 3 times live leaves no duplicate events.
-- [ ] Main (primary) calendar is untouched.
-- [ ] Week page shows planned blocks in class colors next to gray events.
-- [ ] Replan button works and the warning banner reads in plain words.
-- [ ] Saving steps, adding/editing/done/drop/restore, and Canvas import each trigger a replan.
-- [ ] Regenerate is disabled once steps are scheduled.
-- [ ] Deleting a step that has only future planned blocks works.
+- [x] Live Canvas import: fetch, import selected, fetch again shows Already imported, changed date shows Update and is never auto-applied. (verified by Mufaddal, 2026-10-12)
+- [x] Canvas link stored as ciphertext in settings.canvas_feed_url_encrypted (looks like gibberish, plain column gone). (verified by Mufaddal, 2026-10-12)
+- [x] Blocks appear on the phone's Google Calendar (Runway calendar). (verified by Mufaddal, 2026-10-12)
+- [x] Replanning 3 times live leaves no duplicate events. (verified by Mufaddal, 2026-10-12)
+- [x] Main (primary) calendar is untouched. (verified by Mufaddal, 2026-10-12)
+- [x] Week page shows planned blocks in class colors next to gray events. (verified by Mufaddal, 2026-10-12)
+- [x] Replan button works and the warning banner reads in plain words. (verified by Mufaddal, 2026-10-12)
+- [x] Saving steps, adding/editing/done/drop/restore, and Canvas import each trigger a replan. (verified by Mufaddal, 2026-10-12)
+- [x] Regenerate is disabled once steps are scheduled. (verified by Mufaddal, 2026-10-12)
+- [x] Deleting a step that has only future planned blocks works. (verified by Mufaddal, 2026-10-12)
 
 ## Log
 

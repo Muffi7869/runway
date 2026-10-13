@@ -265,18 +265,18 @@ ba7f6eb P4-2: replan service, Week blocks, triggers
 
 ### Manual checks
 
-The following require the real deployed site, owner data, or a phone and remain for Mufaddal:
+The following were verified on the real deployed site with owner data and a phone:
 
-- [ ] Live Canvas import: fetch, import selected, fetch again shows Already imported, changed date shows Update and is never auto-applied.
-- [ ] Canvas link stored as ciphertext in settings.canvas_feed_url_encrypted (looks like gibberish, plain column gone).
-- [ ] Blocks appear on the phone's Google Calendar (Runway calendar).
-- [ ] Replanning 3 times live leaves no duplicate events.
-- [ ] Main (primary) calendar is untouched.
-- [ ] Week page shows planned blocks in class colors next to gray events.
-- [ ] Replan button works and the warning banner reads in plain words.
-- [ ] Saving steps, adding, editing, Done, Drop, Restore, and Canvas import each trigger a replan.
-- [ ] Regenerate is disabled once steps are scheduled.
-- [ ] Deleting a step that has only future planned blocks works.
+- [x] Live Canvas import: fetch, import selected, fetch again shows Already imported, changed date shows Update and is never auto-applied. (verified by Mufaddal, 2026-10-12)
+- [x] Canvas link stored as ciphertext in settings.canvas_feed_url_encrypted (looks like gibberish, plain column gone). (verified by Mufaddal, 2026-10-12)
+- [x] Blocks appear on the phone's Google Calendar (Runway calendar). (verified by Mufaddal, 2026-10-12)
+- [x] Replanning 3 times live leaves no duplicate events. (verified by Mufaddal, 2026-10-12)
+- [x] Main (primary) calendar is untouched. (verified by Mufaddal, 2026-10-12)
+- [x] Week page shows planned blocks in class colors next to gray events. (verified by Mufaddal, 2026-10-12)
+- [x] Replan button works and the warning banner reads in plain words. (verified by Mufaddal, 2026-10-12)
+- [x] Saving steps, adding, editing, Done, Drop, Restore, and Canvas import each trigger a replan. (verified by Mufaddal, 2026-10-12)
+- [x] Regenerate is disabled once steps are scheduled. (verified by Mufaddal, 2026-10-12)
+- [x] Deleting a step that has only future planned blocks works. (verified by Mufaddal, 2026-10-12)
 
 ## 6. Deviations from the brief, and why
 
@@ -287,7 +287,7 @@ The following require the real deployed site, owner data, or a phone and remain 
 ## 7. Known issues and shortcuts
 
 - The full npm audit reports 9 high-severity findings through the development-only `braces` advisory. Runtime dependencies report zero vulnerabilities. The available automated fix requires forced breaking package changes and was not applied.
-- Real Google Calendar behavior cannot be proven with mocked tests alone. Phone display, three-run live idempotence, and primary-calendar safety remain unchecked manual items.
+- Live Google Calendar behavior, phone display, three-run idempotence, and primary-calendar safety were verified by Mufaddal on 2026-10-12.
 - The quiet transient mirror warning is return-state only by design and therefore is not retained across a full page reload.
 - A first-time simultaneous Runway-calendar creation race can still create an extra calendar; the existing find-or-create logic reports extras and never deletes calendars.
 
@@ -319,6 +319,4 @@ The following require the real deployed site, owner data, or a phone and remain 
 
 ## 11. Questions
 
-1. Did blocks appear correctly on the phone's Runway calendar after the deployment?
-2. Did three unchanged live replans leave exactly one Google event per block?
-3. Did inspection confirm the primary calendar remained untouched?
+None.
