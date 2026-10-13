@@ -1,5 +1,6 @@
 const ROOT_PATH = "/";
 const PRIVACY_PATH = "/privacy";
+const CRON_PATHS = ["/api/cron/reminder", "/api/cron/morning"] as const;
 
 export const PUBLIC_PATHS = [
   "/login",
@@ -22,7 +23,10 @@ export function isPublicPath(pathname: string): boolean {
 }
 
 export function skipsOwnerCheck(pathname: string): boolean {
-  return pathname === PRIVACY_PATH;
+  return (
+    pathname === PRIVACY_PATH ||
+    CRON_PATHS.some((path) => pathname === path)
+  );
 }
 
 export function getRouteAction(

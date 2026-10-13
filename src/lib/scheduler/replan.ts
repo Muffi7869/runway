@@ -2,11 +2,11 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database, Json } from "@/lib/db/database.types";
-import { mirrorBlocks } from "@/lib/google/block-mirror";
-import { syncFixedEvents } from "@/lib/google/sync-service";
-import { parseTimeOfDay } from "@/lib/settings/schema";
-import { syncWindow } from "@/lib/time/zoned";
+import type { Database, Json } from "../db/database.types";
+import { mirrorBlocks } from "../google/block-mirror";
+import { syncFixedEvents } from "../google/sync-service";
+import { parseTimeOfDay } from "../settings/schema";
+import { syncWindow } from "../time/zoned";
 
 import { planSchedule } from "./plan";
 import type { ScheduleAssignment, ScheduleInput } from "./types";
@@ -34,6 +34,7 @@ async function performReplan(
   supabase: SupabaseClient<Database>,
   ownerId: string,
   now: Date,
+  mirrorEnabled: boolean,
 ): Promise<ReplanResult> {
   const { data: connection, error: connectionError } = await supabase
     .from("google_connection")
@@ -208,6 +209,7 @@ async function performReplan(
     {
       p_now: now.toISOString(),
       p_blocks: blockPayload,
+      p_user_id: ownerId,
     },
   );
 
@@ -235,12 +237,14 @@ async function performReplan(
   let mirrorFailed = false;
   let mirrorNeedsReconnect = false;
 
-  try {
-    const mirrorResult = await mirrorBlocks(supabase, ownerId);
-    mirrorNeedsReconnect = !mirrorResult.ok;
-    mirrorFailed = mirrorResult.ok && mirrorResult.failed > 0;
-  } catch {
-    mirrorFailed = true;
+  if (mirrorEnabled) {
+    try {
+      const mirrorResult = await mirrorBlocks(supabase, ownerId);
+      mirrorNeedsReconnect = !mirrorResult.ok;
+      mirrorFailed = mirrorResult.ok && mirrorResult.failed > 0;
+    } catch {
+      mirrorFailed = true;
+    }
   }
 
   return {
@@ -257,6 +261,7 @@ export function replan(
   supabase: SupabaseClient<Database>,
   ownerId: string,
   now = new Date(),
+  options: { mirror?: boolean } = {},
 ): Promise<ReplanResult> {
   const active = planningByOwner[ownerId];
 
@@ -264,7 +269,12 @@ export function replan(
     return active;
   }
 
-  const planning = performReplan(supabase, ownerId, now).finally(() => {
+  const planning = performReplan(
+    supabase,
+    ownerId,
+    now,
+    options.mirror !== false,
+  ).finally(() => {
     if (planningByOwner[ownerId] === planning) {
       planningByOwner[ownerId] = undefined;
     }

@@ -36,6 +36,10 @@
 - [ ] Percent picker can't go below the saved value.
 - [ ] Log other work adds an unscheduled assignment.
 - [ ] All steps done prompt appears and Mark done works.
+- [ ] Reminder email arrives around 11:30 PM (within the window the plan allows).
+- [ ] Next morning an unchecked day shows as missed and the work moved to later days.
+- [ ] Cron route without the secret returns 401 on the live site.
+- [ ] Vercel Cron jobs listed in the project dashboard.
 
 ## Log
 
@@ -528,3 +532,12 @@
 - Added pure unit coverage for check-in grouping and defaults, progress choices, minute clamping, safe error mapping, and pace-input assembly across active, done, dropped, and zero-progress sessions.
 - Decisions: same-day unscheduled work reuses existing session minutes; database errors are mapped to fixed plain messages; pace and replan failures are quiet follow-up states because the atomic check-in has already succeeded.
 - Known issues: the browser behavior listed under Manual checks remains for Mufaddal to confirm in fast mode.
+
+### P6-3 — Cron jobs, reminder email, and injected-client replan
+
+- Added fail-closed, constant-time cron authorization, a server-only service-role database client, paginated single-owner resolution, and strict import-boundary coverage.
+- Added daily reminder and morning cron routes. The reminder counts only the owner's planned and checked-in blocks for the current Los Angeles day and sends only that count plus a check-in link; the morning route marks earlier planned blocks missed, replans, and mirrors Google Calendar without letting one later-stage failure stop the next stage.
+- Confirmed from Vercel's current Cron Jobs Usage & Pricing and Managing Cron Jobs documentation that Hobby supports 100 jobs per project, a minimum interval of once daily, and hourly scheduling precision of up to 59 minutes.
+- Decisions: scheduled the reminder at `0 6 * * *` and morning processing at `0 15 * * *` because the plan has hourly precision; these remain on the intended side of Los Angeles midnight in both daylight and standard time.
+- Decisions: the default Resend onboarding sender can deliver only to the email belonging to the Resend account, so that account email must equal the configured allowed owner email unless a verified sender is configured.
+- Known issues: the live delivery timing and Vercel dashboard registration remain in Manual checks.

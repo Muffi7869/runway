@@ -52,6 +52,20 @@ describe("route access decisions", () => {
     expect(getRouteAction("/privacy", "not_owner")).toBe("pass");
   });
 
+  it.each(["/api/cron/reminder", "/api/cron/morning"])(
+    "lets the cron route perform its own bearer check: %s",
+    (pathname) => {
+      expect(skipsOwnerCheck(pathname)).toBe(true);
+    },
+  );
+
+  it.each(["/api/cron", "/api/cron/other", "/api/cron/reminder/extra"])(
+    "does not bypass owner checks for an unnamed cron path: %s",
+    (pathname) => {
+      expect(skipsOwnerCheck(pathname)).toBe(false);
+    },
+  );
+
   it("lets the owner reach the landing route", () => {
     expect(getRouteAction("/", "owner")).toBe("pass");
   });
