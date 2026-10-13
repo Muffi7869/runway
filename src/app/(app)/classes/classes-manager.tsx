@@ -6,6 +6,7 @@ import {
   CLASS_COLOR_PALETTE,
   type ClassColor,
 } from "@/lib/classes/palette";
+import { describePace } from "@/lib/pace/compute";
 
 import {
   addClass,
@@ -132,10 +133,12 @@ function ExistingClassForm({ classRow }: { classRow: ClassRow }) {
           className="block size-5 rounded-full"
           style={{ backgroundColor: displayedColor?.value ?? "#737373" }}
         />
-        <span className="font-medium">{classRow.name}</span>
-        <span className="ml-auto text-sm">
-          Pace: {Number(classRow.pace_ratio).toFixed(1)}×
-        </span>
+        <div>
+          <p className="font-medium">{classRow.name}</p>
+          <p className="text-sm">
+            {describePace(Number(classRow.pace_ratio))}
+          </p>
+        </div>
       </div>
       <label className="grid gap-1">
         <span>Name</span>

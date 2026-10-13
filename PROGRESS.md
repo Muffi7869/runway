@@ -32,6 +32,10 @@
 - [ ] Second check-in the same day updates the session instead of duplicating.
 - [ ] Slow progress at check-in pushes remaining work later.
 - [ ] Classes page shows live pace.
+- [ ] /checkin shows today's blocks grouped by assignment with minutes prefilled.
+- [ ] Percent picker can't go below the saved value.
+- [ ] Log other work adds an unscheduled assignment.
+- [ ] All steps done prompt appears and Mark done works.
 
 ## Log
 
@@ -514,3 +518,13 @@
 - Added rollback-only SQL checks for the advisory lock, owner identity paths, same-day session replacement, earliest progress preservation, block check-in, progress regression, assignment ownership, and active status.
 - Decisions: check-in dates always use the current Los Angeles date; same-day minutes replace rather than accumulate; unchanged step progress creates no session-step row; the existing session-step uniqueness constraint was retained.
 - Known issues: the migration is not applied to the remote database; the rollback-only SQL tests could not run because Docker and Podman are unavailable and remain for P6-4; the live check-in and pace behaviors remain under Manual checks.
+
+### P6-2 — Check-in page, pace updates, and live pace
+
+- Regenerated linked database types and confirmed the atomic check-in function plus the owner-aware planned-block replacement signature are live.
+- Added a responsive owner-only Check in page that groups yesterday and today's planned, missed, and checked-in work, supports same-day updates and unscheduled work, preserves entered values, and prevents choosing progress below the saved percentage.
+- Added a validated server action that filters unchanged or lower progress before the atomic check-in RPC, recomputes touched class pace from all class history, replans without risking the saved check-in, and detects fully completed active assignments.
+- Added reusable completion prompts backed by the existing Mark done action, a Check in navigation item, and descriptive live pace text on the Classes page.
+- Added pure unit coverage for check-in grouping and defaults, progress choices, minute clamping, safe error mapping, and pace-input assembly across active, done, dropped, and zero-progress sessions.
+- Decisions: same-day unscheduled work reuses existing session minutes; database errors are mapped to fixed plain messages; pace and replan failures are quiet follow-up states because the atomic check-in has already succeeded.
+- Known issues: the browser behavior listed under Manual checks remains for Mufaddal to confirm in fast mode.

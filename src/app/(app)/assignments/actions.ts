@@ -250,6 +250,7 @@ async function updateAssignmentStatus(
 
   await replanQuietly(supabase, userId);
   revalidatePath("/assignments");
+  revalidatePath("/checkin");
   return { ok: true };
 }
 

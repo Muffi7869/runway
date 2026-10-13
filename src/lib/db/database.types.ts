@@ -467,12 +467,16 @@ export type Database = {
     }
     Functions: {
       replace_planned_blocks: {
-        Args: { p_blocks: Json; p_now: string }
+        Args: { p_blocks: Json; p_now: string; p_user_id?: string }
         Returns: undefined
       }
       save_assignment_steps: {
         Args: { p_ai_total?: number; p_assignment_id: string; p_steps: Json }
         Returns: undefined
+      }
+      save_checkin: {
+        Args: { p_block_ids: string[]; p_entries: Json }
+        Returns: Json
       }
     }
     Enums: {

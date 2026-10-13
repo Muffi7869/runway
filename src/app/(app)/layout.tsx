@@ -10,15 +10,18 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <header className="flex items-center justify-between border-b px-6 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b px-4 py-4 sm:px-6">
         <Link className="font-semibold" href="/week">
           Runway
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
           <nav aria-label="Main navigation">
-            <ul className="flex items-center gap-4">
+            <ul className="flex flex-wrap items-center gap-3 sm:gap-4">
               <li>
                 <Link href="/week">Week</Link>
+              </li>
+              <li>
+                <Link href="/checkin">Check in</Link>
               </li>
               <li>
                 <Link href="/assignments">Assignments</Link>
