@@ -52,13 +52,13 @@ PROGRESS.md           running log (see below)
 
 | Table | Belongs to | Key fields |
 | --- | --- | --- |
-| settings | user | study window start/end, max study minutes per day, min/max block minutes, buffer days, timezone, check-in time (default 23:30), Canvas feed URL (treat as secret) |
-| classes | user | name, color, pace_ratio (default 1.0) |
+| settings | user | study window start/end, max study minutes per day, min/max block minutes, buffer days, timezone, check-in time (default 23:30), canvas_feed_url_encrypted (nullable, secret), last_plan_warnings (jsonb, nullable), last_planned_at (nullable) |
+| classes | user | name, color, pace_ratio (default 1.0, clamped 0.5–3.0, recomputed from sessions) |
 | fixed_events | user | title, start, end, google_event_id, source_calendar_id |
 | assignments | class | class_id, title, type (assignment/exam), deadline, spec_text (nullable: null = no spec yet), weight (low/medium/high), status (active/done/dropped), ai_total_estimate_minutes (nullable: null = not broken down yet), recurrence_rule (v2, nullable), canvas_uid (nullable, unique per user) |
 | steps | assignment | assignment_id, name, order, estimated_minutes, percent_done (0/25/50/75/100) |
 | blocks | step | step_id, start, end, planned_minutes, google_event_id, status (planned/checked_in/missed) |
-| sessions | assignment | assignment_id, date, actual_minutes |
+| sessions | assignment | assignment_id, date (LA calendar date), actual_minutes. One session per assignment per date: a second check-in that day updates it |
 | session_steps | session | session_id, step_id, percent_before, percent_after (both 0/25/50/75/100, after ≥ before) |
 | blocked_days | user | date, reason |
 | google_connection | user | refresh_token_encrypted, granted_scopes, fixed_calendar_ids (list), runway_calendar_id, last_synced_at, status (connected/needs_reconnect). One row per user |
@@ -79,6 +79,7 @@ Every table has `id`, `user_id`, `created_at`, `updated_at`. Link columns (`*_id
 10. **The repo is PUBLIC.** Nothing personal goes in code, commits, docs, `PROGRESS.md`, `reports/`, or test fixtures: no real calendar events, class schedules, emails, assignment specs, Canvas feed URLs, or local machine paths. His name, GitHub username, and the fact that he's a UCSD student are fine to show; they're already public through the LICENSE and commits. Tests use made-up data. Anything that needs a real value goes in an environment variable.
 11. **Only one person may use the deployed app.** Sign-in is restricted to the email in the `ALLOWED_EMAIL` environment variable. Every other account is rejected before it can reach any data or trigger any OpenAI call.
 12. **Google Calendar data is never sent to OpenAI or any other AI service.** Only text the user pastes or types (assignment specs, exam topics) and Runway's own records (assignment names, step names, minutes) may be sent. The public /privacy page promises this.
+13. **The Supabase service role key is used ONLY inside `/api/cron/*` routes**, which must reject any request without the correct `CRON_SECRET`. Every service-role query filters explicitly by the owner's user id (looked up from `ALLOWED_EMAIL`). Never import the service-role client anywhere else, and never send it to the browser.
 
 ## Scheduler rules (summary)
 
