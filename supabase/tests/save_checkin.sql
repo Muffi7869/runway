@@ -6,7 +6,7 @@ insert into auth.users (
 ) values (
   '00000000-0000-0000-0000-000000000000',
   '00000000-0000-4000-8000-000000000701',
-  'authenticated', 'authenticated', 'phase6-checkin@example.com', '', now(),
+  'authenticated', 'authenticated', null, '', now(),
   '{}'::jsonb, '{}'::jsonb, now(), now()
 );
 

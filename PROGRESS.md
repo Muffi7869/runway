@@ -42,6 +42,7 @@
 - [ ] Vercel Cron jobs listed in the project dashboard.
 - [ ] Rough day shows "Moved ... to later days" and Undo restores the plan live.
 - [ ] Days off: add a travel day, blocks move off it; remove it, plan returns.
+- [ ] Run supabase/tests/run_all_rollback.sql in the Supabase SQL Editor and confirm RUNNER REPORT shows 0 failed (owner: Mufaddal).
 
 ## Log
 
@@ -554,3 +555,12 @@
 - Wrote the evidence-based Phase 6 report with fresh application checks, audits, commit history, schema evidence, and the current manual-check list.
 - Decisions: a saved rough day remains saved when replanning fails and shows a quiet retry note; Days off lists only today and future rows in Los Angeles; all database mutations remain owner-scoped.
 - Known issues: the local SQL rollback suite remains unexecuted until Docker or Podman is available, and the live interactions listed under Manual checks remain for Mufaddal.
+
+### P6-FIX — Rollback SQL test runner
+
+- Audited every standalone SQL test, added explicit transaction and auth-context coverage where missing, removed email-like fixture values, and updated the legacy schema check to the current ten-table contract.
+- Added one SQL Editor runner that exercises assignment-step saves, planned-block replacement, atomic check-ins, owner delete policies, RLS isolation, and uniqueness constraints with fixed fictional rows.
+- Each runner test deliberately rolls back its inner subtransaction before recording its result; the final RN002 report aborts the outer transaction so no test data or temp table can persist.
+- Added a dependency-free static checker for forbidden transaction endings, SQL Editor compatibility, balanced DO blocks, auth-role syntax, and public-repo secret patterns.
+- Decisions: grouped closely related assertions into four named runner tests, followed by per-table unchanged-count checks; results appear in the final RUNNER REPORT error text with failures first.
+- Known issues: PostgreSQL and Docker are unavailable, so the SQL has not been executed; Mufaddal must run the combined file in the Supabase SQL Editor and confirm zero failures.

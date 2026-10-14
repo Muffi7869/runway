@@ -1,3 +1,5 @@
+begin;
+
 do $$
 declare
   test_user_id uuid := '00000000-0000-4000-8000-000000000001';
@@ -25,7 +27,7 @@ begin
     test_user_id,
     'authenticated',
     'authenticated',
-    'schema-check@example.com',
+    null,
     '',
     now(),
     '{}'::jsonb,
@@ -152,19 +154,20 @@ begin
         'blocks',
         'sessions',
         'session_steps',
-        'blocked_days'
+        'blocked_days',
+        'google_connection'
       );
 
-    if matching_count = 9 then
-      report := report || 'RLS on nine contract tables: accepted as expected' || E'\n';
+    if matching_count = 10 then
+      report := report || 'RLS on ten contract tables: accepted as expected' || E'\n';
     else
       report := report || format(
-        'RLS on nine contract tables: NOT ACCEPTED (%s enabled)',
+        'RLS on ten contract tables: NOT ACCEPTED (%s enabled)',
         matching_count
       ) || E'\n';
     end if;
   exception when others then
-    report := report || 'RLS on nine contract tables: NOT ACCEPTED' || E'\n';
+    report := report || 'RLS on ten contract tables: NOT ACCEPTED' || E'\n';
   end;
 
   begin
@@ -376,7 +379,23 @@ begin
     report := report || 'study window equal to minimum block: NOT ACCEPTED' || E'\n';
   end;
 
-  raise exception using
-    message = E'Rollback-only verification report:\n' || report;
+  raise notice E'Rollback-only verification report:\n%', report;
 end;
 $$;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}',
+  true
+);
+
+do $$
+begin
+  if auth.uid() <> '00000000-0000-4000-8000-000000000001'::uuid then
+    raise exception 'test auth context was not applied';
+  end if;
+end;
+$$;
+
+rollback;

@@ -1,3 +1,5 @@
+begin;
+
 do $$
 declare
   test_user_id uuid := '00000000-0000-4000-8000-000000000021';
@@ -21,7 +23,7 @@ begin
     test_user_id,
     'authenticated',
     'authenticated',
-    'schema-check@example.com',
+    null,
     '',
     now(),
     '{}'::jsonb,
@@ -124,7 +126,23 @@ begin
     report := report || 'invalid connection status: rejected as expected' || E'\n';
   end;
 
-  raise exception using
-    message = E'Rollback-only verification report:\n' || report;
+  raise notice E'Rollback-only verification report:\n%', report;
 end;
 $$;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-000000000021","role":"authenticated"}',
+  true
+);
+
+do $$
+begin
+  if auth.uid() <> '00000000-0000-4000-8000-000000000021'::uuid then
+    raise exception 'test auth context was not applied';
+  end if;
+end;
+$$;
+
+rollback;
