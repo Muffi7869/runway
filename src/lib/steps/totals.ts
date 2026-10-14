@@ -22,9 +22,14 @@ export function describeTotals({
   aiTotal: number | null;
   currentTotal: number;
 }): string {
-  const aiText = aiTotal === null ? "none" : formatEstimate(aiTotal);
-  const currentText =
-    currentTotal === 0 ? "not set yet" : formatEstimate(currentTotal);
+  const { aiText, currentText } = describeTotalParts({ aiTotal, currentTotal });
 
-  return `AI estimate: ${aiText} · Your plan: ${currentText}`;
+  return `AI estimate: ${aiText ?? "none"} · Your plan: ${currentText}`;
+}
+
+export function describeTotalParts({ aiTotal, currentTotal }: { aiTotal: number | null; currentTotal: number | null }): { aiText: string | null; currentText: string } {
+  return {
+    aiText: aiTotal === null ? null : formatEstimate(aiTotal),
+    currentText: currentTotal === null || currentTotal === 0 ? "not set yet" : formatEstimate(currentTotal),
+  };
 }

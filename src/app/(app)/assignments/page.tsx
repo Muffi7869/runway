@@ -1,153 +1,32 @@
 import Link from "next/link";
 
-import {
-  formatDeadline,
-  formatEstimate,
-  splitAssignments,
-} from "@/lib/assignments/helpers";
+import { formatDeadline, splitAssignments } from "@/lib/assignments/helpers";
 import { shouldShowNeedsSpec } from "@/lib/assignments/needs-spec";
+import { groupByWeek } from "@/lib/assignments/presentation";
 import { requireOwner } from "@/lib/auth/server";
-import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
+import { CLASS_COLOR_PALETTE, type ClassColor } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
 import { requireSettingsComplete } from "@/lib/settings/server";
-import { currentTotalsByAssignment } from "@/lib/steps/totals";
+import { currentTotalsByAssignment, describeTotalParts } from "@/lib/steps/totals";
+import { assignmentProgress } from "@/lib/week/presentation";
 
 import styles from "./assignments.module.css";
-import { AssignmentStatusButton } from "./status-button";
+import { AssignmentsView, type AssignmentListItem } from "./assignments-view";
 
 type AssignmentRow = {
-  id: string;
-  class_id: string;
-  title: string;
-  deadline: string;
-  weight: "low" | "medium" | "high";
-  status: "active" | "done" | "dropped";
+  id: string; class_id: string; title: string; deadline: string;
+  weight: "low" | "medium" | "high"; status: "active" | "done" | "dropped";
+  ai_total_estimate_minutes: number | null;
 };
+const statuses = ["active", "done", "dropped"] as const;
+const weights = ["low", "medium", "high"] as const;
 
-type ClassRow = {
-  id: string;
-  name: string;
-  color: string;
-};
-
-const assignmentStatuses = ["active", "done", "dropped"] as const;
-const assignmentWeights = ["low", "medium", "high"] as const;
-
-function isAssignmentRow(value: {
-  id: string;
-  class_id: string;
-  title: string;
-  deadline: string;
-  weight: string;
-  status: string;
-}): value is AssignmentRow {
-  return (
-    assignmentStatuses.includes(
-      value.status as (typeof assignmentStatuses)[number],
-    ) &&
-    assignmentWeights.includes(
-      value.weight as (typeof assignmentWeights)[number],
-    )
-  );
+function isAssignmentRow(value: Omit<AssignmentRow, "weight" | "status"> & { weight: string; status: string }): value is AssignmentRow {
+  return statuses.includes(value.status as AssignmentRow["status"]) && weights.includes(value.weight as AssignmentRow["weight"]);
 }
 
-function paletteValue(colorKey: string): string {
-  return (
-    CLASS_COLOR_PALETTE.find((color) => color.key === colorKey)?.value ??
-    "var(--ink-3)"
-  );
-}
-
-function AssignmentRows({
-  assignments,
-  classesById,
-  currentTotals,
-  needsSpecIds,
-  now,
-  variant,
-}: {
-  assignments: AssignmentRow[];
-  classesById: Map<string, ClassRow>;
-  currentTotals: Map<string, number>;
-  needsSpecIds: ReadonlySet<string>;
-  now: Date;
-  variant: "active" | "done" | "dropped";
-}) {
-  return (
-    <div className={styles.list}>
-      {assignments.map((assignment) => {
-        const classRow = classesById.get(assignment.class_id);
-        const currentTotal = currentTotals.get(assignment.id);
-
-        return (
-          <article className={styles.row} key={assignment.id}>
-            <div className={styles.content}>
-              <div className={styles.className}>
-                <span
-                  aria-hidden="true"
-                  className={styles.swatch}
-                  style={{
-                    backgroundColor: paletteValue(classRow?.color ?? ""),
-                  }}
-                />
-                <span>{classRow?.name ?? "Unknown class"}</span>
-              </div>
-
-              <div className={styles.titleLine}>
-                <h3 className={styles.title}>{assignment.title}</h3>
-                {shouldShowNeedsSpec(assignment, needsSpecIds) ? (
-                  <span className={styles.tag}>Needs spec</span>
-                ) : null}
-              </div>
-
-              <div className={styles.facts}>
-                <span>Due {formatDeadline(assignment.deadline, now)}</span>
-                <span>Weight: {assignment.weight}</span>
-                <span>
-                  Total:{" "}
-                  {currentTotal === undefined
-                    ? "Not broken down yet"
-                    : formatEstimate(currentTotal)}
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.actions}>
-              {variant === "active" ? (
-                <>
-                  <Link
-                    className={styles.linkButton}
-                    href={`/assignments/${assignment.id}/breakdown`}
-                  >
-                    Break down
-                  </Link>
-                  <Link
-                    className={styles.linkButton}
-                    href={`/assignments/${assignment.id}/edit`}
-                  >
-                    Edit
-                  </Link>
-                  <AssignmentStatusButton
-                    assignmentId={assignment.id}
-                    kind="done"
-                  />
-                  <AssignmentStatusButton
-                    assignmentId={assignment.id}
-                    kind="drop"
-                  />
-                </>
-              ) : (
-                <AssignmentStatusButton
-                  assignmentId={assignment.id}
-                  kind="restore"
-                />
-              )}
-            </div>
-          </article>
-        );
-      })}
-    </div>
-  );
+function colorKey(value?: string): ClassColor {
+  return CLASS_COLOR_PALETTE.some((color) => color.key === value) ? value as ClassColor : "blue";
 }
 
 export default async function AssignmentsPage() {
@@ -155,127 +34,63 @@ export default async function AssignmentsPage() {
   const user = await requireOwner();
   const supabase = await createClient();
   const [classesResult, assignmentsResult] = await Promise.all([
-    supabase
-      .from("classes")
-      .select("id,name,color")
-      .eq("user_id", user.id),
-    supabase
-      .from("assignments")
-      .select("id,class_id,title,deadline,weight,status")
-      .eq("user_id", user.id),
+    supabase.from("classes").select("id,name,color").eq("user_id", user.id),
+    supabase.from("assignments").select("id,class_id,title,deadline,weight,status,ai_total_estimate_minutes").eq("user_id", user.id),
   ]);
+  if (classesResult.error || assignmentsResult.error) throw new Error("Unable to load assignments.");
+  if (!assignmentsResult.data.every(isAssignmentRow)) throw new Error("An assignment has an unsupported status or weight.");
 
-  if (classesResult.error || assignmentsResult.error) {
-    throw new Error("Unable to load assignments.");
-  }
-
-  if (!assignmentsResult.data.every(isAssignmentRow)) {
-    throw new Error("An assignment has an unsupported status or weight.");
-  }
-
-  const assignmentIds = assignmentsResult.data.map((assignment) => assignment.id);
-  let stepRows: { assignment_id: string; estimated_minutes: number }[] = [];
+  const assignmentIds = assignmentsResult.data.map(({ id }) => id);
+  let steps: { assignment_id: string; estimated_minutes: number; percent_done: number }[] = [];
   let needsSpecRows: { id: string }[] = [];
-
-  if (assignmentIds.length > 0) {
+  if (assignmentIds.length) {
     const [stepsResult, needsSpecResult] = await Promise.all([
-      supabase
-        .from("steps")
-        .select("assignment_id,estimated_minutes")
-        .eq("user_id", user.id)
-        .in("assignment_id", assignmentIds),
-      supabase
-        .from("assignments")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .in("id", assignmentIds)
-        .is("spec_text", null),
+      supabase.from("steps").select("assignment_id,estimated_minutes,percent_done").eq("user_id", user.id).in("assignment_id", assignmentIds),
+      supabase.from("assignments").select("id").eq("user_id", user.id).eq("status", "active").in("id", assignmentIds).is("spec_text", null),
     ]);
-
-    if (stepsResult.error || needsSpecResult.error) {
-      throw new Error("Unable to load assignment details.");
-    }
-
-    stepRows = stepsResult.data;
+    if (stepsResult.error || needsSpecResult.error) throw new Error("Unable to load assignment details.");
+    steps = stepsResult.data;
     needsSpecRows = needsSpecResult.data;
   }
 
-  const classesById = new Map(
-    classesResult.data.map((classRow) => [classRow.id, classRow]),
-  );
-  const assignments = splitAssignments(assignmentsResult.data);
-  const currentTotals = currentTotalsByAssignment(stepRows);
-  const needsSpecIds = new Set(needsSpecRows.map((row) => row.id));
   const now = new Date();
+  const classesById = new Map(classesResult.data.map((row) => [row.id, row]));
+  const needsSpecIds = new Set(needsSpecRows.map(({ id }) => id));
+  const totals = currentTotalsByAssignment(steps);
+  const stepsByAssignment = new Map<string, typeof steps>();
+  for (const step of steps) stepsByAssignment.set(step.assignment_id, [...(stepsByAssignment.get(step.assignment_id) ?? []), step]);
 
-  return (
-    <main className={styles.page}>
-      <div className={styles.headingRow}>
-        <h1 className={styles.heading}>Assignments</h1>
-        <div className={styles.headingActions}>
-          <Link className={styles.linkButton} href="/assignments/import">
-            Import from Canvas
-          </Link>
-          <Link className={styles.addLink} href="/assignments/new">
-            Add assignment
-          </Link>
-        </div>
+  function present(assignment: AssignmentRow): AssignmentListItem {
+    const classRow = classesById.get(assignment.class_id);
+    const assignmentSteps = stepsByAssignment.get(assignment.id) ?? [];
+    const total = totals.get(assignment.id);
+    const totalLabels = describeTotalParts({ aiTotal: assignment.ai_total_estimate_minutes, currentTotal: total ?? null });
+    return {
+      id: assignment.id, title: assignment.title,
+      className: classRow?.name ?? "Unknown class", classColor: colorKey(classRow?.color),
+      deadlineLabel: formatDeadline(assignment.deadline, now), weight: assignment.weight, status: assignment.status,
+      progress: assignmentProgress(assignmentSteps),
+      currentTotal: totalLabels.currentText === "not set yet" ? "Not planned" : totalLabels.currentText,
+      aiTotal: totalLabels.aiText ?? undefined,
+      needsSpec: shouldShowNeedsSpec(assignment, needsSpecIds),
+      overdue: assignment.status === "active" && new Date(assignment.deadline) < now,
+      weekGroup: "later", hasSteps: assignmentSteps.length > 0,
+    };
+  }
+
+  const split = splitAssignments(assignmentsResult.data);
+  const grouped = groupByWeek(split.active, now);
+  return <main className={styles.page}>
+    <div className={styles.headingRow}>
+      <div><p className={styles.eyebrow}>Plan your work</p><h1 className={styles.heading}>Assignments</h1></div>
+      <div className={styles.headingActions}>
+        <Link className="ui-button" href="/assignments/import">Import from Canvas</Link>
+        <Link className="ui-button ui-button--primary" href="/assignments/new">Add assignment</Link>
       </div>
-
-      <section aria-labelledby="active-assignments" className={styles.section}>
-        <h2 className={styles.sectionHeading} id="active-assignments">
-          Active
-        </h2>
-        {assignments.active.length ? (
-          <AssignmentRows
-            assignments={assignments.active}
-            classesById={classesById}
-            currentTotals={currentTotals}
-            needsSpecIds={needsSpecIds}
-            now={now}
-            variant="active"
-          />
-        ) : (
-          <p>No active assignments yet.</p>
-        )}
-      </section>
-
-      <details className={styles.details}>
-        <summary className={styles.summary}>
-          Done ({assignments.done.length})
-        </summary>
-        {assignments.done.length ? (
-          <AssignmentRows
-            assignments={assignments.done}
-            classesById={classesById}
-            currentTotals={currentTotals}
-            needsSpecIds={needsSpecIds}
-            now={now}
-            variant="done"
-          />
-        ) : (
-          <p className={styles.emptyDetails}>No done assignments.</p>
-        )}
-      </details>
-
-      <details className={styles.details}>
-        <summary className={styles.summary}>
-          Dropped ({assignments.dropped.length})
-        </summary>
-        {assignments.dropped.length ? (
-          <AssignmentRows
-            assignments={assignments.dropped}
-            classesById={classesById}
-            currentTotals={currentTotals}
-            needsSpecIds={needsSpecIds}
-            now={now}
-            variant="dropped"
-          />
-        ) : (
-          <p className={styles.emptyDetails}>No dropped assignments.</p>
-        )}
-      </details>
-    </main>
-  );
+    </div>
+    <AssignmentsView
+      activeGroups={{ thisWeek: grouped.thisWeek.map(present), nextWeek: grouped.nextWeek.map(present), later: grouped.later.map(present) }}
+      done={split.done.map(present)} dropped={split.dropped.map(present)}
+    />
+  </main>;
 }

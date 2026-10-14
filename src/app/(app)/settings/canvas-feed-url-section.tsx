@@ -7,6 +7,7 @@ import {
   saveCanvasUrlAction,
   type CanvasUrlActionState,
 } from "./canvas-actions";
+import styles from "./settings.module.css";
 
 export function CanvasFeedUrlSection({
   hasSavedUrl,
@@ -57,13 +58,13 @@ export function CanvasFeedUrlSection({
   }
 
   return (
-    <section className="mt-10 border-t pt-6">
-      <h2 className="text-xl font-semibold">Canvas calendar link</h2>
+    <section className={styles.card}>
+      <div className={styles.cardHeader}><div><h2>Canvas calendar link</h2><p>Import assignment deadlines without showing the saved link.</p></div></div>
       {isSaved && !replacing ? (
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <span>Saved ••••</span>
+        <div className={styles.savedRow}>
+          <span className={styles.savedPill}>Saved ••••</span>
           <button
-            className="rounded border px-3 py-2"
+            className="ui-button"
             onClick={() => {
               setCanvasUrl("");
               setReplacing(true);
@@ -74,7 +75,7 @@ export function CanvasFeedUrlSection({
           </button>
           <form action={removeAction} onSubmit={confirmRemoval}>
             <button
-              className="rounded border px-3 py-2 disabled:opacity-50"
+              className="ui-button"
               disabled={isRemoving}
               type="submit"
             >
@@ -85,19 +86,19 @@ export function CanvasFeedUrlSection({
       ) : null}
 
       {showInput ? (
-        <form action={saveAction} className="mt-3 space-y-3">
-          <label className="grid gap-1">
+        <form action={saveAction} className={styles.form}>
+          <label className={styles.field}>
             <span>Canvas calendar feed link</span>
             <input
               autoComplete="off"
-              className="w-full rounded border px-3 py-2"
+              className={styles.input}
               name="canvasUrl"
               onChange={(event) => setCanvasUrl(event.target.value)}
               type="password"
               value={canvasUrl}
             />
           </label>
-          <p className="text-sm text-[var(--ink-3)]">
+          <p className={styles.hint}>
             Copy it from Canvas under Calendar, Calendar Feed.
           </p>
           <button
@@ -111,16 +112,16 @@ export function CanvasFeedUrlSection({
       ) : null}
 
       {saveState.error ? (
-        <p className="mt-3 text-sm text-[var(--danger)]">{saveState.error}</p>
+        <p className={`${styles.message} ${styles.error}`}>{saveState.error}</p>
       ) : null}
       {removeState.error ? (
-        <p className="mt-3 text-sm text-[var(--danger)]">{removeState.error}</p>
+        <p className={`${styles.message} ${styles.error}`}>{removeState.error}</p>
       ) : null}
       {saveState.ok ? (
-        <p className="mt-3 text-sm text-[var(--ok)]">Canvas link saved.</p>
+        <p className={`${styles.message} ${styles.success}`}>Canvas link saved.</p>
       ) : null}
       {removeState.ok ? (
-        <p className="mt-3 text-sm text-[var(--ok)]">Canvas link removed.</p>
+        <p className={`${styles.message} ${styles.success}`}>Canvas link removed.</p>
       ) : null}
     </section>
   );

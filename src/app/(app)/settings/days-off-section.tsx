@@ -10,6 +10,7 @@ import {
   removeDayOffAction,
   type DayOffActionState,
 } from "./days-off-actions";
+import styles from "./settings.module.css";
 
 export type DayOffItem = {
   id: string;
@@ -69,25 +70,25 @@ export function DaysOffSection({
   );
 
   return (
-    <section className="mt-10 border-t pt-6">
-      <h2 className="text-xl font-semibold">Days off</h2>
-      <form action={addAction} className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <label className="grid gap-1">
+    <section className={styles.card}>
+      <div className={styles.cardHeader}><div><h2>Days off</h2><p>Keep rest days clear of planned work.</p></div></div>
+      <form action={addAction} className={styles.dayForm}>
+        <label className={styles.field}>
           <span>Date</span>
           <input
-            className="rounded border px-3 py-2"
+            className={styles.input}
             min={today}
             name="date"
             onChange={(event) => setDate(event.target.value)}
             type="date"
             value={date}
           />
-          {addState.errors?.date ? <span className="text-sm text-[var(--danger)]">{addState.errors.date}</span> : null}
+          {addState.errors?.date ? <span className={`${styles.message} ${styles.error}`}>{addState.errors.date}</span> : null}
         </label>
-        <label className="grid gap-1">
+        <label className={styles.field}>
           <span>Reason</span>
           <select
-            className="rounded border px-3 py-2"
+            className={styles.input}
             name="reason"
             onChange={(event) => setReason(event.target.value)}
             value={reason}
@@ -98,7 +99,7 @@ export function DaysOffSection({
               </option>
             ))}
           </select>
-          {addState.errors?.reason ? <span className="text-sm text-[var(--danger)]">{addState.errors.reason}</span> : null}
+          {addState.errors?.reason ? <span className={`${styles.message} ${styles.error}`}>{addState.errors.reason}</span> : null}
         </label>
         <button
           className="ui-button ui-button--primary"
@@ -108,22 +109,22 @@ export function DaysOffSection({
           {isAdding ? "Adding…" : "Add day off"}
         </button>
       </form>
-      {addState.error ? <p className="mt-3 text-sm text-[var(--danger)]">{addState.error}</p> : null}
-      {addState.ok ? <p className="mt-3 text-sm text-[var(--ok)]">Day off saved.</p> : null}
-      {addState.note ? <p className="mt-1 text-sm">{addState.note}</p> : null}
+      {addState.error ? <p className={`${styles.message} ${styles.error}`}>{addState.error}</p> : null}
+      {addState.ok ? <p className={`${styles.message} ${styles.success}`}>Day off saved.</p> : null}
+      {addState.note ? <p className={styles.message}>{addState.note}</p> : null}
 
-      <div className="mt-5 space-y-3">
+      <div className={styles.daysList}>
         {days.length === 0 ? <p>No upcoming days off.</p> : null}
         {days.map((day) => (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded border p-3" key={day.id}>
+          <div className={styles.dayRow} key={day.id}>
             <p>
-              <span className="font-medium">{displayDate(day.date)}</span>
+              <strong>{displayDate(day.date)}</strong>
               {` · ${displayReason(day.reason)}`}
             </p>
             <form action={removeAction}>
               <input name="id" type="hidden" value={day.id} />
               <button
-                className="rounded border px-3 py-2 disabled:opacity-50"
+                className="ui-button ui-button--small"
                 disabled={isRemoving}
                 type="submit"
               >
@@ -133,9 +134,9 @@ export function DaysOffSection({
           </div>
         ))}
       </div>
-      {removeState.error ? <p className="mt-3 text-sm text-[var(--danger)]">{removeState.error}</p> : null}
-      {removeState.ok ? <p className="mt-3 text-sm text-[var(--ok)]">Day off removed.</p> : null}
-      {removeState.note ? <p className="mt-1 text-sm">{removeState.note}</p> : null}
+      {removeState.error ? <p className={`${styles.message} ${styles.error}`}>{removeState.error}</p> : null}
+      {removeState.ok ? <p className={`${styles.message} ${styles.success}`}>Day off removed.</p> : null}
+      {removeState.note ? <p className={styles.message}>{removeState.note}</p> : null}
     </section>
   );
 }

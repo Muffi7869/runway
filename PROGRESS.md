@@ -49,6 +49,8 @@
 - [ ] Week page matches its mockup in light and dark (calendar, now line, Today panel, banner)
 - [ ] Check in matches its mockup in light and dark and saves exactly as before
 - [ ] Signed-out landing, /login, /privacy match the mockup in light and dark
+- [ ] Assignments, plan editor, Import, Classes (Color popover) and Settings (Appearance) match their mockups in light and dark on the live site
+- [ ] Theme persists after reload on every page
 
 ## Log
 
@@ -588,3 +590,13 @@
 - Restyled the signed-out landing, login, privacy, and private pages with a shared no-sidebar shell and an aria-hidden product preview containing only invented content.
 - Decisions: added only small owner-filtered, explicit-column reads needed to present existing Week and Check in data; retained all scheduling, pace, authentication, and action behavior.
 - Known issues: Codex cannot sign into the owner-only app, so the signed-in visual and save checks remain in Manual checks.
+
+### P6.5-UI-3 — Assignments, plan editor, Import, Classes, Settings, and Phase 6.5 report
+
+- Restyled Assignments with counted status tabs, Los Angeles week groups, class chips, progress, current and original AI totals, active-only tags, and the existing action controls.
+- Restyled the plan editor and Canvas import while preserving every server-action field, hidden JSON payload, disabled state, and data behavior.
+- Restyled Classes with owner-filtered summary statistics and an accessible eight-color popover that closes on Escape or outside interaction and returns focus.
+- Restyled Settings into section cards and added the existing System, Light, and Dark ThemeControl under Appearance without changing Settings, Canvas, calendar, or Days off actions.
+- Added pure and markup tests for assignment grouping across daylight-saving boundaries, class stats, assignment rows and tab counts, the color popover, and Appearance.
+- Decisions: added only explicit-column, owner-filtered reads for assignment progress and class summary statistics; did not select assignment specs or render the saved Canvas link.
+- Known issues: Codex cannot sign into the owner-only app, so signed-in visual comparison, theme persistence, and regression workflows remain in Manual checks.

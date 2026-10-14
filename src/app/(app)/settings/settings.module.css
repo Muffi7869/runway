@@ -1,0 +1,33 @@
+.page { width: min(100%, 920px); margin: 0 auto; padding: var(--page-padding-top) var(--page-padding-inline) 48px; }
+.pageHeader { margin-bottom: 22px; }
+.heading { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 650; letter-spacing: -.025em; }
+.pageHeader p { margin: 5px 0 0; color: var(--ink-2); }
+.stack { display: grid; gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--card-padding); background: var(--surface); }
+.cardHeader { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.cardHeader h2 { margin: 0; font-size: 17px; font-weight: 650; }
+.cardHeader p { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
+.form { display: grid; gap: 18px; }
+.twoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.field { display: grid; min-width: 0; gap: 6px; color: var(--ink-3); font-size: 11px; font-weight: 650; letter-spacing: .045em; text-transform: uppercase; }
+.input { width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 0 12px; background: var(--surface); color: var(--ink); }
+.readOnly { min-height: 40px; border-radius: var(--radius-control); padding: 10px 12px; background: var(--surface-2); color: var(--ink-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
+.duration { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.message { margin: 0; font-size: 12px; }
+.error { color: var(--danger); }
+.success { color: var(--ok); }
+.savedRow, .buttonRow, .calendarRow, .dayRow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.savedPill { display: inline-flex; width: fit-content; border-radius: var(--radius-pill); padding: 5px 10px; background: var(--ok-soft); color: var(--ok); font-size: 12px; font-weight: 650; }
+.hint { margin: 6px 0 0; color: var(--ink-3); font-size: 12px; }
+.calendarList, .daysList { display: grid; gap: 8px; margin-top: 14px; }
+.calendarRow, .dayRow { min-height: 44px; justify-content: space-between; border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px; }
+.calendarChoice { display: flex; align-items: center; gap: 9px; min-height: 40px; cursor: pointer; }
+.calendarChoice input { width: 18px; height: 18px; }
+.dayForm { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.appearance { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+
+@media (max-width: 620px) {
+  .twoColumns, .dayForm { grid-template-columns: 1fr; }
+  .duration { grid-template-columns: 1fr 1fr; }
+  .buttonRow > *, .dayForm button { flex: 1 1 auto; width: 100%; }
+}

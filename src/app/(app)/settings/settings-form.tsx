@@ -10,6 +10,7 @@ import {
 } from "@/lib/settings/schema";
 
 import { saveSettings, type SettingsActionState } from "./actions";
+import styles from "./settings.module.css";
 
 export type SettingsFormValues = {
   study_window_start: string;
@@ -55,7 +56,7 @@ function ErrorMessage({ errors }: { errors?: string[] }) {
     return null;
   }
 
-  return <p className="text-sm text-[var(--danger)]">{errors[0]}</p>;
+  return <p className={`${styles.message} ${styles.error}`}>{errors[0]}</p>;
 }
 
 export function SettingsForm({ initialValues }: SettingsFormProps) {
@@ -105,15 +106,15 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
   return (
     <form
       action={formAction}
-      className="mt-6 space-y-6"
+      className={styles.form}
       noValidate
       onSubmit={validateBeforeSubmit}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className="grid gap-1">
+      <div className={styles.twoColumns}>
+        <label className={styles.field}>
           <span>Study window start</span>
           <input
-            className="rounded border px-3 py-2"
+            className={styles.input}
             name="study_window_start"
             onChange={(event) =>
               updateValue("study_window_start", event.target.value)
@@ -122,10 +123,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
             value={values.study_window_start}
           />
         </label>
-        <label className="grid gap-1">
+        <label className={styles.field}>
           <span>Study window end</span>
           <input
-            className="rounded border px-3 py-2"
+            className={styles.input}
             name="study_window_end"
             onChange={(event) =>
               updateValue("study_window_end", event.target.value)
@@ -138,13 +139,13 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
       <ErrorMessage errors={errors?.study_window_start} />
       <ErrorMessage errors={errors?.study_window_end} />
 
-      <fieldset className="space-y-2">
+      <fieldset className={styles.field}>
         <legend>Maximum study time per day</legend>
-        <div className="grid grid-cols-2 gap-4">
-          <label className="grid gap-1">
+        <div className={styles.duration}>
+          <label className={styles.field}>
             <span>Hours</span>
             <input
-              className="rounded border px-3 py-2"
+              className={styles.input}
               min="0"
               name="max_study_hours"
               onChange={(event) =>
@@ -155,10 +156,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               value={values.max_study_hours}
             />
           </label>
-          <label className="grid gap-1">
+          <label className={styles.field}>
             <span>Minutes</span>
             <input
-              className="rounded border px-3 py-2"
+              className={styles.input}
               min="0"
               name="max_study_minutes"
               onChange={(event) =>
@@ -173,13 +174,13 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
         <ErrorMessage errors={errors?.max_study_minutes_per_day} />
       </fieldset>
 
-      <fieldset className="space-y-2">
+      <fieldset className={styles.field}>
         <legend>Minimum block length</legend>
-        <div className="grid grid-cols-2 gap-4">
-          <label className="grid gap-1">
+        <div className={styles.duration}>
+          <label className={styles.field}>
             <span>Hours</span>
             <input
-              className="rounded border px-3 py-2"
+              className={styles.input}
               min="0"
               name="min_block_hours"
               onChange={(event) =>
@@ -190,10 +191,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               value={values.min_block_hours}
             />
           </label>
-          <label className="grid gap-1">
+          <label className={styles.field}>
             <span>Minutes</span>
             <input
-              className="rounded border px-3 py-2"
+              className={styles.input}
               min="0"
               name="min_block_minutes"
               onChange={(event) =>
@@ -208,13 +209,13 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
         <ErrorMessage errors={errors?.min_block_minutes} />
       </fieldset>
 
-      <fieldset className="space-y-2">
+      <fieldset className={styles.field}>
         <legend>Maximum block length</legend>
-        <div className="grid grid-cols-2 gap-4">
-          <label className="grid gap-1">
+        <div className={styles.duration}>
+          <label className={styles.field}>
             <span>Hours</span>
             <input
-              className="rounded border px-3 py-2"
+              className={styles.input}
               min="0"
               name="max_block_hours"
               onChange={(event) =>
@@ -225,10 +226,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               value={values.max_block_hours}
             />
           </label>
-          <label className="grid gap-1">
+          <label className={styles.field}>
             <span>Minutes</span>
             <input
-              className="rounded border px-3 py-2"
+              className={styles.input}
               min="0"
               name="max_block_minutes"
               onChange={(event) =>
@@ -243,10 +244,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
         <ErrorMessage errors={errors?.max_block_minutes} />
       </fieldset>
 
-      <label className="grid gap-1">
+      <div className={styles.twoColumns}><label className={styles.field}>
         <span>Buffer days before deadline</span>
         <input
-          className="rounded border px-3 py-2"
+          className={styles.input}
           max="7"
           min="0"
           name="buffer_days"
@@ -258,10 +259,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
         <ErrorMessage errors={errors?.buffer_days} />
       </label>
 
-      <label className="grid gap-1">
+      <label className={styles.field}>
         <span>Check-in time</span>
         <input
-          className="rounded border px-3 py-2"
+          className={styles.input}
           name="check_in_time"
           onChange={(event) =>
             updateValue("check_in_time", event.target.value)
@@ -270,20 +271,20 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
           value={values.check_in_time}
         />
         <ErrorMessage errors={errors?.check_in_time} />
-      </label>
+      </label></div>
 
-      <div className="grid gap-1">
+      <div className={styles.field}>
         <span>Timezone</span>
-        <p className="rounded border bg-[var(--surface-2)] px-3 py-2">
+        <p className={styles.readOnly}>
           America/Los_Angeles
         </p>
       </div>
 
       {state.formError ? (
-        <p className="text-sm text-[var(--danger)]">{state.formError}</p>
+        <p className={`${styles.message} ${styles.error}`}>{state.formError}</p>
       ) : null}
       {state.successMessage ? (
-        <p className="text-sm text-[var(--ok)]">{state.successMessage}</p>
+        <p className={`${styles.message} ${styles.success}`}>{state.successMessage}</p>
       ) : null}
 
       <button

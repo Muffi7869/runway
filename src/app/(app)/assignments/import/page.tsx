@@ -11,8 +11,12 @@ export default async function CanvasImportPage() {
   return (
     <main className={styles.page}>
       <div className={styles.headingRow}>
-        <h1>Import from Canvas</h1>
-        <Link href="/assignments">Back to assignments</Link>
+        <div>
+          <p className={styles.eyebrow}>Assignments</p>
+          <h1>Import from Canvas</h1>
+          <p className={styles.intro}>Review what is new before anything is added.</p>
+        </div>
+        <Link className="ui-button" href="/assignments">Back to assignments</Link>
       </div>
       <CanvasImport />
     </main>

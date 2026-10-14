@@ -6,6 +6,7 @@ import {
   saveCalendars,
   type CalendarActionState,
 } from "./calendar-actions";
+import styles from "./settings.module.css";
 
 export type CalendarOption = {
   id: string;
@@ -35,12 +36,13 @@ export function CalendarPicker({
   }
 
   return (
-    <form action={formAction} className="mt-6 space-y-4">
-      <fieldset className="space-y-3">
-        <legend className="font-medium">Calendars</legend>
+    <form action={formAction} className={styles.form}>
+      <fieldset>
+        <legend>Calendars</legend>
+        <div className={styles.calendarList}>
         {calendars.length ? (
           calendars.map((calendar) => (
-            <label className="flex items-center gap-2" key={calendar.id}>
+            <label className={styles.calendarChoice} key={calendar.id}>
               <input
                 checked={selectedIds.includes(calendar.id)}
                 name="calendar_ids"
@@ -52,22 +54,23 @@ export function CalendarPicker({
               />
               <span>{calendar.name}</span>
               {calendar.primary ? (
-                <small className="text-[var(--ink-3)]">primary</small>
+                <small className={styles.hint}>primary</small>
               ) : null}
             </label>
           ))
         ) : (
-          <p className="text-sm text-[var(--ink-3)]">
+          <p className={styles.hint}>
             No calendars are available to select.
           </p>
         )}
+        </div>
       </fieldset>
 
       {state.formError ? (
-        <p className="text-sm text-[var(--danger)]">{state.formError}</p>
+        <p className={`${styles.message} ${styles.error}`}>{state.formError}</p>
       ) : null}
       {state.successMessage ? (
-        <p className="text-sm text-[var(--ok)]">{state.successMessage}</p>
+        <p className={`${styles.message} ${styles.success}`}>{state.successMessage}</p>
       ) : null}
 
       <button

@@ -18,9 +18,11 @@ import {
   CalendarPicker,
   type CalendarOption,
 } from "./calendar-picker";
+import { AppearanceSection } from "./appearance-section";
 import { CanvasFeedUrlSection } from "./canvas-feed-url-section";
 import { DaysOffSection } from "./days-off-section";
 import { SettingsForm, type SettingsFormValues } from "./settings-form";
+import styles from "./settings.module.css";
 
 type SearchParams = Promise<{
   google?: string | string[];
@@ -205,24 +207,31 @@ export default async function SettingsPage({
   }
 
   return (
-    <main className="mx-auto max-w-2xl p-6">
-      <h1 className="text-2xl font-semibold">Settings</h1>
-      <SettingsForm initialValues={initialValues} />
+    <main className={styles.page}>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.heading}>Settings</h1>
+        <p>Set your study rhythm and connected services.</p>
+      </header>
+      <div className={styles.stack}>
+      <section className={styles.card}>
+        <div className={styles.cardHeader}><div><h2>Study window and limits</h2><p>Define when and how long Runway may plan work.</p></div></div>
+        <SettingsForm initialValues={initialValues} />
+      </section>
       <CanvasFeedUrlSection
         hasSavedUrl={Boolean(canvasSettings?.canvas_feed_url_encrypted)}
       />
       <DaysOffSection days={blockedDays} today={today} />
-      <section className="mt-10 border-t pt-6">
-        <h2 className="text-xl font-semibold">Google Calendar</h2>
-        {googleMessage ? <p className="mt-3">{googleMessage}</p> : null}
+      <section className={styles.card}>
+        <div className={styles.cardHeader}><div><h2>Google Calendar</h2><p>Choose the calendars Runway treats as fixed time.</p></div></div>
+        {googleMessage ? <p>{googleMessage}</p> : null}
         {googleStatus === "connected" ? (
           <>
-            <p className="mt-3">Connected</p>
+            <p className={styles.savedPill}>Connected</p>
             {googleLoadError ? (
-              <p className="mt-3 text-[var(--danger)]">{googleLoadError}</p>
+              <p className={`${styles.message} ${styles.error}`}>{googleLoadError}</p>
             ) : null}
             {extraRunwayCalendars > 0 ? (
-              <p className="mt-3">
+              <p className={styles.hint}>
                 {`Found ${extraRunwayCalendars} extra calendars named "Runway" in your Google account. Runway uses one of them. You can delete the others in Google Calendar.`}
               </p>
             ) : null}
@@ -236,9 +245,9 @@ export default async function SettingsPage({
         ) : null}
         {googleStatus === "needs_reconnect" ? (
           <>
-            <p className="mt-3">Runway lost access to Google Calendar.</p>
+            <p>Runway lost access to Google Calendar.</p>
             <a
-              className="ui-button ui-button--primary mt-4"
+              className="ui-button ui-button--primary"
               href="/api/google/connect"
             >
               Reconnect
@@ -247,9 +256,9 @@ export default async function SettingsPage({
         ) : null}
         {googleStatus === "none" ? (
           <>
-            <p className="mt-3">Not connected</p>
+            <p>Not connected</p>
             <a
-              className="ui-button ui-button--primary mt-4"
+              className="ui-button ui-button--primary"
               href="/api/google/connect"
             >
               Connect Google Calendar
@@ -257,6 +266,8 @@ export default async function SettingsPage({
           </>
         ) : null}
       </section>
+      <AppearanceSection />
+      </div>
     </main>
   );
 }
