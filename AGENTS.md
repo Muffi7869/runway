@@ -46,7 +46,11 @@ src/lib/db/           Supabase queries
 supabase/migrations/  every schema change, as SQL migration files
 reports/              end-of-phase reports
 PROGRESS.md           running log (see below)
+DESIGN.md             the visual system: tokens, components, screen specs
+design-ref/           mockup source for each screen (git-ignored, never commit)
 ```
+
+**UI work:** read `DESIGN.md` first and follow it exactly. Use its CSS variables, never raw hex in components. Restyling never changes app logic, data flow, or the database.
 
 ## Data model (the contract, change only with Orchestrator approval)
 
