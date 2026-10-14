@@ -219,7 +219,7 @@ export default async function SettingsPage({
           <>
             <p className="mt-3">Connected</p>
             {googleLoadError ? (
-              <p className="mt-3 text-red-700">{googleLoadError}</p>
+              <p className="mt-3 text-[var(--danger)]">{googleLoadError}</p>
             ) : null}
             {extraRunwayCalendars > 0 ? (
               <p className="mt-3">
@@ -238,7 +238,7 @@ export default async function SettingsPage({
           <>
             <p className="mt-3">Runway lost access to Google Calendar.</p>
             <a
-              className="mt-4 inline-block rounded bg-black px-4 py-2 text-white"
+              className="ui-button ui-button--primary mt-4"
               href="/api/google/connect"
             >
               Reconnect
@@ -249,7 +249,7 @@ export default async function SettingsPage({
           <>
             <p className="mt-3">Not connected</p>
             <a
-              className="mt-4 inline-block rounded bg-black px-4 py-2 text-white"
+              className="ui-button ui-button--primary mt-4"
               href="/api/google/connect"
             >
               Connect Google Calendar

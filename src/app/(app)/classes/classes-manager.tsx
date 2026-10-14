@@ -49,7 +49,7 @@ function ColorPicker({
               aria-hidden="true"
               className={`block size-8 rounded-full border-2 ${
                 selectedColor === color.key
-                  ? "border-black ring-2 ring-black ring-offset-2"
+                  ? "border-[var(--accent)] ring-2 ring-[var(--accent)] ring-offset-2"
                   : "border-transparent"
               }`}
               style={{ backgroundColor: color.value }}
@@ -64,11 +64,11 @@ function ColorPicker({
 
 function ActionMessage({ state }: { state: ClassActionState }) {
   if (state.error) {
-    return <p className="text-sm text-red-700">{state.error}</p>;
+    return <p className="text-sm text-[var(--danger)]">{state.error}</p>;
   }
 
   if (state.successMessage) {
-    return <p className="text-sm text-green-700">{state.successMessage}</p>;
+    return <p className="text-sm text-[var(--ok)]">{state.successMessage}</p>;
   }
 
   return null;
@@ -106,7 +106,7 @@ function AddClassForm() {
       <ColorPicker name="color" onChange={setColor} selectedColor={color} />
       <ActionMessage state={state} />
       <button
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="ui-button ui-button--primary"
         disabled={isPending}
         type="submit"
       >
@@ -131,7 +131,9 @@ function ExistingClassForm({ classRow }: { classRow: ClassRow }) {
         <span
           aria-hidden="true"
           className="block size-5 rounded-full"
-          style={{ backgroundColor: displayedColor?.value ?? "#737373" }}
+          style={{
+            backgroundColor: displayedColor?.value ?? "var(--ink-3)",
+          }}
         />
         <div>
           <p className="font-medium">{classRow.name}</p>

@@ -8,6 +8,7 @@ import {
   undoRoughDayAction,
   type RoughDayActionResult,
 } from "@/app/(app)/week/rough-day-actions";
+import { Button } from "@/components/ui/button";
 
 export function RoughDayControls({
   initiallyActive,
@@ -38,8 +39,7 @@ export function RoughDayControls({
 
   return (
     <section aria-label="Rough day" className="space-y-3">
-      <button
-        className="rounded border border-black px-4 py-2 disabled:opacity-50"
+      <Button
         disabled={isPending}
         onClick={() =>
           run(active ? undoRoughDayAction : roughDayAction, !active)
@@ -53,9 +53,11 @@ export function RoughDayControls({
           : active
             ? "Undo rough day"
             : "Rough day"}
-      </button>
+      </Button>
 
-      {result?.error ? <p className="text-sm text-red-700">{result.error}</p> : null}
+      {result?.error ? (
+        <p className="text-sm text-[var(--danger)]">{result.error}</p>
+      ) : null}
       {result?.ok ? (
         <div className="space-y-1 text-sm" role="status">
           {result.text ? <p>{result.text}</p> : null}

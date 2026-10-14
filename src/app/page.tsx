@@ -33,7 +33,7 @@ export default async function Home() {
         check-in.
       </p>
       <Link
-        className="rounded bg-black px-4 py-2 text-white"
+        className="ui-button ui-button--primary"
         href="/login"
       >
         Sign in

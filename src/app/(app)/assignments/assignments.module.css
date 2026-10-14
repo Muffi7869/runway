@@ -33,18 +33,18 @@
   min-height: 2.5rem;
   align-items: center;
   justify-content: center;
-  border: 1px solid #a3a3a3;
-  border-radius: 0.375rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
   padding: 0.5rem 0.875rem;
-  background: #ffffff;
-  color: #171717;
+  background: var(--surface);
+  color: var(--ink);
   text-decoration: none;
 }
 
 .addLink {
-  border-color: #171717;
-  background: #171717;
-  color: #ffffff;
+  border-color: var(--primary-line);
+  background: var(--primary);
+  color: var(--on-primary);
 }
 
 .section {
@@ -66,8 +66,9 @@
   display: grid;
   min-width: 0;
   gap: 1rem;
-  border: 1px solid #d4d4d4;
-  border-radius: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
   padding: 1rem;
 }
 
@@ -80,7 +81,7 @@
   min-width: 0;
   align-items: center;
   gap: 0.5rem;
-  color: #525252;
+  color: var(--ink-2);
   font-size: 0.875rem;
 }
 
@@ -104,8 +105,8 @@
   display: inline-flex;
   border-radius: 9999px;
   padding: 0.2rem 0.55rem;
-  background: #e5e5e5;
-  color: #262626;
+  background: var(--surface-2);
+  color: var(--ink-2);
   font-size: 0.75rem;
   white-space: nowrap;
 }
@@ -115,7 +116,7 @@
   flex-wrap: wrap;
   gap: 0.375rem 1rem;
   margin-top: 0.5rem;
-  color: #525252;
+  color: var(--ink-2);
   font-size: 0.875rem;
 }
 
@@ -145,13 +146,13 @@
 
 .actionError {
   max-width: 20rem;
-  color: #b91c1c;
+  color: var(--danger);
   font-size: 0.875rem;
 }
 
 .details {
   margin-top: 1.5rem;
-  border-top: 1px solid #d4d4d4;
+  border-top: 1px solid var(--line);
   padding-top: 1rem;
 }
 

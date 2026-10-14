@@ -54,7 +54,7 @@ function isAssignmentRow(value: {
 function paletteValue(colorKey: string): string {
   return (
     CLASS_COLOR_PALETTE.find((color) => color.key === colorKey)?.value ??
-    "#737373"
+    "var(--ink-3)"
   );
 }
 

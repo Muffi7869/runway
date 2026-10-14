@@ -200,7 +200,8 @@ export function CheckinForm({
                     aria-hidden="true"
                     className={styles.swatch}
                     style={{
-                      backgroundColor: paletteColor?.value ?? "#737373",
+                      backgroundColor:
+                        paletteColor?.value ?? "var(--ink-3)",
                     }}
                   />
                   <h2>

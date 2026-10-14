@@ -2,9 +2,9 @@
   width: 100%;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
 }
 
 .mobileNavigation {
@@ -12,16 +12,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .dayButton {
   padding: 0.25rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  background: #ffffff;
-  color: #111827;
+  min-width: 40px;
+  min-height: 40px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .dayButton:disabled {
@@ -35,20 +37,20 @@
 
 .todayLabel,
 .todayHeader {
-  background: #dbeafe;
+  background: var(--accent-soft);
 }
 
 .desktopHeaders {
   display: none;
   grid-template-columns: 4rem repeat(7, minmax(0, 1fr));
-  border-bottom: 1px solid #e5e7eb;
-  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .dayHeader {
   min-width: 0;
   padding: 0.75rem 0.5rem;
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid var(--line);
   text-align: center;
   font-weight: 600;
 }
@@ -57,14 +59,14 @@
   display: grid;
   min-width: 0;
   grid-template-columns: 3.5rem minmax(0, 1fr);
-  background: #ffffff;
+  background: var(--surface);
 }
 
 .hourGutter {
   position: relative;
-  border-right: 1px solid #e5e7eb;
-  background: #ffffff;
-  color: #4b5563;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-3);
   font-size: 0.75rem;
 }
 
@@ -77,8 +79,8 @@
   position: relative;
   display: none;
   min-width: 0;
-  border-right: 1px solid #e5e7eb;
-  background: #ffffff;
+  border-right: 1px solid var(--line);
+  background: var(--surface);
 }
 
 .dayColumn[data-active="true"] {
@@ -86,7 +88,7 @@
 }
 
 .todayColumn {
-  background: #eff6ff;
+  background: color-mix(in srgb, var(--accent-soft) 35%, var(--surface));
 }
 
 .hourLine {
@@ -94,7 +96,7 @@
   right: 0;
   left: 0;
   z-index: 0;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--line);
   pointer-events: none;
 }
 
@@ -111,10 +113,10 @@
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.25rem 0.5rem;
-  border: 1px solid #9ca3af;
-  border-radius: 0.25rem;
-  background: #e5e7eb;
-  color: #111827;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-study-block);
+  background: var(--surface-2);
+  color: var(--ink-2);
 }
 
 .eventTitle,

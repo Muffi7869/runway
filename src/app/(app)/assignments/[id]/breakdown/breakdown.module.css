@@ -25,15 +25,15 @@
   min-height: 2.5rem;
   align-items: center;
   justify-content: center;
-  border: 1px solid #171717;
+  border: 1px solid var(--primary-line);
   border-radius: 0.375rem;
   padding: 0.5rem 0.875rem;
   text-decoration: none;
 }
 
 .primaryButton {
-  background: #171717;
-  color: #ffffff;
+  background: var(--primary);
+  color: var(--on-primary);
   cursor: pointer;
 }
 
@@ -46,8 +46,8 @@
 
 .secondaryButton,
 .smallButton {
-  background: #ffffff;
-  color: #171717;
+  background: var(--surface);
+  color: var(--ink);
   cursor: pointer;
 }
 
@@ -58,12 +58,12 @@
 
 .backLink {
   margin-top: 1.5rem;
-  background: #ffffff;
-  color: #171717;
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .error {
-  color: #b91c1c;
+  color: var(--danger);
   font-size: 0.875rem;
 }
 
@@ -88,7 +88,7 @@
 }
 
 .unsaved {
-  color: #92400e;
+  color: var(--warn);
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -103,7 +103,7 @@
   display: grid;
   min-width: 0;
   gap: 0.75rem;
-  border: 1px solid #d4d4d4;
+  border: 1px solid var(--line);
   border-radius: 0.5rem;
   padding: 1rem;
 }
@@ -118,10 +118,10 @@
 .textInput,
 .numberInput {
   min-width: 0;
-  border: 1px solid #a3a3a3;
+  border: 1px solid var(--line-2);
   border-radius: 0.375rem;
   padding: 0.5rem;
-  background: #ffffff;
+  background: var(--surface);
 }
 
 .textInput {
@@ -133,7 +133,7 @@
 }
 
 .readOnly {
-  color: #525252;
+  color: var(--ink-2);
   font-size: 0.875rem;
 }
 
@@ -142,7 +142,7 @@
 }
 
 .cancelLink {
-  color: #171717;
+  color: var(--ink);
 }
 
 @media (min-width: 40rem) {

@@ -181,7 +181,7 @@ export default async function WeekPage({
     return (
       <main className="mx-auto w-full max-w-7xl p-4 sm:p-6">
         <h1 className="text-2xl font-semibold">Week</h1>
-        <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+        <div className="mt-6 rounded-xl bg-[var(--warn-soft)] p-4 text-[var(--warn)]">
           <p className="font-medium">
             {needsReconnect
               ? "Runway lost access to Google Calendar."
@@ -207,8 +207,11 @@ export default async function WeekPage({
     throw new Error("Unable to read the study window.");
   }
 
-  const colorByKey = new Map<string, string>(
-    CLASS_COLOR_PALETTE.map((color) => [color.key, color.value]),
+  const colorByKey = new Map<string, { fill: string; text: string }>(
+    CLASS_COLOR_PALETTE.map((color) => [
+      color.key,
+      { fill: color.fill, text: color.text },
+    ]),
   );
   const fixedGridEvents = fixedEvents.map((event) => ({
     ...event,
@@ -223,7 +226,10 @@ export default async function WeekPage({
     }),
     start: block.start,
     end: block.end,
-    color: colorByKey.get(block.step.assignment.class.color) ?? "#4B5563",
+    color: colorByKey.get(block.step.assignment.class.color) ?? {
+      fill: "var(--surface-2)",
+      text: "var(--ink-2)",
+    },
   }));
   const allEvents = [...fixedGridEvents, ...plannedGridEvents];
   const segments = segmentEventsByDay(allEvents, monday);
@@ -243,15 +249,15 @@ export default async function WeekPage({
     plannedGridEvents.map((event) => [event.id, event.color]),
   );
   const gridEvents: WeekGridEvent[] = layouts.map((event) => {
-    const backgroundColor = plannedColors.get(event.id);
+    const color = plannedColors.get(event.id);
 
     return {
       ...event,
       timeRange: eventTimes.get(event.id) ?? "",
-      ...(backgroundColor
+      ...(color
         ? {
-            backgroundColor,
-            textColor: backgroundColor === "#CA8A04" ? "#111827" : "#FFFFFF",
+            backgroundColor: color.fill,
+            textColor: color.text,
           }
         : {}),
     };
@@ -279,7 +285,7 @@ export default async function WeekPage({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Week</h1>
-          <p className="mt-1 text-gray-600">{weekLabel(days)}</p>
+          <p className="mt-1 text-[var(--ink-3)]">{weekLabel(days)}</p>
           <nav
             aria-label="Week navigation"
             className="mt-4 flex flex-wrap items-center gap-3 text-sm"
@@ -319,7 +325,7 @@ export default async function WeekPage({
       {warningSentences.length > 0 ? (
         <section
           aria-label="Planning warnings"
-          className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4"
+          className="mt-6 rounded-xl bg-[var(--warn-soft)] p-4 text-[var(--warn)]"
         >
           {warningSentences.map((warning) => (
             <p key={warning}>{warning}</p>

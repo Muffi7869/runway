@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { syncNowAction } from "@/app/(app)/week/actions";
 import type { SyncFixedEventsResult } from "@/lib/google/sync-service";
 import { formatLastSynced } from "@/lib/week/view";
+import { Button } from "@/components/ui/button";
 
 function resultMessage(result: SyncFixedEventsResult): string {
   if (result.ok) {
@@ -56,14 +57,13 @@ export function SyncControls({
   return (
     <section className="mt-6 space-y-3" aria-label="Calendar sync">
       <p>Last synced: {formatLastSynced(lastSyncedAt, new Date(now))}</p>
-      <button
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+      <Button
         disabled={isRunning}
         onClick={syncNow}
         type="button"
       >
         {isRunning ? "Syncing…" : "Sync now"}
-      </button>
+      </Button>
       {message ? <p>{message}</p> : null}
     </section>
   );

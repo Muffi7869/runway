@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { replanAction } from "@/app/(app)/week/actions";
 import { formatLastSynced } from "@/lib/week/view";
+import { Button } from "@/components/ui/button";
 
 export function ReplanControls({
   lastPlannedAt,
@@ -53,14 +54,14 @@ export function ReplanControls({
       <p>
         Last planned: {lastPlannedAt ? formatLastSynced(lastPlannedAt, new Date(now)) : "Never planned"}
       </p>
-      <button
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+      <Button
         disabled={isPending}
         onClick={runReplan}
         type="button"
+        variant="default"
       >
         {isPending ? "Replanning..." : "Replan"}
-      </button>
+      </Button>
       {message ? <p>{message}</p> : null}
     </section>
   );

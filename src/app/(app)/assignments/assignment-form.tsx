@@ -33,7 +33,7 @@ function FieldError({ message }: { message?: string }) {
     return null;
   }
 
-  return <p className="text-sm text-red-700">{message}</p>;
+  return <p className="text-sm text-[var(--danger)]">{message}</p>;
 }
 
 export function AssignmentForm({
@@ -210,7 +210,7 @@ export function AssignmentForm({
           onChange={(event) => updateValue("specText", event.target.value)}
           value={values.specText}
         />
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-[var(--ink-3)]">
           Optional. Paste the assignment text.
         </span>
         <FieldError message={state.fieldErrors?.specText} />
@@ -230,15 +230,15 @@ export function AssignmentForm({
           type="file"
         />
         {isReadingPdf ? (
-          <p className="text-sm text-gray-600">Reading PDF...</p>
+          <p className="text-sm text-[var(--ink-3)]">Reading PDF...</p>
         ) : null}
         {pdfMessage ? (
           <p
             aria-live="polite"
             className={
               pdfMessage.kind === "error"
-                ? "text-sm text-red-700"
-                : "text-sm text-gray-600"
+                ? "text-sm text-[var(--danger)]"
+                : "text-sm text-[var(--ink-3)]"
             }
           >
             {pdfMessage.text}
@@ -247,12 +247,12 @@ export function AssignmentForm({
       </div>
 
       {state.formError ? (
-        <p className="text-sm text-red-700">{state.formError}</p>
+        <p className="text-sm text-[var(--danger)]">{state.formError}</p>
       ) : null}
 
       <div className="flex items-center gap-3">
         <button
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+          className="ui-button ui-button--primary"
           disabled={isPending}
           type="submit"
         >

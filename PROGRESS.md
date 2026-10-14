@@ -43,6 +43,9 @@
 - [ ] Rough day shows "Moved ... to later days" and Undo restores the plan live.
 - [ ] Days off: add a travel day, blocks move off it; remove it, plan returns.
 - [ ] Run supabase/tests/run_all_rollback.sql in the Supabase SQL Editor and confirm RUNNER REPORT shows 0 failed (owner: Mufaddal).
+- [ ] Theme System/Light/Dark works and persists after reload, no flash
+- [ ] Sidebar nav, Check in badge and sync status look like the mockup
+- [ ] Nothing that worked before broke: check-in save, replan, import, step save
 
 ## Log
 
@@ -564,3 +567,12 @@
 - Added a dependency-free static checker for forbidden transaction endings, SQL Editor compatibility, balanced DO blocks, auth-role syntax, and public-repo secret patterns.
 - Decisions: grouped closely related assertions into four named runner tests, followed by per-table unchanged-count checks; results appear in the final RUNNER REPORT error text with failures first.
 - Known issues: PostgreSQL and Docker are unavailable, so the SQL has not been executed; Mufaddal must run the combined file in the Supabase SQL Editor and confirm zero failures.
+
+### P6.5-UI-1 — Design system foundation and app shell
+
+- Added the approved light and dark design tokens, eight-class palette, shadcn and Tailwind mappings, Geist typography, focus treatment, reduced-motion behavior, and token-based styling for existing layout-critical CSS.
+- Added a pre-paint System, Light, and Dark theme system backed by local storage and a one-year cookie, plus the accessible segmented theme control and pure theme tests.
+- Added shared buttons, cards, class chips, tags, segmented controls, tabs, progress bars, banners, steppers, labeled form fields, and navigation items with server-rendered component coverage.
+- Replaced the protected header with the responsive 232-pixel sidebar, active navigation, a read-only owner-filtered Check in badge, Google sync status, owner block, and the existing sign-out action.
+- Decisions: optional sidebar data failures render a usable shell without a badge or sync line; theme state remains device-local and introduces no database or server-action change.
+- Known issues: signed-in screens and theme persistence still require the manual visual checks listed above because Codex cannot sign into the owner-only app.

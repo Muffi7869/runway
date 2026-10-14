@@ -55,7 +55,7 @@ function ErrorMessage({ errors }: { errors?: string[] }) {
     return null;
   }
 
-  return <p className="text-sm text-red-700">{errors[0]}</p>;
+  return <p className="text-sm text-[var(--danger)]">{errors[0]}</p>;
 }
 
 export function SettingsForm({ initialValues }: SettingsFormProps) {
@@ -274,20 +274,20 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
 
       <div className="grid gap-1">
         <span>Timezone</span>
-        <p className="rounded border bg-neutral-50 px-3 py-2">
+        <p className="rounded border bg-[var(--surface-2)] px-3 py-2">
           America/Los_Angeles
         </p>
       </div>
 
       {state.formError ? (
-        <p className="text-sm text-red-700">{state.formError}</p>
+        <p className="text-sm text-[var(--danger)]">{state.formError}</p>
       ) : null}
       {state.successMessage ? (
-        <p className="text-sm text-green-700">{state.successMessage}</p>
+        <p className="text-sm text-[var(--ok)]">{state.successMessage}</p>
       ) : null}
 
       <button
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="ui-button ui-button--primary"
         disabled={isPending}
         type="submit"
       >

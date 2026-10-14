@@ -82,7 +82,7 @@ export function DaysOffSection({
             type="date"
             value={date}
           />
-          {addState.errors?.date ? <span className="text-sm text-red-700">{addState.errors.date}</span> : null}
+          {addState.errors?.date ? <span className="text-sm text-[var(--danger)]">{addState.errors.date}</span> : null}
         </label>
         <label className="grid gap-1">
           <span>Reason</span>
@@ -98,18 +98,18 @@ export function DaysOffSection({
               </option>
             ))}
           </select>
-          {addState.errors?.reason ? <span className="text-sm text-red-700">{addState.errors.reason}</span> : null}
+          {addState.errors?.reason ? <span className="text-sm text-[var(--danger)]">{addState.errors.reason}</span> : null}
         </label>
         <button
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+          className="ui-button ui-button--primary"
           disabled={isAdding}
           type="submit"
         >
           {isAdding ? "Adding…" : "Add day off"}
         </button>
       </form>
-      {addState.error ? <p className="mt-3 text-sm text-red-700">{addState.error}</p> : null}
-      {addState.ok ? <p className="mt-3 text-sm text-green-700">Day off saved.</p> : null}
+      {addState.error ? <p className="mt-3 text-sm text-[var(--danger)]">{addState.error}</p> : null}
+      {addState.ok ? <p className="mt-3 text-sm text-[var(--ok)]">Day off saved.</p> : null}
       {addState.note ? <p className="mt-1 text-sm">{addState.note}</p> : null}
 
       <div className="mt-5 space-y-3">
@@ -133,8 +133,8 @@ export function DaysOffSection({
           </div>
         ))}
       </div>
-      {removeState.error ? <p className="mt-3 text-sm text-red-700">{removeState.error}</p> : null}
-      {removeState.ok ? <p className="mt-3 text-sm text-green-700">Day off removed.</p> : null}
+      {removeState.error ? <p className="mt-3 text-sm text-[var(--danger)]">{removeState.error}</p> : null}
+      {removeState.ok ? <p className="mt-3 text-sm text-[var(--ok)]">Day off removed.</p> : null}
       {removeState.note ? <p className="mt-1 text-sm">{removeState.note}</p> : null}
     </section>
   );

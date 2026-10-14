@@ -52,26 +52,26 @@ export function CalendarPicker({
               />
               <span>{calendar.name}</span>
               {calendar.primary ? (
-                <small className="text-neutral-600">primary</small>
+                <small className="text-[var(--ink-3)]">primary</small>
               ) : null}
             </label>
           ))
         ) : (
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-[var(--ink-3)]">
             No calendars are available to select.
           </p>
         )}
       </fieldset>
 
       {state.formError ? (
-        <p className="text-sm text-red-700">{state.formError}</p>
+        <p className="text-sm text-[var(--danger)]">{state.formError}</p>
       ) : null}
       {state.successMessage ? (
-        <p className="text-sm text-green-700">{state.successMessage}</p>
+        <p className="text-sm text-[var(--ok)]">{state.successMessage}</p>
       ) : null}
 
       <button
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+        className="ui-button ui-button--primary"
         disabled={isPending}
         type="submit"
       >

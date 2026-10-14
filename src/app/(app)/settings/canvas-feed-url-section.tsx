@@ -97,11 +97,11 @@ export function CanvasFeedUrlSection({
               value={canvasUrl}
             />
           </label>
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-[var(--ink-3)]">
             Copy it from Canvas under Calendar, Calendar Feed.
           </p>
           <button
-            className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+            className="ui-button ui-button--primary"
             disabled={isSaving}
             type="submit"
           >
@@ -111,16 +111,16 @@ export function CanvasFeedUrlSection({
       ) : null}
 
       {saveState.error ? (
-        <p className="mt-3 text-sm text-red-700">{saveState.error}</p>
+        <p className="mt-3 text-sm text-[var(--danger)]">{saveState.error}</p>
       ) : null}
       {removeState.error ? (
-        <p className="mt-3 text-sm text-red-700">{removeState.error}</p>
+        <p className="mt-3 text-sm text-[var(--danger)]">{removeState.error}</p>
       ) : null}
       {saveState.ok ? (
-        <p className="mt-3 text-sm text-green-700">Canvas link saved.</p>
+        <p className="mt-3 text-sm text-[var(--ok)]">Canvas link saved.</p>
       ) : null}
       {removeState.ok ? (
-        <p className="mt-3 text-sm text-green-700">Canvas link removed.</p>
+        <p className="mt-3 text-sm text-[var(--ok)]">Canvas link removed.</p>
       ) : null}
     </section>
   );
