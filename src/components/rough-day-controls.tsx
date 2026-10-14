@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Moon } from "lucide-react";
 
 import {
   roughDayAction,
@@ -38,14 +39,16 @@ export function RoughDayControls({
   }
 
   return (
-    <section aria-label="Rough day" className="space-y-3">
+    <section aria-label="Rough day" className="week-control">
       <Button
         disabled={isPending}
         onClick={() =>
           run(active ? undoRoughDayAction : roughDayAction, !active)
         }
         type="button"
+        variant="ghost"
       >
+        <Moon aria-hidden="true" size={18} strokeWidth={1.6} />
         {isPending
           ? active
             ? "Undoing..."
@@ -56,10 +59,10 @@ export function RoughDayControls({
       </Button>
 
       {result?.error ? (
-        <p className="text-sm text-[var(--danger)]">{result.error}</p>
+        <p className="week-control__message text-[var(--danger)]">{result.error}</p>
       ) : null}
       {result?.ok ? (
-        <div className="space-y-1 text-sm" role="status">
+        <div className="week-control__message" role="status">
           {result.text ? <p>{result.text}</p> : null}
           {result.warnings?.map((warning) => <p key={warning}>{warning}</p>)}
           {result.note ? <p>{result.note}</p> : null}

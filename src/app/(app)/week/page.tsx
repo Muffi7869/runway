@@ -1,20 +1,30 @@
 import Link from "next/link";
+import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { ReplanControls } from "@/components/replan-controls";
 import { RoughDayControls } from "@/components/rough-day-controls";
 import { SyncControls, AutoSync } from "@/components/sync-controls";
+import { Banner } from "@/components/ui/banner";
+import { WeekTodayPanel, type TodayBlockItem } from "@/components/week-today-panel";
 import {
   WeekGrid,
   type WeekGridDay,
   type WeekGridEvent,
 } from "@/components/week-grid";
 import { requireOwner } from "@/lib/auth/server";
-import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
+import { formatEstimate } from "@/lib/assignments/helpers";
+import { CLASS_COLOR_PALETTE, type ClassColor } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
 import { parseTimeOfDay } from "@/lib/settings/schema";
 import { laDateKey } from "@/lib/settings/day-off";
 import { requireSettingsComplete } from "@/lib/settings/server";
-import { addDays, APP_TIMEZONE, type CalendarDate, zonedParts } from "@/lib/time/zoned";
+import {
+  addDays,
+  APP_TIMEZONE,
+  type CalendarDate,
+  zonedParts,
+  zonedTimeToUtc,
+} from "@/lib/time/zoned";
 import {
   assignLanes,
   formatTimeRange,
@@ -25,17 +35,23 @@ import {
   weekDays,
 } from "@/lib/week/view";
 import {
+  assignmentProgress,
   buildPlannedBlockLabel,
   buildWarningSentences,
 } from "@/lib/week/presentation";
+
+import styles from "./week.module.css";
 
 export const maxDuration = 30;
 
 type SearchParams = Promise<{ week?: string | string[] }>;
 
-const shortDayFormatter = new Intl.DateTimeFormat("en-US", {
+const weekdayFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
   weekday: "short",
+});
+const dayNumberFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC",
   day: "numeric",
 });
 const longDayFormatter = new Intl.DateTimeFormat("en-US", {
@@ -54,6 +70,18 @@ const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
   year: "numeric",
+});
+const todayDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+});
+const dueDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: APP_TIMEZONE,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
 });
 
 function calendarDateAsUtc(date: CalendarDate): Date {
@@ -84,6 +112,26 @@ function sameDate(first: CalendarDate, second: CalendarDate): boolean {
     first.month === second.month &&
     first.day === second.day
   );
+}
+
+function classColor(value: string): ClassColor {
+  return CLASS_COLOR_PALETTE.some((color) => color.key === value)
+    ? (value as ClassColor)
+    : "blue";
+}
+
+function blockStatus(value: string): TodayBlockItem["status"] {
+  return value === "checked_in" || value === "missed" ? value : "planned";
+}
+
+function formatClockMinutes(minutes: number): string {
+  const date = new Date(Date.UTC(2026, 0, 1, 0, minutes));
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(date);
 }
 
 export default async function WeekPage({
@@ -125,10 +173,10 @@ export default async function WeekPage({
     supabase
       .from("blocks")
       .select(
-        "id,start,end,step:steps!inner(id,name,assignment:assignments!inner(id,title,status,class:classes!inner(id,name,color)))",
+        "id,start,end,planned_minutes,status,step:steps!inner(id,name,assignment:assignments!inner(id,title,status,class:classes!inner(id,name,color)))",
       )
       .eq("user_id", user.id)
-      .eq("status", "planned")
+      .in("status", ["planned", "checked_in", "missed"])
       .lt("start", bounds.end.toISOString())
       .gt("end", bounds.start.toISOString())
       .order("start", { ascending: true }),
@@ -139,7 +187,9 @@ export default async function WeekPage({
       .maybeSingle(),
     supabase
       .from("assignments")
-      .select("id,title")
+      .select(
+        "id,title,deadline,class:classes!inner(name,color),steps(estimated_minutes,percent_done)",
+      )
       .eq("user_id", user.id)
       .eq("status", "active"),
     supabase
@@ -179,18 +229,24 @@ export default async function WeekPage({
     const needsReconnect = connection?.status === "needs_reconnect";
 
     return (
-      <main className="mx-auto w-full max-w-7xl p-4 sm:p-6">
-        <h1 className="text-2xl font-semibold">Week</h1>
-        <div className="mt-6 rounded-xl bg-[var(--warn-soft)] p-4 text-[var(--warn)]">
-          <p className="font-medium">
-            {needsReconnect
-              ? "Runway lost access to Google Calendar."
-              : "Google Calendar isn't connected."}
-          </p>
-          <Link className="mt-2 inline-block underline" href="/settings">
-            Open Settings
-          </Link>
-        </div>
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <div>
+            <h1>This week</h1>
+            <p>{weekLabel(days)}</p>
+          </div>
+        </header>
+        <Banner className={styles.disconnected} variant="warn">
+          <AlertTriangle aria-hidden="true" size={18} strokeWidth={1.6} />
+          <div>
+            <p>
+              {needsReconnect
+                ? "Runway lost access to Google Calendar."
+                : "Google Calendar isn't connected."}
+            </p>
+            <Link href="/settings">Open Settings</Link>
+          </div>
+        </Banner>
       </main>
     );
   }
@@ -226,6 +282,7 @@ export default async function WeekPage({
     }),
     start: block.start,
     end: block.end,
+    status: blockStatus(block.status),
     color: colorByKey.get(block.step.assignment.class.color) ?? {
       fill: "var(--surface-2)",
       text: "var(--ink-2)",
@@ -245,19 +302,23 @@ export default async function WeekPage({
       formatTimeRange(event.start, event.end),
     ]),
   );
-  const plannedColors = new Map(
-    plannedGridEvents.map((event) => [event.id, event.color]),
+  const plannedPresentation = new Map(
+    plannedGridEvents.map((event) => [
+      event.id,
+      { color: event.color, status: event.status },
+    ]),
   );
   const gridEvents: WeekGridEvent[] = layouts.map((event) => {
-    const color = plannedColors.get(event.id);
+    const presentation = plannedPresentation.get(event.id);
 
     return {
       ...event,
       timeRange: eventTimes.get(event.id) ?? "",
-      ...(color
+      ...(presentation ? { status: presentation.status } : {}),
+      ...(presentation
         ? {
-            backgroundColor: color.fill,
-            textColor: color.text,
+            backgroundColor: presentation.color.fill,
+            textColor: presentation.color.text,
           }
         : {}),
     };
@@ -272,74 +333,149 @@ export default async function WeekPage({
     const date = calendarDateAsUtc(day);
 
     return {
-      shortLabel: shortDayFormatter.format(date),
+      shortLabel: `${weekdayFormatter.format(date)} ${dayNumberFormatter.format(date)}`,
+      weekdayLabel: weekdayFormatter.format(date),
+      dayLabel: dayNumberFormatter.format(date),
       longLabel: longDayFormatter.format(date),
       isToday: sameDate(day, today),
+      visibleStart: zonedTimeToUtc(
+        { ...day, hour: range.startHour, minute: 0 },
+        APP_TIMEZONE,
+      ).toISOString(),
     };
   });
   const previousMonday = addDays(monday, -7);
   const nextMonday = addDays(monday, 7);
+  const todayKey = laDateKey(now);
+  const todayBlocks: TodayBlockItem[] = plannedBlocks
+    .filter((block) => laDateKey(new Date(block.start)) === todayKey)
+    .map((block) => ({
+      id: block.id,
+      label: buildPlannedBlockLabel({
+        className: block.step.assignment.class.name,
+        assignmentTitle: block.step.assignment.title,
+        stepName: block.step.name,
+      }),
+      detail: formatTimeRange(block.start, block.end),
+      color: classColor(block.step.assignment.class.color),
+      status: blockStatus(block.status),
+    }));
+  const upNext =
+    todayBlocks.find((block) => {
+      const source = plannedBlocks.find((row) => row.id === block.id);
+      return (
+        block.status === "planned" &&
+        source !== undefined &&
+        new Date(source.start).getTime() >= now.getTime()
+      );
+    }) ?? null;
+  const plannedTodayMinutes = plannedBlocks
+    .filter((block) => laDateKey(new Date(block.start)) === todayKey)
+    .reduce((sum, block) => sum + block.planned_minutes, 0);
+  const checkedInTodayMinutes = plannedBlocks
+    .filter(
+      (block) =>
+        block.status === "checked_in" &&
+        laDateKey(new Date(block.start)) === todayKey,
+    )
+    .reduce((sum, block) => sum + block.planned_minutes, 0);
+  const weekPlannedMinutes = plannedBlocks.reduce(
+    (sum, block) => sum + block.planned_minutes,
+    0,
+  );
+  const checkinMinutes = parseTimeOfDay(settings.check_in_time);
+  const dueSoon = [...activeAssignmentsResult.data]
+    .sort(
+      (first, second) =>
+        new Date(first.deadline).getTime() - new Date(second.deadline).getTime(),
+    )
+    .slice(0, 3)
+    .map((assignment) => ({
+      id: assignment.id,
+      label: `${assignment.class.name} · ${assignment.title}`,
+      dueLabel: dueDateFormatter.format(new Date(assignment.deadline)),
+      progress: assignmentProgress(assignment.steps),
+      color: classColor(assignment.class.color),
+    }));
 
   return (
-    <main className="mx-auto w-full max-w-7xl overflow-x-hidden p-4 sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <main className={styles.page}>
+      <header className={styles.header}>
         <div>
-          <h1 className="text-2xl font-semibold">Week</h1>
-          <p className="mt-1 text-[var(--ink-3)]">{weekLabel(days)}</p>
-          <nav
-            aria-label="Week navigation"
-            className="mt-4 flex flex-wrap items-center gap-3 text-sm"
-          >
+          <h1>This week</h1>
+          <p>
+            {weekLabel(days)} · {formatEstimate(weekPlannedMinutes)} of study planned
+          </p>
+        </div>
+        <div className={styles.headerActions}>
+          <nav aria-label="Week navigation" className={styles.weekNavigation}>
             <Link
-              className="rounded border px-3 py-2"
+              aria-label="Previous week"
+              className="ui-button ui-button--icon"
               href={`/week?week=${weekParam(previousMonday)}`}
             >
-              Previous week
+              <ChevronLeft aria-hidden="true" size={18} strokeWidth={1.6} />
             </Link>
-            <Link className="rounded border px-3 py-2" href="/week">
-              This week
+            <Link className="ui-button" href="/week">
+              Today
             </Link>
             <Link
-              className="rounded border px-3 py-2"
+              aria-label="Next week"
+              className="ui-button ui-button--icon"
               href={`/week?week=${weekParam(nextMonday)}`}
             >
-              Next week
+              <ChevronRight aria-hidden="true" size={18} strokeWidth={1.6} />
             </Link>
           </nav>
-        </div>
-        <div className="space-y-6">
+          <RoughDayControls initiallyActive={Boolean(roughDayResult.data)} />
+          <ReplanControls
+            lastPlannedAt={planningResult.data?.last_planned_at ?? null}
+            now={now.toISOString()}
+          />
           <SyncControls
             lastSyncedAt={connection.last_synced_at}
             now={now.toISOString()}
           />
-          <div className="flex flex-wrap items-start gap-6">
-            <ReplanControls
-              lastPlannedAt={planningResult.data?.last_planned_at ?? null}
-              now={now.toISOString()}
-            />
-            <RoughDayControls initiallyActive={Boolean(roughDayResult.data)} />
-          </div>
         </div>
-      </div>
+      </header>
 
       {warningSentences.length > 0 ? (
-        <section
-          aria-label="Planning warnings"
-          className="mt-6 rounded-xl bg-[var(--warn-soft)] p-4 text-[var(--warn)]"
-        >
+        <Banner className={styles.warning} variant="warn">
+          <AlertTriangle aria-hidden="true" size={18} strokeWidth={1.6} />
+          <div aria-label="Planning warnings">
           {warningSentences.map((warning) => (
             <p key={warning}>{warning}</p>
           ))}
-        </section>
+          </div>
+        </Banner>
       ) : null}
 
-      <div className="mt-6 min-w-0">
-        <WeekGrid
-          days={gridDays}
-          endHour={range.endHour}
-          events={gridEvents}
-          initialDayIndex={todayIndex >= 0 ? todayIndex : 0}
-          startHour={range.startHour}
+      <div className={styles.content}>
+        <div className={styles.calendarWrap}>
+          <WeekGrid
+            days={gridDays}
+            endHour={range.endHour}
+            events={gridEvents}
+            initialDayIndex={todayIndex >= 0 ? todayIndex : 0}
+            now={now.toISOString()}
+            startHour={range.startHour}
+          />
+        </div>
+        <WeekTodayPanel
+          checkinTime={
+            checkinMinutes === null ? "11:30 PM" : formatClockMinutes(checkinMinutes)
+          }
+          completionPercent={
+            plannedTodayMinutes === 0
+              ? 0
+              : Math.round((checkedInTodayMinutes / plannedTodayMinutes) * 100)
+          }
+          dateLabel={todayDateFormatter.format(now)}
+          dueSoon={dueSoon}
+          plannedLabel={formatEstimate(plannedTodayMinutes)}
+          plannedToday={todayBlocks}
+          uncheckedCount={todayBlocks.filter((block) => block.status !== "checked_in").length}
+          upNext={upNext}
         />
       </div>
       {shouldAutoSync ? <AutoSync /> : null}

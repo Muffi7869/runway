@@ -1,0 +1,150 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: var(--card-padding);
+  background: var(--surface);
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.heading h2 {
+  min-width: 0;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.due {
+  color: var(--ink-3);
+}
+
+.heading :global(.ui-tag) {
+  margin-left: auto;
+}
+
+.steps {
+  display: grid;
+  gap: 16px;
+}
+
+.step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.stepText {
+  display: grid;
+  min-width: 180px;
+  gap: 2px;
+}
+
+.stepText strong {
+  font-weight: 500;
+}
+
+.stepText span,
+.note,
+.minutesRow > span {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.note {
+  margin: 0;
+}
+
+.percentPicker {
+  display: inline-flex;
+  gap: 2px;
+  border-radius: 10px;
+  padding: 3px;
+  background: var(--surface-2);
+}
+
+.percentPicker button {
+  min-width: 52px;
+  min-height: 36px;
+  border: 0;
+  border-radius: var(--radius-segment);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.percentPicker button:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.percentPicker button:disabled {
+  color: var(--ink-3);
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.percentPicker .selectedPercent {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line-2);
+  color: var(--ink);
+}
+
+.minutesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.minutesRow label {
+  color: var(--ink-2);
+}
+
+.minutesRow input {
+  width: 84px;
+  min-height: 40px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  padding: 0 10px;
+  background: var(--surface);
+  text-align: right;
+}
+
+@media (max-width: 700px) {
+  .step,
+  .minutesRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .percentPicker {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .percentPicker button {
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 4px;
+  }
+
+  .minutesRow input {
+    width: 100%;
+  }
+}

@@ -286,6 +286,10 @@ html[data-theme="dark"] {
 .app-user .ui-button { width: 100%; }
 .app-content { min-width: 0; flex: 1 1 auto; }
 
+.week-control { position: relative; display: flex; align-items: center; gap: 8px; }
+.week-control__status { margin: 0; color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+.week-control__message { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; width: max-content; max-width: min(320px, 80vw); margin: 0; border: 1px solid var(--line); border-radius: var(--radius-control); padding: 8px 10px; background: var(--surface); box-shadow: var(--shadow-floating); color: var(--ink-2); font-size: 12px; }
+
 @media (max-width: 700px) {
   :root { --page-padding-top: 20px; --page-padding-inline: 16px; }
   .app-shell { flex-direction: column; }

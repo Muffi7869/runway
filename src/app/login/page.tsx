@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SignedOutShell } from "@/components/signed-out-shell";
 
 import { SignInButton } from "./sign-in-button";
 
@@ -10,12 +10,9 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <SignInButton />
-      {error ? <p>Sign-in failed. Please try again.</p> : null}
-      <Link className="text-sm underline" href="/privacy">
-        Privacy
-      </Link>
-    </main>
+    <SignedOutShell
+      action={<SignInButton />}
+      message={error ? <p role="alert">Sign-in failed. Please try again.</p> : null}
+    />
   );
 }

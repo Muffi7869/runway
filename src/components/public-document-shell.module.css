@@ -1,0 +1,62 @@
+.page {
+  width: min(100%, 680px);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+.page header {
+  margin-bottom: 56px;
+}
+
+.page header a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.page article {
+  display: grid;
+  gap: 20px;
+}
+
+.page h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.page h2 {
+  margin: 0 0 7px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.page p {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.page section {
+  display: grid;
+  gap: 8px;
+}
+
+.page a {
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 24px 20px 48px;
+  }
+
+  .page header {
+    margin-bottom: 40px;
+  }
+}

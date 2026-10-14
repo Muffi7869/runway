@@ -23,7 +23,7 @@ export function SignInButton() {
       onClick={signInWithGoogle}
       className="ui-button ui-button--primary"
     >
-      Sign in with Google
+      Continue with Google
     </button>
   );
 }

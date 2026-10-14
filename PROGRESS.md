@@ -46,6 +46,9 @@
 - [ ] Theme System/Light/Dark works and persists after reload, no flash
 - [ ] Sidebar nav, Check in badge and sync status look like the mockup
 - [ ] Nothing that worked before broke: check-in save, replan, import, step save
+- [ ] Week page matches its mockup in light and dark (calendar, now line, Today panel, banner)
+- [ ] Check in matches its mockup in light and dark and saves exactly as before
+- [ ] Signed-out landing, /login, /privacy match the mockup in light and dark
 
 ## Log
 
@@ -576,3 +579,12 @@
 - Replaced the protected header with the responsive 232-pixel sidebar, active navigation, a read-only owner-filtered Check in badge, Google sync status, owner block, and the existing sign-out action.
 - Decisions: optional sidebar data failures render a usable shell without a badge or sync line; theme state remains device-local and introduces no database or server-action change.
 - Known issues: signed-in screens and theme persistence still require the manual visual checks listed above because Codex cannot sign into the owner-only app.
+
+### P6.5-UI-2 — Week, Check in, and signed-out pages
+
+- Restyled Week with the approved 48-pixel calendar rows, today treatment, minute-updating current-time line, class-tinted planned blocks, faded historical blocks, warning banner, and responsive Today panel.
+- Added pure weighted assignment-progress and Los Angeles wall-clock current-time-position helpers with boundary and DST coverage, plus presentational tests for the Week panel and grid.
+- Restyled Check in into assignment cards with the existing progress and minutes controls unchanged, plus summary, success, and per-class pace cards; preserved the existing action payload fields and behaviors.
+- Restyled the signed-out landing, login, privacy, and private pages with a shared no-sidebar shell and an aria-hidden product preview containing only invented content.
+- Decisions: added only small owner-filtered, explicit-column reads needed to present existing Week and Check in data; retained all scheduling, pace, authentication, and action behavior.
+- Known issues: Codex cannot sign into the owner-only app, so the signed-in visual and save checks remain in Manual checks.

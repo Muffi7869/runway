@@ -1,12 +1,14 @@
 import Link from "next/link";
 
+import { PublicDocumentShell } from "../../components/public-document-shell";
+
 export const metadata = {
   title: "Privacy Policy – Runway",
 };
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-5 px-6 py-12">
+    <PublicDocumentShell>
       <h1 className="text-3xl font-semibold">Privacy Policy – Runway</h1>
 
       <p>Runway is a personal app used by one person, its owner.</p>
@@ -75,6 +77,6 @@ export default function PrivacyPage() {
       <Link className="underline" href="/">
         Back to Runway
       </Link>
-    </main>
+    </PublicDocumentShell>
   );
 }

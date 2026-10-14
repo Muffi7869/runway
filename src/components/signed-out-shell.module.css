@@ -1,0 +1,392 @@
+.shell {
+  display: flex;
+  min-height: 100vh;
+  flex-wrap: wrap;
+}
+
+.intro {
+  display: flex;
+  min-height: 100vh;
+  flex: 1 1 440px;
+  flex-direction: column;
+  padding: 40px 56px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.introBody {
+  display: flex;
+  width: min(100%, 400px);
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+  padding: 48px 0;
+}
+
+.introBody h1 {
+  margin: 0;
+  font-size: clamp(34px, 4vw, 40px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.pitch {
+  margin: 14px 0 0;
+  color: var(--ink-2);
+  font-size: 16px;
+}
+
+.actionArea {
+  display: grid;
+  gap: 12px;
+}
+
+.actionArea :global(.ui-button) {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 11px;
+  font-size: 15px;
+}
+
+.actionArea p {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 13px;
+  text-align: center;
+}
+
+.actionArea .error {
+  color: var(--danger);
+}
+
+.steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding: 24px 0 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.steps li > span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 11px;
+}
+
+.steps p {
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.steps strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.intro footer {
+  display: flex;
+  gap: 16px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.intro footer a {
+  color: inherit;
+}
+
+.preview {
+  display: flex;
+  min-height: 100vh;
+  flex: 1.25 1 560px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-left: 1px solid var(--line);
+  padding: 48px 32px;
+  background-color: var(--panel);
+  background-image: radial-gradient(var(--dots) 1px, transparent 1.4px);
+  background-size: 20px 20px;
+}
+
+.previewStage {
+  position: relative;
+  width: min(100%, 600px);
+  height: 520px;
+}
+
+.miniWeek,
+.previewCheckin,
+.previewToast {
+  position: absolute;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-floating);
+}
+
+.miniWeek {
+  top: 40px;
+  left: 0;
+  width: min(100%, 520px);
+  padding: 16px 16px 12px;
+}
+
+.miniWeek header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 12px;
+}
+
+.miniWeek header span {
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+
+.dayHeaders,
+.dayColumns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dayHeaders {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dayHeaders span {
+  padding-left: 10px;
+}
+
+.dayHeaders span:first-child {
+  color: var(--accent-ink);
+}
+
+.dayColumn {
+  position: relative;
+  height: 300px;
+  border-left: 1px solid var(--line);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--line) 0 1px,
+    transparent 1px 50px
+  );
+}
+
+.dayColumn > div {
+  position: absolute;
+  right: 6px;
+  left: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-study-block);
+  padding: 7px 9px;
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+.dayColumn > div strong {
+  display: block;
+  font-weight: 600;
+}
+
+.dayColumn > div:nth-child(1) {
+  top: 8px;
+  height: 42px;
+}
+
+.dayColumn > div:nth-child(2) {
+  top: 88px;
+  height: 72px;
+}
+
+.dayColumn > div:nth-child(3) {
+  top: 200px;
+  height: 82px;
+}
+
+.fixedEvent {
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+
+.blueEvent,
+.greenEvent,
+.purpleEvent {
+  background: var(--class-fill);
+  color: var(--class-text);
+}
+
+.blueEvent {
+  --class-fill: var(--class-blue-fill);
+  --class-text: var(--class-blue-text);
+}
+
+.greenEvent {
+  --class-fill: var(--class-green-fill);
+  --class-text: var(--class-green-text);
+}
+
+.purpleEvent {
+  --class-fill: var(--class-purple-fill);
+  --class-text: var(--class-purple-text);
+}
+
+.previewCheckin {
+  top: 250px;
+  right: 0;
+  display: grid;
+  width: 280px;
+  gap: 10px;
+  padding: 16px;
+}
+
+.previewCheckin > span {
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.previewSegments {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  border-radius: 9px;
+  padding: 3px;
+  background: var(--surface-2);
+}
+
+.previewSegments span {
+  display: grid;
+  min-height: 28px;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--ink-3);
+  font-family: var(--font-code);
+  font-size: 11.5px;
+}
+
+.previewSegments .previewSelected {
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line-2);
+  color: var(--ink);
+}
+
+.previewCheckin p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.previewCheckin p strong {
+  color: var(--ink);
+}
+
+.previewToast {
+  bottom: 18px;
+  left: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+
+.previewToast strong {
+  color: var(--ink);
+}
+
+.previewCheck {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+@media (max-width: 900px) {
+  .intro {
+    min-height: auto;
+  }
+
+  .preview {
+    min-height: 580px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .intro {
+    padding: 24px 20px;
+  }
+
+  .introBody {
+    padding: 56px 0 40px;
+  }
+
+  .introBody h1 {
+    font-size: 34px;
+  }
+
+  .preview {
+    min-height: 440px;
+    padding: 28px 16px;
+  }
+
+  .previewStage {
+    height: 380px;
+  }
+
+  .miniWeek {
+    top: 0;
+  }
+
+  .dayColumn {
+    height: 230px;
+  }
+
+  .previewCheckin {
+    top: 190px;
+    right: 8px;
+    width: 240px;
+  }
+
+  .previewToast {
+    bottom: 0;
+    left: 8px;
+  }
+}

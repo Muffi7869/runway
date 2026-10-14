@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { SignedOutShell } from "@/components/signed-out-shell";
+
 import { getRouteAction } from "../lib/auth/routing";
 import { getOwnerStatus } from "../lib/auth/server";
 import { createClient } from "../lib/db/server";
@@ -25,22 +27,12 @@ export default async function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="text-3xl font-semibold">Runway</h1>
-      <p>
-        Runway reads a fixed weekly schedule, breaks assignments into steps,
-        plans study blocks in free time, and re-plans nightly from a short
-        check-in.
-      </p>
-      <Link
-        className="ui-button ui-button--primary"
-        href="/login"
-      >
-        Sign in
-      </Link>
-      <Link className="underline" href="/privacy">
-        Privacy
-      </Link>
-    </main>
+    <SignedOutShell
+      action={
+        <Link className="ui-button ui-button--primary" href="/login">
+          Continue with Google
+        </Link>
+      }
+    />
   );
 }

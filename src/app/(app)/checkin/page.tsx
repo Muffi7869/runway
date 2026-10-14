@@ -1,4 +1,5 @@
 import { requireOwner } from "@/lib/auth/server";
+import { formatDeadline } from "@/lib/assignments/helpers";
 import {
   buildCheckinView,
   type CheckinGroup,
@@ -13,7 +14,10 @@ import {
   zonedTimeToUtc,
 } from "@/lib/time/zoned";
 
-import { CheckinForm } from "./checkin-form";
+import {
+  CheckinForm,
+  type CheckinPresentation,
+} from "./checkin-form";
 import styles from "./checkin.module.css";
 
 function dateKey(date: { year: number; month: number; day: number }): string {
@@ -46,13 +50,13 @@ export default async function CheckinPage() {
   const [assignmentsResult, classesResult] = await Promise.all([
     supabase
       .from("assignments")
-      .select("id,class_id,title,status")
+      .select("id,class_id,title,status,deadline")
       .eq("user_id", user.id)
       .eq("status", "active")
       .order("deadline", { ascending: true }),
     supabase
       .from("classes")
-      .select("id,name,color")
+      .select("id,name,color,pace_ratio")
       .eq("user_id", user.id),
   ]);
 
@@ -206,14 +210,70 @@ export default async function CheckinPage() {
       ? [{ assignmentId: assignment.id, title: assignment.title }]
       : [];
   });
+  const presentationByAssignment = new Map<string, CheckinPresentation>();
+
+  for (const assignment of assignmentsResult.data) {
+    presentationByAssignment.set(assignment.id, {
+      assignmentId: assignment.id,
+      dueLabel: `Due ${formatDeadline(assignment.deadline, now)}`,
+      fromYesterday: false,
+      plannedMinutesByStep: {},
+    });
+  }
+
+  for (const block of blocksResult.data) {
+    if (block.status !== "planned" && block.status !== "missed") {
+      continue;
+    }
+
+    const step = stepsResult.data.find((row) => row.id === block.step_id);
+    const presentation = step
+      ? presentationByAssignment.get(step.assignment_id)
+      : undefined;
+
+    if (!presentation) {
+      continue;
+    }
+
+    const blockDate = dateKey(zonedParts(new Date(block.start), APP_TIMEZONE));
+    if (blockDate !== todayLa && blockDate !== yesterdayLa) {
+      continue;
+    }
+
+    presentation.plannedMinutesByStep[block.step_id] =
+      (presentation.plannedMinutesByStep[block.step_id] ?? 0) +
+      block.planned_minutes;
+    presentation.fromYesterday ||= blockDate === yesterdayLa;
+  }
+
+  const dateLabel = new Intl.DateTimeFormat("en-US", {
+    timeZone: APP_TIMEZONE,
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(now);
 
   return (
     <main className={styles.page}>
-      <h1>Check in</h1>
+      <header className={styles.pageHeader}>
+        <p>{dateLabel}</p>
+        <h1>How did today go?</h1>
+        <span>
+          Mark how far each step got and how long you actually worked. Runway
+          replans the rest of your week from this.
+        </span>
+      </header>
       <CheckinForm
+        classPaces={classesResult.data.map((classRow) => ({
+          id: classRow.id,
+          name: classRow.name,
+          color: classRow.color,
+          paceRatio: Number(classRow.pace_ratio),
+        }))}
         initialAllDone={initialAllDone}
         initialGroups={groups}
         otherGroups={otherGroups}
+        presentations={[...presentationByAssignment.values()]}
       />
     </main>
   );

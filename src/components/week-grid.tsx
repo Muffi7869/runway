@@ -1,26 +1,31 @@
 "use client";
 
-import { useRef, useState, type TouchEvent } from "react";
+import { useEffect, useRef, useState, type TouchEvent } from "react";
 
 import { eventPlacement } from "../lib/week/placement";
+import { nowLineOffset } from "../lib/week/presentation";
 import type { WeekEventLayout } from "../lib/week/view";
 
 import styles from "./week-grid.module.css";
 
-export const WEEK_GRID_ROW_HEIGHT_PX = 64;
+export const WEEK_GRID_ROW_HEIGHT_PX = 48;
 const MIN_EVENT_HEIGHT_PX = 20;
 const SWIPE_THRESHOLD = 50;
 
 export type WeekGridDay = {
   shortLabel: string;
   longLabel: string;
+  weekdayLabel: string;
+  dayLabel: string;
   isToday: boolean;
+  visibleStart: string;
 };
 
 export type WeekGridEvent = WeekEventLayout & {
   timeRange: string;
   backgroundColor?: string;
   textColor?: string;
+  status?: "planned" | "checked_in" | "missed";
 };
 
 type WeekGridPresentationProps = {
@@ -33,6 +38,7 @@ type WeekGridPresentationProps = {
   onNextDay?: () => void;
   onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
+  now: Date;
 };
 
 function formatHour(hour: number): string {
@@ -51,6 +57,7 @@ export function WeekGridPresentation({
   onNextDay,
   onTouchStart,
   onTouchEnd,
+  now,
 }: WeekGridPresentationProps) {
   const hours = Array.from(
     { length: Math.max(0, endHour - startHour) },
@@ -99,7 +106,8 @@ export function WeekGridPresentation({
             className={`${styles.dayHeader} ${day.isToday ? styles.todayHeader : ""}`}
             key={day.longLabel}
           >
-            {day.shortLabel}
+            <span className={styles.weekdayLabel}>{day.weekdayLabel}</span>
+            <span className={styles.dayNumber}>{day.dayLabel}</span>
           </div>
         ))}
       </div>
@@ -141,6 +149,25 @@ export function WeekGridPresentation({
               />
             ))}
 
+            {(() => {
+              const offset = nowLineOffset(
+                now,
+                new Date(day.visibleStart),
+                WEEK_GRID_ROW_HEIGHT_PX,
+              );
+
+              return Number.isFinite(offset) && offset >= 0 && offset <= gridHeight ? (
+                <div
+                  aria-hidden="true"
+                  className={styles.nowLine}
+                  data-now-line="true"
+                  style={{ top: offset }}
+                >
+                  <span />
+                </div>
+              ) : null;
+            })()}
+
             {events
               .filter((event) => event.dayIndex === dayIndex)
               .map((event) => {
@@ -156,6 +183,7 @@ export function WeekGridPresentation({
                   <div
                     className={styles.eventSlot}
                     data-event-id={event.id}
+                    data-status={event.status}
                     key={`${event.id}-${event.dayIndex}-${event.startMinute}-${event.endMinute}`}
                     style={{
                       height: placement.heightPx,
@@ -176,6 +204,11 @@ export function WeekGridPresentation({
                         {event.title}
                       </p>
                       <p className={styles.eventTime}>{event.timeRange}</p>
+                      {event.status === "checked_in" ? (
+                        <p className={styles.eventStatus}>Checked in</p>
+                      ) : event.status === "missed" ? (
+                        <p className={styles.eventStatus}>Not checked in</p>
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -193,15 +226,23 @@ export function WeekGrid({
   startHour,
   endHour,
   initialDayIndex,
+  now,
 }: {
   days: WeekGridDay[];
   events: WeekGridEvent[];
   startHour: number;
   endHour: number;
   initialDayIndex: number;
+  now: string;
 }) {
   const [activeDayIndex, setActiveDayIndex] = useState(initialDayIndex);
+  const [currentNow, setCurrentNow] = useState(() => new Date(now));
   const touchStartX = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentNow(new Date()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   function moveDay(direction: -1 | 1) {
     setActiveDayIndex((current) =>
@@ -241,6 +282,7 @@ export function WeekGrid({
       onPreviousDay={() => moveDay(-1)}
       onTouchEnd={handleTouchEnd}
       onTouchStart={handleTouchStart}
+      now={currentNow}
       startHour={startHour}
     />
   );

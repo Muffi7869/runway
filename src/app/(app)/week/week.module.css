@@ -1,0 +1,84 @@
+.page {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+  padding: var(--page-padding-top) var(--page-padding-inline) 40px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.header p {
+  margin: 4px 0 0;
+  color: var(--ink-3);
+}
+
+.headerActions,
+.weekNavigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.warning {
+  align-items: center;
+}
+
+.warning p {
+  margin: 0;
+}
+
+.disconnected {
+  max-width: 680px;
+}
+
+.disconnected p {
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+
+.disconnected a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+
+.content {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.calendarWrap {
+  min-width: 0;
+  flex: 1 1 640px;
+}
+
+@media (max-width: 980px) {
+  .content {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 700px) {
+  .header,
+  .headerActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

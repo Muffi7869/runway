@@ -1,143 +1,213 @@
 .page {
-  width: min(100%, 56rem);
+  width: min(100%, 1100px);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: var(--page-padding-top) var(--page-padding-inline) 48px;
 }
 
-.page h1 {
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
+.pageHeader {
+  margin-bottom: 24px;
+}
+
+.pageHeader p,
+.label {
+  margin: 0 0 5px;
+  color: var(--ink-3);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  margin: 0 0 7px;
+  font-size: 26px;
   font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-.form,
-.steps,
+.pageHeader span,
+.note,
+.empty {
+  color: var(--ink-2);
+}
+
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+.assignmentColumn,
+.summaryColumn,
 .doneSection {
   display: grid;
-  gap: 1rem;
+  gap: 16px;
 }
 
-.group,
+.summaryColumn {
+  position: sticky;
+  top: 20px;
+}
+
+.summaryCard,
+.paceCard {
+  display: grid;
+  gap: 16px;
+}
+
+.summaryCard dl {
+  display: grid;
+  gap: 11px;
+  margin: 0;
+}
+
+.summaryCard dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.summaryCard dt {
+  color: var(--ink-2);
+}
+
+.summaryCard dd {
+  margin: 0;
+  font-weight: 500;
+}
+
+.summaryCard button {
+  width: 100%;
+}
+
+.paceCard ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paceCard li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.paceDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--class-dot);
+}
+
+.paceCard strong {
+  font-weight: 500;
+}
+
+.paceText {
+  display: grid;
+  gap: 2px;
+}
+
+.paceText small {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
 .otherWork,
 .donePrompt {
-  margin-top: 1rem;
-  padding: 1rem;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface);
 }
 
-.groupHeading,
-.otherWorkControls,
-.step,
-.minutesField {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.groupHeading h2 {
-  min-width: 0;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-.swatch {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 auto;
-  border-radius: 999px;
-}
-
-.minutesField {
-  margin: 1rem 0;
-  justify-content: space-between;
-}
-
-.minutesField input {
-  width: 7rem;
-}
-
-.step {
-  justify-content: space-between;
-}
-
-.step > span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.step small,
-.note {
-  color: var(--ink-2);
-  font-size: 0.875rem;
+.otherWork {
+  margin-bottom: 16px;
+  padding: 14px 16px;
 }
 
 .otherWork label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.otherWorkControls {
+  display: flex;
+  gap: 8px;
 }
 
 .otherWorkControls select {
   min-width: 0;
   flex: 1;
-}
-
-.page input,
-.page select,
-.page button {
-  min-height: 2.5rem;
+  min-height: 40px;
   border: 1px solid var(--line-2);
   border-radius: var(--radius-control);
-  padding: 0.5rem 0.75rem;
+  padding: 0 12px;
   background: var(--surface);
-  color: inherit;
 }
 
-.page button {
-  cursor: pointer;
+.empty {
+  margin: 0 0 16px;
 }
 
-.page button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+.doneSection {
+  margin-top: 20px;
 }
 
-.saveButton {
-  justify-self: start;
-  border-color: var(--primary-line) !important;
-  background: var(--primary) !important;
-  color: var(--on-primary) !important;
-}
-
-.error {
-  color: var(--danger);
-}
-
-.success {
-  color: var(--ok);
+.donePrompt {
+  padding: 16px;
 }
 
 .donePrompt p {
-  margin-bottom: 0.75rem;
+  margin: 0 0 10px;
 }
 
-@media (max-width: 40rem) {
-  .page {
-    padding: 1rem;
+.donePrompt button {
+  min-height: 40px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  padding: 0 14px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .form {
+    grid-template-columns: 1fr;
   }
 
-  .step,
-  .minutesField,
+  .summaryColumn {
+    position: static;
+    grid-row: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 20px 16px 36px;
+  }
+
+  .summaryColumn {
+    grid-template-columns: 1fr;
+  }
+
   .otherWorkControls {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .minutesField input,
-  .step select,
-  .otherWorkControls select,
   .otherWorkControls button {
     width: 100%;
   }

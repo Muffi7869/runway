@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
 
 import { replanAction } from "@/app/(app)/week/actions";
 import { formatLastSynced } from "@/lib/week/view";
@@ -50,19 +51,22 @@ export function ReplanControls({
   }
 
   return (
-    <section className="space-y-3" aria-label="Study plan">
-      <p>
-        Last planned: {lastPlannedAt ? formatLastSynced(lastPlannedAt, new Date(now)) : "Never planned"}
-      </p>
+    <section className="week-control" aria-label="Study plan">
       <Button
         disabled={isPending}
         onClick={runReplan}
         type="button"
         variant="default"
       >
+        <RefreshCw aria-hidden="true" size={18} strokeWidth={1.6} />
         {isPending ? "Replanning..." : "Replan"}
       </Button>
-      {message ? <p>{message}</p> : null}
+      <p className="week-control__status">
+        {lastPlannedAt
+          ? `Updated ${formatLastSynced(lastPlannedAt, new Date(now))}`
+          : "Not planned yet"}
+      </p>
+      {message ? <p className="week-control__message">{message}</p> : null}
     </section>
   );
 }

@@ -2,13 +2,19 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
+import { CheckinCard } from "@/components/checkin-card";
+import { Banner } from "@/components/ui/banner";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { formatEstimate } from "@/lib/assignments/helpers";
 import {
   clampMinutes,
-  percentChoices,
   type CheckinGroup,
 } from "@/lib/checkin/view";
-import { CLASS_COLOR_PALETTE } from "@/lib/classes/palette";
+import { CLASS_COLOR_PALETTE, type ClassColor } from "@/lib/classes/palette";
+import { describePace } from "@/lib/pace/compute";
 
 import {
   markDoneAction,
@@ -24,6 +30,26 @@ type EditableGroup = CheckinGroup & {
   minutes: string;
   percents: Record<string, number>;
 };
+
+export type CheckinPresentation = {
+  assignmentId: string;
+  dueLabel: string;
+  fromYesterday: boolean;
+  plannedMinutesByStep: Record<string, number>;
+};
+
+type ClassPace = {
+  id: string;
+  name: string;
+  color: string;
+  paceRatio: number;
+};
+
+function classColor(value: string): ClassColor {
+  return CLASS_COLOR_PALETTE.some((color) => color.key === value)
+    ? (value as ClassColor)
+    : "blue";
+}
 
 function editableGroup(group: CheckinGroup): EditableGroup {
   return {
@@ -81,10 +107,14 @@ export function CheckinForm({
   initialGroups,
   otherGroups,
   initialAllDone,
+  presentations,
+  classPaces,
 }: {
   initialGroups: CheckinGroup[];
   otherGroups: CheckinGroup[];
   initialAllDone: Array<{ assignmentId: string; title: string }>;
+  presentations: CheckinPresentation[];
+  classPaces: ClassPace[];
 }) {
   const router = useRouter();
   const [groups, setGroups] = useState<EditableGroup[]>(() =>
@@ -132,6 +162,36 @@ export function CheckinForm({
         (candidate) => candidate.assignmentId === assignment.assignmentId,
       ) === index,
   );
+  const presentationByAssignment = new Map(
+    presentations.map((presentation) => [
+      presentation.assignmentId,
+      presentation,
+    ]),
+  );
+  const totalMinutes = groups.reduce(
+    (sum, group) => sum + clampMinutes(Number(group.minutes)),
+    0,
+  );
+  const movedSteps = groups.reduce(
+    (sum, group) =>
+      sum +
+      group.steps.filter(
+        (step) =>
+          (group.percents[step.stepId] ?? step.storedPercent) >
+          step.storedPercent,
+      ).length,
+    0,
+  );
+  const plannedMinutes = groups.reduce((sum, group) => {
+    const presentation = presentationByAssignment.get(group.assignmentId);
+    return (
+      sum +
+      Object.values(presentation?.plannedMinutesByStep ?? {}).reduce(
+        (subtotal, minutes) => subtotal + minutes,
+        0,
+      )
+    );
+  }, 0);
 
   function addOtherWork() {
     const group = otherGroups.find(
@@ -149,14 +209,14 @@ export function CheckinForm({
   return (
     <>
       {groups.length === 0 ? (
-        <p>
+        <p className={styles.empty}>
           Nothing scheduled for today. Use Log other work if you did something
           anyway.
         </p>
       ) : null}
 
       <div className={styles.otherWork}>
-        <label htmlFor="other-assignment">Log other work</label>
+        <label htmlFor="other-assignment">Log work on something else</label>
         <div className={styles.otherWorkControls}>
           <select
             id="other-assignment"
@@ -170,13 +230,14 @@ export function CheckinForm({
               </option>
             ))}
           </select>
-          <button
+          <Button
             disabled={!selectedOther}
             onClick={addOtherWork}
             type="button"
+            variant="ghost"
           >
             Add
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -188,109 +249,105 @@ export function CheckinForm({
             type="hidden"
             value={JSON.stringify(blockIds)}
           />
-          {groups.map((group, groupIndex) => {
-            const paletteColor = CLASS_COLOR_PALETTE.find(
-              (color) => color.key === group.classColor,
-            );
+          <div className={styles.assignmentColumn}>
+            {groups.map((group, groupIndex) => {
+              const presentation = presentationByAssignment.get(
+                group.assignmentId,
+              );
 
-            return (
-              <section className={styles.group} key={group.assignmentId}>
-                <div className={styles.groupHeading}>
-                  <span
-                    aria-hidden="true"
-                    className={styles.swatch}
-                    style={{
-                      backgroundColor:
-                        paletteColor?.value ?? "var(--ink-3)",
-                    }}
-                  />
-                  <h2>
-                    {group.className} · {group.title}
-                  </h2>
+              return (
+                <CheckinCard
+                  color={classColor(group.classColor)}
+                  dueLabel={presentation?.dueLabel ?? ""}
+                  fromYesterday={presentation?.fromYesterday ?? false}
+                  group={group}
+                  key={group.assignmentId}
+                  minutes={group.minutes}
+                  onMinutesChange={(value) => {
+                    setGroups((current) =>
+                      current.map((candidate, index) =>
+                        index === groupIndex
+                          ? { ...candidate, minutes: value }
+                          : candidate,
+                      ),
+                    );
+                  }}
+                  onPercentChange={(stepId, value) => {
+                    setGroups((current) =>
+                      current.map((candidate, index) =>
+                        index === groupIndex
+                          ? {
+                              ...candidate,
+                              percents: {
+                                ...candidate.percents,
+                                [stepId]: value,
+                              },
+                            }
+                          : candidate,
+                      ),
+                    );
+                  }}
+                  percents={group.percents}
+                  plannedMinutesByStep={
+                    presentation?.plannedMinutesByStep ?? {}
+                  }
+                />
+              );
+            })}
+          </div>
+
+          <aside aria-label="Summary" className={styles.summaryColumn}>
+            <Card className={styles.summaryCard}>
+              <p className={styles.label}>Tonight</p>
+              <dl>
+                <div>
+                  <dt>Time worked</dt>
+                  <dd className="num">{formatEstimate(totalMinutes)}</dd>
                 </div>
-                {group.alreadyCheckedIn ? (
-                  <p className={styles.note}>Already checked in today.</p>
-                ) : null}
-                <label className={styles.minutesField}>
-                  <span>Minutes worked</span>
-                  <input
-                    max={720}
-                    min={0}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setGroups((current) =>
-                        current.map((candidate, index) =>
-                          index === groupIndex
-                            ? { ...candidate, minutes: value }
-                            : candidate,
-                        ),
-                      );
-                    }}
-                    step={1}
-                    type="number"
-                    value={group.minutes}
-                  />
-                </label>
-                <div className={styles.steps}>
-                  {group.steps.length ? (
-                    group.steps.map((step) => (
-                      <label className={styles.step} key={step.stepId}>
-                        <span>
-                          {step.name}
-                          {step.plannedToday ? (
-                            <small> Planned today</small>
-                          ) : null}
-                        </span>
-                        <select
-                          aria-label={`${step.name} percent complete`}
-                          onChange={(event) => {
-                            const value = Number(event.target.value);
-                            setGroups((current) =>
-                              current.map((candidate, index) =>
-                                index === groupIndex
-                                  ? {
-                                      ...candidate,
-                                      percents: {
-                                        ...candidate.percents,
-                                        [step.stepId]: value,
-                                      },
-                                    }
-                                  : candidate,
-                              ),
-                            );
-                          }}
-                          value={group.percents[step.stepId]}
-                        >
-                          {percentChoices(step.storedPercent).map((choice) => (
-                            <option
-                              disabled={choice.disabled}
-                              key={choice.value}
-                              value={choice.value}
-                            >
-                              {choice.value}%
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ))
-                  ) : (
-                    <p className={styles.note}>No unfinished steps.</p>
-                  )}
+                <div>
+                  <dt>Steps moved forward</dt>
+                  <dd className="num">{movedSteps}</dd>
                 </div>
-              </section>
-            );
-          })}
-          <button className={styles.saveButton} disabled={isPending} type="submit">
-            {isPending ? "Saving…" : "Save check-in"}
-          </button>
-          {state.error ? <p className={styles.error}>{state.error}</p> : null}
-          {state.ok ? <p className={styles.success}>Check-in saved.</p> : null}
-          {state.paceFailed ? (
-            <p className={styles.note}>Pace will update on a later check-in.</p>
-          ) : null}
-          {state.replanFailed ? (
-            <p className={styles.note}>Saved, but replanning needs another try.</p>
-          ) : null}
+                <div>
+                  <dt>Planned today</dt>
+                  <dd className="num">{formatEstimate(plannedMinutes)}</dd>
+                </div>
+              </dl>
+              <Button disabled={isPending} type="submit" variant="primary">
+                {isPending ? "Saving…" : "Save check-in"}
+              </Button>
+              {state.error ? <p className={styles.error}>{state.error}</p> : null}
+              {state.ok ? (
+                <Banner variant="ok">
+                  <span>
+                    Saved. Your week was replanned. <Link href="/week">See the new plan</Link>
+                  </span>
+                </Banner>
+              ) : null}
+              {state.paceFailed ? (
+                <p className={styles.note}>Pace will update on a later check-in.</p>
+              ) : null}
+              {state.replanFailed ? (
+                <p className={styles.note}>Saved, but replanning needs another try.</p>
+              ) : null}
+            </Card>
+
+            <Card className={styles.paceCard}>
+              <p className={styles.label}>Your pace</p>
+              <ul>
+                {classPaces.map((classRow) => (
+                  <li data-class-color={classColor(classRow.color)} key={classRow.id}>
+                    <span aria-hidden="true" className={styles.paceDot} />
+                    <span className={styles.paceText}>
+                      <strong>{classRow.name}</strong>
+                      <small>{describePace(classRow.paceRatio)}</small>
+                    </span>
+                    <strong className="num">{classRow.paceRatio.toFixed(2)}×</strong>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </aside>
         </form>
       ) : null}
 

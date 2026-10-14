@@ -19,7 +19,10 @@ const days: WeekGridDay[] = [
 ].map((longLabel, index) => ({
   longLabel,
   shortLabel: longLabel.slice(0, 3),
+  weekdayLabel: longLabel.slice(0, 3),
+  dayLabel: String(5 + index),
   isToday: index === 2,
+  visibleStart: `2026-10-${String(5 + index).padStart(2, "0")}T15:00:00.000Z`,
 }));
 
 function event(
@@ -59,6 +62,7 @@ function renderGrid(): string {
       days={days}
       endHour={18}
       events={events}
+      now={new Date("2026-10-07T18:30:00.000Z")}
       startHour={8}
     />,
   );
@@ -97,9 +101,9 @@ describe("WeekGridPresentation", () => {
 
   it.each([
     ["event-8", 0],
-    ["event-9", 64],
-    ["event-10", 128],
-    ["event-16", 512],
+    ["event-9", 48],
+    ["event-10", 96],
+    ["event-16", 384],
   ])("renders %s at top %i", (id, topPx) => {
     const tag = eventOpeningTag(renderGrid(), id);
     const expectedTop =
@@ -127,7 +131,11 @@ describe("WeekGridPresentation", () => {
     expect(saturdayMarkup).not.toContain("data-event-id");
   });
 
-  it("uses the exported 64-pixel row height", () => {
-    expect(WEEK_GRID_ROW_HEIGHT_PX).toBe(64);
+  it("uses the approved 48-pixel row height", () => {
+    expect(WEEK_GRID_ROW_HEIGHT_PX).toBe(48);
+  });
+
+  it("renders the current-time line only inside today's visible hours", () => {
+    expect(renderGrid().match(/data-now-line="true"/g)).toHaveLength(1);
   });
 });

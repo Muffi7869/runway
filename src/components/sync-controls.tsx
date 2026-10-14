@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CloudDownload } from "lucide-react";
 
 import { syncNowAction } from "@/app/(app)/week/actions";
 import type { SyncFixedEventsResult } from "@/lib/google/sync-service";
@@ -55,16 +56,20 @@ export function SyncControls({
   }
 
   return (
-    <section className="mt-6 space-y-3" aria-label="Calendar sync">
-      <p>Last synced: {formatLastSynced(lastSyncedAt, new Date(now))}</p>
+    <section className="week-control" aria-label="Calendar sync">
       <Button
         disabled={isRunning}
         onClick={syncNow}
         type="button"
+        variant="ghost"
       >
+        <CloudDownload aria-hidden="true" size={18} strokeWidth={1.6} />
         {isRunning ? "Syncing…" : "Sync now"}
       </Button>
-      {message ? <p>{message}</p> : null}
+      <p className="week-control__status">
+        Synced {formatLastSynced(lastSyncedAt, new Date(now))}
+      </p>
+      {message ? <p className="week-control__message">{message}</p> : null}
     </section>
   );
 }
