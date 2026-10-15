@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { ReplanControls } from "@/components/replan-controls";
 import { RoughDayControls } from "@/components/rough-day-controls";
-import { SyncControls, AutoSync } from "@/components/sync-controls";
+import { SyncControls } from "@/components/sync-controls";
 import { Banner } from "@/components/ui/banner";
 import { WeekTodayPanel, type TodayBlockItem } from "@/components/week-today-panel";
 import {
@@ -15,6 +17,7 @@ import { requireOwner } from "@/lib/auth/server";
 import { formatEstimate } from "@/lib/assignments/helpers";
 import { CLASS_COLOR_PALETTE, type ClassColor } from "@/lib/classes/palette";
 import { createClient } from "@/lib/db/server";
+import { syncFixedEventsOnce } from "@/lib/google/sync-service";
 import { parseTimeOfDay } from "@/lib/settings/schema";
 import { laDateKey } from "@/lib/settings/day-off";
 import { requireSettingsComplete } from "@/lib/settings/server";
@@ -224,6 +227,27 @@ export default async function WeekPage({
     connection.fixed_calendar_ids.length > 0 &&
     (!Number.isFinite(lastSyncedTime) ||
       now.getTime() - lastSyncedTime > 30 * 60 * 1000);
+
+  if (shouldAutoSync) {
+    after(async () => {
+      try {
+        const result = await syncFixedEventsOnce({
+          supabase,
+          userId: user.id,
+          now,
+        });
+
+        if (
+          result.ok &&
+          result.inserted + result.updated + result.removed > 0
+        ) {
+          revalidatePath("/week");
+        }
+      } catch {
+        // Automatic refresh is best effort; Sync now remains the retry path.
+      }
+    });
+  }
 
   if (!isConnected) {
     const needsReconnect = connection?.status === "needs_reconnect";
@@ -478,7 +502,6 @@ export default async function WeekPage({
           upNext={upNext}
         />
       </div>
-      {shouldAutoSync ? <AutoSync /> : null}
     </main>
   );
 }

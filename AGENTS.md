@@ -50,6 +50,10 @@ DESIGN.md             the visual system: tokens, components, screen specs
 design-ref/           mockup source for each screen (git-ignored, never commit)
 ```
 
+**Site URL:** the app lives at `https://runway.mrajkotwala.com`. Every absolute URL (email links, OAuth redirects, privacy links) comes from the `NEXT_PUBLIC_SITE_URL` environment variable. Never hard-code a domain.
+
+**Performance:** pages must never wait on Google or OpenAI before rendering. Run independent database queries in parallel. Every app route has a `loading.tsx` skeleton.
+
 **UI work:** read `DESIGN.md` first and follow it exactly. Use its CSS variables, never raw hex in components. Restyling never changes app logic, data flow, or the database.
 
 ## Data model (the contract, change only with Orchestrator approval)

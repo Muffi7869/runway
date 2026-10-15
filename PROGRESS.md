@@ -12,6 +12,8 @@
 - Supabase browser and server clients live in `src/lib/db`, matching the project layout. The Supabase CLI installed and ran without requiring install-script approval, so no package scripts were approved.
 - Sessions store assignment-level work totals, while `session_steps` stores each step touched in that session with its before-and-after progress. This preserves one session across multiple steps without duplicating session totals.
 - Live Vercel URL: https://runway-xi-ten.vercel.app
+- Vercel functions are configured for `sfo1`, the closest function region to the Supabase `us-west-1` project. If the deployment plan does not honor the file setting, use Project Settings → Functions → Function Region.
+- The root layout reads the theme cookie before rendering. This makes every route dynamic, including public pages, but adds only a local cookie read and no network round trip.
 
 ## Known issues
 
@@ -51,6 +53,38 @@
 - [ ] Signed-out landing, /login, /privacy match the mockup in light and dark
 - [ ] Assignments, plan editor, Import, Classes (Color popover) and Settings (Appearance) match their mockups in light and dark on the live site
 - [ ] Theme persists after reload on every page
+- [ ] Tabs feel instant on the live site (measure in Vercel Logs: before vs after per page)
+- [ ] Theme choice survives reload, new tab, sign out and in
+
+## Phase 6.6 performance audit
+
+Counts are sequential network/database stages on the critical response path, not elapsed time. They include the shared proxy owner-auth round trip. Queries in one `Promise.all` count as one stage; layout and page rendering can overlap, so the route count uses the longer branch. Counts assume the normal one-page Google Calendar response when relevant.
+
+### BEFORE
+
+| Page | Sequential round trips BEFORE | Notes |
+| --- | ---: | --- |
+| Shared layout | 3 | Proxy owner auth → layout owner auth → blocks for the Check in badge and `google_connection` status in parallel. The layout owner auth repeated the page owner auth. |
+| `/week` | 5 | Proxy auth → settings gate owner auth → required settings → repeated page owner auth → six parallel reads: connection, fixed events, blocks, planning metadata, active assignments, and rough day. After rendering, the client stale-sync action repeated auth, then read connection and token, exchanged OAuth credentials, listed each chosen calendar in sequence, read existing fixed events, wrote the diff, updated last sync, and always refreshed. |
+| `/assignments` | 6 | Proxy auth → gate owner auth → required settings → repeated page owner auth → classes and assignments in parallel → dependent steps and null-spec assignment IDs in parallel. |
+| `/assignments/[id]/breakdown` | 8 | Proxy auth → gate owner auth → required settings → repeated page owner auth → assignment → class → steps → dependent session-step and block checks in parallel. |
+| `/assignments/import` | 3 | Proxy auth → gate owner auth → required settings. The layout separately repeated owner auth and its optional reads. |
+| `/classes` | 5 | Proxy auth → gate owner auth → required settings → repeated page owner auth → classes, assignments, and sessions in parallel. |
+| `/settings` | 13 | Proxy auth → page owner auth → settings → Canvas status → Google connection → blocked days → ensure-calendar connection → token row → OAuth token exchange → calendar list → repeated token row → repeated OAuth exchange → repeated calendar list. Google blocked the whole page. |
+| `/checkin` | 7 | Proxy auth → gate owner auth → required settings → repeated page owner auth → assignments and classes in parallel → dependent steps and sessions in parallel → dependent blocks. |
+
+### AFTER
+
+| Page | Sequential round trips AFTER | Notes |
+| --- | ---: | --- |
+| Shared layout | 3 | Proxy auth → one request-cached render owner auth → parallel badge and sync-status reads. The owner and Supabase client are shared with the page; optional failures still leave the shell usable. |
+| `/week` | 4 | Proxy auth → cached owner auth → required settings → six parallel page reads. The same connection/token/OAuth/calendar-list/fixed-event diff runs outside the response in `after()` through the per-owner in-flight guard and revalidates only when rows changed. |
+| `/assignments` | 5 | Proxy auth → cached owner auth → required settings → parallel classes and assignments → dependent steps and null-spec IDs in parallel. |
+| `/assignments/[id]/breakdown` | 6 | Proxy auth → cached owner auth → required settings → assignment → class and steps in parallel → dependent history checks in parallel. |
+| `/assignments/import` | 3 | Proxy auth → cached owner auth → required settings. This route has no independent page queries to parallelize, so its critical database chain cannot be shorter. |
+| `/classes` | 4 | Proxy auth → cached owner auth → required settings → classes, assignments, and sessions in parallel. |
+| `/settings` | 3 | Proxy auth → cached owner auth → settings, Canvas status, and blocked days in parallel. The Google section streams behind Suspense; its connection/token/OAuth/calendar work no longer blocks the page, and its token exchange and calendar list are request-cached instead of repeated. |
+| `/checkin` | 6 | Proxy auth → cached owner auth → required settings → assignments and classes in parallel → dependent steps and sessions in parallel → dependent blocks. |
 
 ## Log
 
@@ -600,3 +634,12 @@
 - Added pure and markup tests for assignment grouping across daylight-saving boundaries, class stats, assignment rows and tab counts, the color popover, and Appearance.
 - Decisions: added only explicit-column, owner-filtered reads for assignment progress and class summary statistics; did not select assignment specs or render the saved Canvas link.
 - Known issues: Codex cannot sign into the owner-only app, so signed-in visual comparison, theme persistence, and regression workflows remain in Manual checks.
+
+### P6.6-1 — Speed and theme persistence
+
+- Audited the protected routes and shared layout, recorded before-and-after critical-path round-trip stages, request-cached the owner, settings gate, and server Supabase client, and parallelized independent Settings and breakdown reads.
+- Configured the closest Vercel function region, added token-based reduced-motion loading skeletons to every requested protected route, and kept internal page navigation on default-prefetching Next links; the Google OAuth endpoint remains a GET form action so it cannot be prefetched accidentally.
+- Moved stale Week synchronization into `after()` with a shared per-owner in-flight guard, swallowed automatic failures, and revalidated Week only when fixed-event rows changed; explicit Sync and Replan behavior remains unchanged.
+- Made explicit Light and Dark cookies part of the first root-layout HTML, retained pre-paint System resolution, made the cookie authoritative over stale local storage, and kept theme persistence independent of Supabase sign-out.
+- Decisions: reading the theme cookie makes all routes dynamic without adding a network call; the Settings Google section now streams separately so Google cannot delay the main Settings response.
+- Known issues: real authenticated timings and cross-tab theme persistence require the live manual checks listed above.

@@ -2,6 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { cache } from "react";
 
 import type { Database } from "@/lib/db/database.types";
 import { createClient } from "@/lib/db/server";
@@ -31,7 +32,7 @@ export async function getOwnerStatus(
   return { status: "owner", user };
 }
 
-export async function requireOwner(): Promise<User> {
+export const requireOwner = cache(async function requireOwner(): Promise<User> {
   const supabase = await createClient();
   const ownerStatus = await getOwnerStatus(supabase);
 
@@ -50,4 +51,4 @@ export async function requireOwner(): Promise<User> {
   }
 
   return ownerStatus.user;
-}
+});

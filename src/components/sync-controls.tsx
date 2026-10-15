@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CloudDownload } from "lucide-react";
 
@@ -72,29 +72,4 @@ export function SyncControls({
       {message ? <p className="week-control__message">{message}</p> : null}
     </section>
   );
-}
-
-export function AutoSync() {
-  const router = useRouter();
-  const started = useRef(false);
-
-  useEffect(() => {
-    if (started.current) {
-      return;
-    }
-
-    started.current = true;
-
-    void (async () => {
-      try {
-        await syncNowAction();
-      } catch {
-        // SyncControls provides the manual retry path and its status messages.
-      } finally {
-        router.refresh();
-      }
-    })();
-  }, [router]);
-
-  return null;
 }

@@ -10,6 +10,7 @@ import type { GoogleEventInput } from "./event-mapper";
 import type { ExistingFixedEvent } from "./sync-planner";
 import {
   syncFixedEvents,
+  syncFixedEventsOnce,
   type SyncFixedEventsDeps,
 } from "./sync-service";
 
@@ -300,6 +301,35 @@ describe("syncFixedEvents", () => {
     expect(database.upsertBatches.length + database.deleteBatches.length).toBe(
       fixedWriteCount,
     );
+  });
+
+  it("shares one in-flight sync for the same owner", async () => {
+    const database = makeDatabase();
+    let finishCalendarRead: (() => void) | undefined;
+    const deps = {
+      getAccessToken: vi.fn(async () => "test-access-token"),
+      listEvents: vi.fn(
+        () =>
+          new Promise<GoogleEventInput[]>((resolve) => {
+            finishCalendarRead = () => resolve([]);
+          }),
+      ),
+    };
+    const input = {
+      supabase: database.client,
+      userId: USER_ID,
+      now: NOW,
+      deps,
+    };
+    const first = syncFixedEventsOnce(input);
+
+    await vi.waitFor(() => expect(deps.listEvents).toHaveBeenCalledOnce());
+    const second = syncFixedEventsOnce(input);
+
+    expect(second).toBe(first);
+    finishCalendarRead?.();
+    await Promise.all([first, second]);
+    expect(deps.listEvents).toHaveBeenCalledOnce();
   });
 
   it("returns needs_reconnect without touching events or last_synced_at", async () => {

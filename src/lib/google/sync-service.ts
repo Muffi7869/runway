@@ -17,6 +17,13 @@ const UPSERT_CHUNK_SIZE = 500;
 const DELETE_CHUNK_SIZE = 200;
 const FIXED_EVENT_COLUMNS =
   "id,source_calendar_id,google_event_id,title,start,end";
+const syncingByOwner: Record<
+  string,
+  Promise<SyncFixedEventsResult> | undefined
+> = Object.create(null) as Record<
+  string,
+  Promise<SyncFixedEventsResult> | undefined
+>;
 
 export type SyncFailureReason =
   | "needs_reconnect"
@@ -241,4 +248,22 @@ export async function syncFixedEvents({
     removed: plan.deletes.length,
     unreadable,
   };
+}
+
+export function syncFixedEventsOnce(
+  input: Parameters<typeof syncFixedEvents>[0],
+): Promise<SyncFixedEventsResult> {
+  const active = syncingByOwner[input.userId];
+
+  if (active) {
+    return active;
+  }
+
+  const syncing = syncFixedEvents(input).finally(() => {
+    if (syncingByOwner[input.userId] === syncing) {
+      syncingByOwner[input.userId] = undefined;
+    }
+  });
+  syncingByOwner[input.userId] = syncing;
+  return syncing;
 }

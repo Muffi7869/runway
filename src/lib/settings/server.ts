@@ -1,11 +1,12 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
 
-export async function requireSettingsComplete() {
+export const requireSettingsComplete = cache(async function requireSettingsComplete() {
   const user = await requireOwner();
   const supabase = await createClient();
   const { data: settings, error } = await supabase
@@ -25,4 +26,4 @@ export async function requireSettingsComplete() {
   }
 
   return settings;
-}
+});

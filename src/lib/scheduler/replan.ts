@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, Json } from "../db/database.types";
 import { mirrorBlocks } from "../google/block-mirror";
-import { syncFixedEvents } from "../google/sync-service";
+import { syncFixedEventsOnce } from "../google/sync-service";
 import { parseTimeOfDay } from "../settings/schema";
 import { syncWindow } from "../time/zoned";
 
@@ -54,7 +54,7 @@ async function performReplan(
   let syncFailed = false;
 
   if (connection?.status === "connected" && syncIsStale) {
-    const syncResult = await syncFixedEvents({
+    const syncResult = await syncFixedEventsOnce({
       supabase,
       userId: ownerId,
       now,

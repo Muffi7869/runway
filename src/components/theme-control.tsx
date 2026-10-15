@@ -40,7 +40,9 @@ function getPreference() {
     // The cookie remains the fallback when storage is unavailable.
   }
   return parseThemePreference(
-    stored ?? (cookie ? decodeURIComponent(cookie.split("=").slice(1).join("=")) : null),
+    cookie
+      ? decodeURIComponent(cookie.split("=").slice(1).join("="))
+      : stored,
   );
 }
 

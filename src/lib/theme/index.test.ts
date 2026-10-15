@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { THEME_BOOTSTRAP_SCRIPT } from "./bootstrap";
+
 import {
   applyThemePreference,
   parseThemePreference,
   resolveTheme,
   THEME_COOKIE_NAME,
   THEME_STORAGE_KEY,
+  themeDataAttribute,
   type ResolvedTheme,
 } from "./index";
 
@@ -28,10 +31,20 @@ describe("theme helpers", () => {
   });
 
   it.each([
+    ["light", "light"],
+    ["dark", "dark"],
+    ["system", undefined],
+    ["unknown", undefined],
+    [undefined, undefined],
+  ] as const)("maps cookie value %s to the initial data theme", (value, expected) => {
+    expect(themeDataAttribute(value)).toBe(expected);
+  });
+
+  it.each([
     ["system", true, "dark"],
     ["light", true, "light"],
     ["dark", false, "dark"],
-  ] as const)("applies %s immediately", (preference, prefersDark, expected) => {
+  ] as const)("stores %s in both stores and applies it immediately", (preference, prefersDark, expected) => {
     const stored = vi.fn();
     const cookie = vi.fn();
     const attribute = vi.fn<(theme: ResolvedTheme) => void>();
@@ -50,6 +63,12 @@ describe("theme helpers", () => {
     expect(cookie).toHaveBeenCalledWith(preference);
     expect(attribute).toHaveBeenCalledWith(expected);
     expect(colorScheme).toHaveBeenCalledWith(expected);
+  });
+
+  it("keeps an explicit light cookie light on a dark-mode device", () => {
+    expect(themeDataAttribute("light")).toBe("light");
+    expect(resolveTheme("light", true)).toBe("light");
+    expect(THEME_BOOTSTRAP_SCRIPT).toContain("cookie()||localStorage.getItem(k)");
   });
 
   it("uses stable storage names", () => {

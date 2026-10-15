@@ -1,11 +1,7 @@
+import { Suspense } from "react";
+
 import { requireOwner } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
-import { getAccessToken, GoogleAuthError } from "@/lib/google/access-token";
-import {
-  isRunwayCalendarCandidate,
-  listCalendars,
-} from "@/lib/google/calendar-api";
-import { ensureRunwayCalendar } from "@/lib/google/runway-calendar";
 import { GOOGLE_CALENDAR_SCOPES } from "@/lib/google/scopes";
 import {
   formatTimeOfDay,
@@ -14,13 +10,13 @@ import {
 } from "@/lib/settings/schema";
 import { laDateKey } from "@/lib/settings/day-off";
 
-import {
-  CalendarPicker,
-  type CalendarOption,
-} from "./calendar-picker";
 import { AppearanceSection } from "./appearance-section";
 import { CanvasFeedUrlSection } from "./canvas-feed-url-section";
 import { DaysOffSection } from "./days-off-section";
+import {
+  GoogleCalendarSection,
+  GoogleCalendarSectionLoading,
+} from "./google-calendar-section";
 import { SettingsForm, type SettingsFormValues } from "./settings-form";
 import styles from "./settings.module.css";
 
@@ -28,8 +24,6 @@ type SearchParams = Promise<{
   google?: string | string[];
   missing?: string | string[];
 }>;
-
-type GoogleConnectionStatus = "connected" | "needs_reconnect" | "none";
 
 const GOOGLE_MESSAGES = {
   connected: "Google Calendar connected.",
@@ -87,86 +81,38 @@ export default async function SettingsPage({
 }) {
   const user = await requireOwner();
   const supabase = await createClient();
-  const query = await searchParams;
   const today = laDateKey(new Date());
-  const { data: settings, error: settingsError } = await supabase
-    .from("settings")
-    .select(
-      "study_window_start,study_window_end,max_study_minutes_per_day,min_block_minutes,max_block_minutes,buffer_days,timezone,check_in_time",
-    )
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const { data: canvasSettings, error: canvasStatusError } = await supabase
-    .from("settings")
-    .select("canvas_feed_url_encrypted")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const { data: googleConnection, error: googleConnectionError } =
-    await supabase
-      .from("google_connection")
-      .select("status,fixed_calendar_ids")
-      .eq("user_id", user.id)
-      .maybeSingle();
-  const { data: blockedDays, error: blockedDaysError } = await supabase
-    .from("blocked_days")
-    .select("id,date,reason")
-    .eq("user_id", user.id)
-    .gte("date", today)
-    .order("date", { ascending: true });
+  const [settingsResult, canvasStatusResult, blockedDaysResult, query] =
+    await Promise.all([
+      supabase
+        .from("settings")
+        .select(
+          "study_window_start,study_window_end,max_study_minutes_per_day,min_block_minutes,max_block_minutes,buffer_days,timezone,check_in_time",
+        )
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("settings")
+        .select("canvas_feed_url_encrypted")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("blocked_days")
+        .select("id,date,reason")
+        .eq("user_id", user.id)
+        .gte("date", today)
+        .order("date", { ascending: true }),
+      searchParams,
+    ]);
+  const { data: settings, error: settingsError } = settingsResult;
+  const { data: canvasSettings, error: canvasStatusError } = canvasStatusResult;
+  const { data: blockedDays, error: blockedDaysError } = blockedDaysResult;
 
-  if (
-    settingsError ||
-    canvasStatusError ||
-    googleConnectionError ||
-    blockedDaysError
-  ) {
+  if (settingsError || canvasStatusError || blockedDaysError) {
     throw new Error("Unable to load settings.");
   }
 
-  let googleStatus: GoogleConnectionStatus =
-    googleConnection?.status === "connected" ||
-    googleConnection?.status === "needs_reconnect"
-      ? googleConnection.status
-      : "none";
   const googleMessage = getGoogleMessage(query);
-  let calendarOptions: CalendarOption[] | undefined;
-  let selectedCalendarIds: string[] = [];
-  let extraRunwayCalendars = 0;
-  let googleLoadError: string | undefined;
-
-  if (googleStatus === "connected") {
-    try {
-      const runwayCalendar = await ensureRunwayCalendar(supabase, user.id);
-      const token = await getAccessToken(supabase, user.id);
-      const calendars = await listCalendars(token);
-      const selectableCalendars = calendars.filter(
-        (calendar) =>
-          calendar.id !== runwayCalendar.calendarId &&
-          !isRunwayCalendarCandidate(calendar),
-      );
-      const selectableIds = new Set(
-        selectableCalendars.map((calendar) => calendar.id),
-      );
-
-      calendarOptions = selectableCalendars.map(
-        ({ id, name, primary }): CalendarOption => ({ id, name, primary }),
-      );
-      selectedCalendarIds = (googleConnection?.fixed_calendar_ids ?? []).filter(
-        (id) => selectableIds.has(id),
-      );
-      extraRunwayCalendars = runwayCalendar.extraRunwayCalendars;
-    } catch (error) {
-      if (
-        error instanceof GoogleAuthError &&
-        error.code === "needs_reconnect"
-      ) {
-        googleStatus = "needs_reconnect";
-      } else {
-        googleLoadError =
-          "Couldn't load your Google calendars. Try again in a moment.";
-      }
-    }
-  }
 
   let initialValues: SettingsFormValues = {
     study_window_start: "",
@@ -221,51 +167,12 @@ export default async function SettingsPage({
         hasSavedUrl={Boolean(canvasSettings?.canvas_feed_url_encrypted)}
       />
       <DaysOffSection days={blockedDays} today={today} />
-      <section className={styles.card}>
-        <div className={styles.cardHeader}><div><h2>Google Calendar</h2><p>Choose the calendars Runway treats as fixed time.</p></div></div>
-        {googleMessage ? <p>{googleMessage}</p> : null}
-        {googleStatus === "connected" ? (
-          <>
-            <p className={styles.savedPill}>Connected</p>
-            {googleLoadError ? (
-              <p className={`${styles.message} ${styles.error}`}>{googleLoadError}</p>
-            ) : null}
-            {extraRunwayCalendars > 0 ? (
-              <p className={styles.hint}>
-                {`Found ${extraRunwayCalendars} extra calendars named "Runway" in your Google account. Runway uses one of them. You can delete the others in Google Calendar.`}
-              </p>
-            ) : null}
-            {calendarOptions ? (
-              <CalendarPicker
-                calendars={calendarOptions}
-                initialSelectedIds={selectedCalendarIds}
-              />
-            ) : null}
-          </>
-        ) : null}
-        {googleStatus === "needs_reconnect" ? (
-          <>
-            <p>Runway lost access to Google Calendar.</p>
-            <a
-              className="ui-button ui-button--primary"
-              href="/api/google/connect"
-            >
-              Reconnect
-            </a>
-          </>
-        ) : null}
-        {googleStatus === "none" ? (
-          <>
-            <p>Not connected</p>
-            <a
-              className="ui-button ui-button--primary"
-              href="/api/google/connect"
-            >
-              Connect Google Calendar
-            </a>
-          </>
-        ) : null}
-      </section>
+      <Suspense fallback={<GoogleCalendarSectionLoading />}>
+        <GoogleCalendarSection
+          googleMessage={googleMessage}
+          userId={user.id}
+        />
+      </Suspense>
       <AppearanceSection />
       </div>
     </main>

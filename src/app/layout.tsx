@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "next/headers";
 import type { ReactNode } from "react";
-import { THEME_BOOTSTRAP_SCRIPT } from "@/lib/theme/bootstrap";
+import { RootDocument } from "../components/root-document";
+import { THEME_COOKIE_NAME } from "../lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,17 +25,16 @@ export const metadata: Metadata = {
   description: "A personal assignment planning app.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const cookieStore = await cookies();
+  const themePreference = cookieStore.get(THEME_COOKIE_NAME)?.value;
+
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full`}
-      suppressHydrationWarning
+    <RootDocument
+      fontClassName={`${geistSans.variable} ${geistMono.variable}`}
+      themePreference={themePreference}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
-      </head>
-      <body className="min-h-full flex flex-col">{children}</body>
-    </html>
+      {children}
+    </RootDocument>
   );
 }

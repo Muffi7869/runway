@@ -10,6 +10,13 @@ export function parseThemePreference(value: unknown): ThemePreference {
     : "system";
 }
 
+export function themeDataAttribute(
+  cookieValue: unknown,
+): Exclude<ThemePreference, "system"> | undefined {
+  const preference = parseThemePreference(cookieValue);
+  return preference === "system" ? undefined : preference;
+}
+
 export function resolveTheme(
   preference: ThemePreference,
   prefersDark: boolean,

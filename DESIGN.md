@@ -7,13 +7,14 @@ The source of truth for how Runway looks. Read it before any UI work. Visual ref
 - **Calm and minimal.** Lots of white space, few borders, soft tints. Nothing shouts.
 - **Color means class.** Each class has one soft tint. Fixed events (classes, lab) are neutral gray. The UI chrome stays neutral so class colors carry meaning.
 - **One quiet accent.** Periwinkle is used for the primary button, today, selection, links and the "now" line. Never as a large fill.
-- **Numbers line up.** Times, minutes, percents and pace use Geist Mono with tabular figures.
+- **Numbers line up.** Times, minutes, percents and pace use tabular figures (`font-variant-numeric: tabular-nums`) in the main font. No monospace font anywhere.
+- **Readable first.** Comfortable text sizes, content uses the available width, no tiny caps labels.
 - **Laptop first, works on phone.** Sidebar + content on laptop; everything stacks on a phone. No horizontal page scroll; wide tables scroll inside their card.
 
 ## Theme
 
 - Light and dark, both first-class. Default follows the device (`prefers-color-scheme`). Settings → Appearance offers System / Light / Dark, stored per device (localStorage + cookie). No database change.
-- Theme is applied as `data-theme="light|dark"` on `<html>` before first paint (small inline script in the root layout) so there is no flash.
+- Theme is applied as `data-theme="light|dark"` on `<html>` before first paint so there is no flash. The saved preference (cookie `runway-theme` = system|light|dark, 1 year, path=/, SameSite=Lax, mirrored in localStorage) is read on the server in the root layout and by the inline script. "System" follows the device only while the saved preference is system; an explicit Light or Dark always wins and survives reloads, new tabs and sign-out.
 - All colors are CSS variables. Components never use raw hex.
 
 ## Tokens
@@ -60,14 +61,17 @@ Each key has a tint fill, a text color on that fill, and a dot color. Study bloc
 
 ## Type
 
-- **Geist** (400, 500, 600) for everything; **Geist Mono** (400, 500) for times, minutes, percents, pace, counts. Load both with `next/font/google` (no new package).
-- Base 14px / 1.45. Page title 26px 600, letter-spacing −0.02em. Section title 16px 600. Small 12–13px. Labels 12px 500, uppercase, letter-spacing 0.02em, `--ink-3`.
+- **Plus Jakarta Sans** (400, 500, 600, 700) for everything, loaded with `next/font/google`. Remove Geist and Geist Mono entirely.
+- Numbers: `tabular-nums` utility class on times, durations, percents, pace, counts.
+- Scale (rem, base 16px): body 16px / 1.5; table rows and secondary text 15px; small 13–14px (never below 13px); page title 32px 700, letter-spacing −0.02em; section/card title 18px 600; big stat 28px 700; sidebar nav 15px 500.
+- Labels: sentence case, 14px 500, `--ink-2`. Uppercase only for the tiny group headers on Assignments ("This week") at 13px 600, letter-spacing 0.04em.
 - Never Inter, Roboto or Arial.
 
 ## Shape and spacing
 
 - Radius: cards 14px, buttons and inputs 9px, segmented items 8px, chips and badges pill (99px), study blocks 8px.
-- Page padding 28px top, 32px sides. Gaps between cards 16–24px. Card padding 20px.
+- Page padding 32px top, 40px sides. Gaps between cards 20–24px. Card padding 24px.
+- Content width: main content fills the space beside the sidebar up to max-width 1320px, LEFT-aligned (no narrow centered column). Settings and Check in may cap at 960px, still left-aligned.
 - Shadows only on floating things (popovers, toasts): `0 10px 30px rgba(0,0,0,.14)`. Cards are flat with a 1px `--line` border.
 - No gradients, no left-border accent cards, no emoji.
 
@@ -100,13 +104,13 @@ Each key has a tint fill, a text color on that fill, and a dot color. Study bloc
 
 Each screen has a mockup of the same name in `design-ref/`.
 
-1. **Week** (`Main.dc.html`): header "This week", date range and planned total; buttons ‹ Today › , Rough day (ghost), Replan. Shortfall banner under the header. Calendar card: 56px hour gutter + 7 day columns, 48px per hour, grid lines from `--line`. Today's header uses the primary circle; today's column has a faint accent wash; a 2px accent "now" line with a dot. Right "Today" panel (280px): planned today, up next, tonight's check-in card with a primary "Check in now", due soon with progress bars. Calendar scrolls horizontally inside its card on narrow screens.
+1. **Week** (`Main.dc.html`): header "This week", date range and planned total; buttons ‹ Today › , Rough day (ghost), Replan. ONE status line under the buttons: "Synced 2 min ago" (Replan syncs first; "Sync now" moves into a small ⋯ menu). Shortfall banner under the header: one icon, one line per shortfall, max 3 lines then "+N more". Declutter rules for the calendar: 56px per hour; hour range = study window (expand only if an event falls outside); consecutive blocks of the same assignment on the same day merge into ONE visual block ("PA3 · 3 steps", time range = first start to last end); blocks under 45 minutes show the title only, one line; blocks of 45 minutes or more show title + step; the time line appears only on blocks of 75 minutes or more; checked-in blocks show a small check icon (no "Checked in" text) at 55% opacity; missed blocks show a small warn dot; fixed events are quiet: no border, `--surface-2` fill, `--ink-2` text, title only, strip bracket prefixes like "[CSE 12]" to "CSE 12"; overlapping items get at most 2 lanes, a third shows "+1"; clicking any block opens a small popover with full title, step(s), time and status. Past days at 70% opacity. Today panel: big stat "3h 20m" on one line (not wrapped). Calendar card: 56px hour gutter + 7 day columns, 48px per hour, grid lines from `--line`. Today's header uses the primary circle; today's column has a faint accent wash; a 2px accent "now" line with a dot. Right "Today" panel (280px): planned today, up next, tonight's check-in card with a primary "Check in now", due soon with progress bars. Calendar scrolls horizontally inside its card on narrow screens.
 2. **Check in** (`Checkin.dc.html`): label with the date, title "How did today go?", helper sentence. One card per assignment: class dot, title, due; "From yesterday" warn pill if relevant; step name + planned time (mono); segmented 0/25/50/75/100 (values below the stored percent disabled); "Minutes actually worked" input. "Log work on something else" ghost button. Right summary card: time worked, steps moved forward, primary Save; success banner after save with a link to the new plan. A small "Your pace" card per class.
-3. **Assignments** (`Assignments.dc.html`): header with counts, Import from Canvas (default) and New assignment (primary). Segmented tabs Active / Done / Dropped with counts. One card with a table: Assignment (class chip + title + tags), Due (date + relative/time line, "Tomorrow" in warn), Progress (bar + %), Time (current plan in mono + "AI guessed …"), actions (Plan button, more menu). Active rows grouped by This week / Next week / Later. Tags: "Needs spec", "Xh Ym short". Unbroken assignments show "Not broken down yet" and a primary "Break down".
+3. **Assignments** (`Assignments.dc.html`): groups in order Overdue (only if any) / This week / Next week / Later. Each row has ONE visible action (Plan, or Break down if not broken down) plus a ⋯ menu for Edit, Done, Drop; never wrap actions onto two lines. Weight tag only for "high"; never show "medium" or "low". Header with counts, Import from Canvas (default) and New assignment (primary). Segmented tabs Active / Done / Dropped with counts. One card with a table: Assignment (class chip + title + tags), Due (date + relative/time line, "Tomorrow" in warn), Progress (bar + %), Time (current plan in mono + "AI guessed …"), actions (Plan button, more menu). Active rows grouped by This week / Next week / Later. Tags: "Needs spec", "Xh Ym short". Unbroken assignments show "Not broken down yet" and a primary "Break down".
 4. **Assignment plan** (`Breakdown.dc.html`): breadcrumb, class chip, title, meta line, Edit details and Mark done. Steps card: "AI estimate · Your plan" line, "Unsaved changes" badge, rows of number, inline-editable name, progress pill (Done / % / Not started), minutes stepper, move and delete icons. Footer: Add step (ghost), Regenerate with AI (disabled with the reason beside it when locked), Save plan (primary). Right column: Spec card (preview, Edit text, Upload PDF) and Scheduled card listing upcoming blocks.
 5. **Import from Canvas** (`Import.dc.html`): breadcrumb, title, "Fetch again". New card: select-all, rows with checkbox, title + course code (mono), matched class (dot + name + "matched") or a required "Choose class…" select in warn style, due date + time input with "Time not in feed" tag for date-only items. Due date changed card with strikethrough old date and Update. Already imported in a collapsible. Footer bar with the "Not shown: …" line, Cancel, and primary "Import N selected".
 6. **Classes** (`Classes.dc.html`): grid of cards (min 300px). Each: class dot + name, Rename (ghost), **Color** button that opens a 4×2 swatch popover (no always-visible swatches). Big mono pace ("1.35×") and a plain sentence ("Work takes you about 35% longer than estimated." / "Not enough check-ins yet."). Stats row: Active, Logged, Next due.
-7. **Settings** (`Settings.dc.html`): one column, max 920px. Each section is a card with a title + one-line explanation on the left and controls on the right (stacks on phone): Study rules (Save and replan), Nightly check-in, Google Calendar (connected banner, calendar checkboxes), Canvas feed (Saved ••••, Replace, Remove), Days off (list + add), Appearance (System/Light/Dark), Account (Sign out).
+7. **Settings** (`Settings.dc.html`): labels in sentence case ("Most study per day"), one combined duration control per setting (hours + minutes side by side under ONE label, not two stacked caps labels). One column, max 960px, left-aligned. Each section is a card with a title + one-line explanation on the left and controls on the right (stacks on phone): Study rules (Save and replan), Nightly check-in, Google Calendar (connected banner, calendar checkboxes), Canvas feed (Saved ••••, Replace, Remove), Days off (list + add), Appearance (System/Light/Dark), Account (Sign out).
 8. **Sign in / landing** (`Login.dc.html`): split screen. Left: logo, headline "Never cram the night before again.", one-sentence pitch, full-width "Continue with Google", "Private app" note, three numbered how-it-works steps, footer with © and Privacy. Right: dotted-grid panel (`--panel` #EFEFEB light / #181817 dark, dots #D9D8D3 / #2C2C2A, 20px grid) with a decorative product preview: mini week card, floating check-in card, "Replanned" toast. The preview is `aria-hidden`. On phone the preview stacks below or hides.
 9. **Privacy** and the "private app" page use the same shell as Sign in (no sidebar), plain readable text, max 680px.
 

@@ -47,23 +47,26 @@ export default async function AssignmentBreakdownPage({
     notFound();
   }
 
-  const { data: classRow, error: classError } = await supabase
-    .from("classes")
-    .select("id,name,color")
-    .eq("id", assignment.class_id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [classResult, stepsResult] = await Promise.all([
+    supabase
+      .from("classes")
+      .select("id,name,color")
+      .eq("id", assignment.class_id)
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("steps")
+      .select("id,name,order,estimated_minutes,percent_done")
+      .eq("assignment_id", assignment.id)
+      .eq("user_id", user.id)
+      .order("order", { ascending: true }),
+  ]);
+  const { data: classRow, error: classError } = classResult;
+  const { data: savedSteps, error: stepsError } = stepsResult;
 
   if (classError || !classRow) {
     throw new Error("Unable to load the assignment class.");
   }
-
-  const { data: savedSteps, error: stepsError } = await supabase
-    .from("steps")
-    .select("id,name,order,estimated_minutes,percent_done")
-    .eq("assignment_id", assignment.id)
-    .eq("user_id", user.id)
-    .order("order", { ascending: true });
 
   if (stepsError) {
     throw new Error("Unable to load the assignment steps.");
