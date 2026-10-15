@@ -7,6 +7,7 @@ import {
 } from "../time/zoned";
 
 export type AssignmentWeekGroup<T> = {
+  overdue: T[];
   thisWeek: T[];
   nextWeek: T[];
   later: T[];
@@ -26,6 +27,7 @@ export function groupByWeek<T extends { deadline: string }>(
     APP_TIMEZONE,
   );
   const result: AssignmentWeekGroup<T> = {
+    overdue: [],
     thisWeek: [],
     nextWeek: [],
     later: [],
@@ -34,7 +36,9 @@ export function groupByWeek<T extends { deadline: string }>(
   for (const assignment of assignments) {
     const deadline = new Date(assignment.deadline);
 
-    if (deadline < nextMonday) {
+    if (deadline < now) {
+      result.overdue.push(assignment);
+    } else if (deadline < nextMonday) {
       result.thisWeek.push(assignment);
     } else if (deadline < followingMonday) {
       result.nextWeek.push(assignment);

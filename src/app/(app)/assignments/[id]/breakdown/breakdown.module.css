@@ -1,18 +1,18 @@
-.page { width: min(100%, 980px); margin: 0 auto; padding: var(--page-padding-top) var(--page-padding-inline) 48px; overflow-wrap: anywhere; }
-.breadcrumb { display: flex; gap: 8px; margin-bottom: 20px; color: var(--ink-3); font-size: 13px; }
+.page { width: min(100%, 1320px); margin: 0; padding: var(--page-padding-top) var(--page-padding-inline) 48px; overflow-wrap: anywhere; }
+.breadcrumb { display: flex; gap: 8px; margin-bottom: 20px; color: var(--ink-3); font-size: var(--text-small); }
 .breadcrumb a { color: var(--ink-2); text-decoration: none; }
 .pageHeader { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
-.heading { margin: 10px 0 4px; font-size: clamp(24px, 3vw, 32px); font-weight: 650; letter-spacing: -.025em; }
-.meta, .readOnly { color: var(--ink-2); font-size: 13px; }
+.heading { margin: 10px 0 4px; font-size: var(--text-page-title); font-weight: 700; letter-spacing: -.02em; }
+.meta, .readOnly { color: var(--ink-2); font-size: var(--text-secondary); }
 .editor { display: grid; gap: 16px; border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--card-padding); background: var(--surface); }
 .editorHeadingRow, .controls, .saveForm, .rowActions, .minutesControls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .editorHeadingRow { justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
-.subheading { margin: 0; font-size: 18px; font-weight: 650; }
-.unsaved { border-radius: var(--radius-pill); padding: 3px 9px; background: var(--warn-soft); color: var(--warn); font-size: 12px; font-weight: 650; }
+.subheading { margin: 0; font-size: var(--text-section-title); font-weight: 600; }
+.unsaved { border-radius: var(--radius-pill); padding: 3px 9px; background: var(--warn-soft); color: var(--warn); font-size: var(--text-small); font-weight: 600; }
 .stepList { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .stepCard { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: end; border: 1px solid var(--line); border-radius: 11px; padding: 14px; background: var(--bg); }
 .field, .minutesField { display: grid; min-width: 0; gap: 5px; }
-.field label, .minutesField label { color: var(--ink-3); font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; }
+.field label, .minutesField label { color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
 .textInput, .numberInput { min-width: 0; min-height: 40px; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 0 11px; background: var(--surface); }
 .textInput { width: 100%; }
 .numberInput { width: 66px; border-width: 0 1px; border-radius: 0; text-align: center; }
@@ -23,11 +23,11 @@
 .smallButton:disabled, .secondaryButton:disabled, .primaryButton:disabled { cursor: not-allowed; opacity: .5; }
 .rowActions { justify-content: flex-end; }
 .readOnly { grid-column: 1 / -1; margin: 0; }
-.error { margin: 0; color: var(--danger); font-size: 12px; }
-.total { margin: 0; border-top: 1px solid var(--line); padding-top: 14px; font-weight: 650; }
+.error { margin: 0; color: var(--danger); font-size: var(--text-small); }
+.total { margin: 0; border-top: 1px solid var(--line); padding-top: 14px; font-weight: 600; }
 .controls { justify-content: space-between; }
 .primaryButton, .secondaryButton, .cancelLink { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 0 14px; background: var(--surface); color: var(--ink); font-weight: 500; text-decoration: none; cursor: pointer; }
-.primaryButton { border-color: var(--primary-line); background: var(--primary); color: var(--on-primary); font-weight: 650; }
+.primaryButton { border-color: var(--primary-line); background: var(--primary); color: var(--on-primary); font-weight: 600; }
 .saveForm { border-top: 1px solid var(--line); padding-top: 16px; }
 .cancelLink { border-color: transparent; background: transparent; }
 

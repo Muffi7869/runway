@@ -1,22 +1,22 @@
-.page { width: min(100%, 1040px); margin: 0 auto; padding: var(--page-padding-top) var(--page-padding-inline) 48px; }
+.page { width: min(100%, 1320px); margin: 0; padding: var(--page-padding-top) var(--page-padding-inline) 48px; }
 .header { margin-bottom: 22px; }
 .header p { margin: 4px 0 0; color: var(--ink-2); }
-.heading { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 650; letter-spacing: -.025em; }
+.heading { margin: 0; font-size: var(--text-page-title); font-weight: 700; letter-spacing: -.02em; }
 .addCard { display: grid; grid-template-columns: minmax(180px, 1fr) auto auto; gap: 12px; align-items: end; margin-bottom: 28px; }
-.field { display: grid; gap: 6px; color: var(--ink-3); font-size: 12px; font-weight: 600; }
+.field { display: grid; gap: 6px; color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
 .input { min-width: 0; min-height: 40px; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 0 12px; background: var(--surface); }
-.sectionHeading { margin: 0 0 12px; font-size: 14px; font-weight: 650; }
+.sectionHeading { margin: 0 0 12px; font-size: var(--text-section-title); font-weight: 600; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .classCard { position: relative; display: grid; gap: 16px; }
 .classHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.name { margin: 0; font-size: 17px; font-weight: 650; }
-.pace { margin: 5px 0 0; color: var(--ink-2); font-size: 13px; }
+.name { margin: 0; font-size: var(--text-section-title); font-weight: 600; }
+.pace { margin: 5px 0 0; color: var(--ink-2); font-size: var(--text-secondary); }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
 .stat { min-width: 0; border-radius: 9px; padding: 10px; background: var(--surface-2); }
-.stat dt { color: var(--ink-3); font-size: 10px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; }
-.stat dd { margin: 4px 0 0; overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.stat dt { color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
+.stat dd { margin: 4px 0 0; overflow: hidden; font-size: var(--text-secondary); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .editRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
-.message { margin: 0; color: var(--ink-2); font-size: 12px; }
+.message { margin: 0; color: var(--ink-2); font-size: var(--text-small); }
 .error { color: var(--danger); }
 .success { color: var(--ok); }
 .picker { position: relative; }

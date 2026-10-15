@@ -118,6 +118,7 @@ describe("shared UI", () => {
     expect(markup).toContain('id="name-error"');
     expect(markup).toContain("Choose one");
     expect(markup).toContain("textarea");
+    expect(markup).not.toContain("uppercase");
   });
 
   it("keeps raw hex colors out of component and app source", () => {

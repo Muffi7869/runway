@@ -1,24 +1,29 @@
-.page { width: min(100%, 920px); margin: 0 auto; padding: var(--page-padding-top) var(--page-padding-inline) 48px; }
+.page { width: min(100%, 960px); margin: 0; padding: var(--page-padding-top) var(--page-padding-inline) 48px; }
 .pageHeader { margin-bottom: 22px; }
-.heading { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 650; letter-spacing: -.025em; }
+.heading { margin: 0; font-size: var(--text-page-title); font-weight: 700; letter-spacing: -.02em; }
 .pageHeader p { margin: 5px 0 0; color: var(--ink-2); }
 .stack { display: grid; gap: 14px; }
 .card { border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--card-padding); background: var(--surface); }
 .cardHeader { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.cardHeader h2 { margin: 0; font-size: 17px; font-weight: 650; }
-.cardHeader p { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; }
+.cardHeader h2 { margin: 0; font-size: var(--text-section-title); font-weight: 600; }
+.cardHeader p { margin: 4px 0 0; color: var(--ink-2); font-size: var(--text-secondary); }
 .form { display: grid; gap: 18px; }
 .twoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.field { display: grid; min-width: 0; gap: 6px; color: var(--ink-3); font-size: 11px; font-weight: 650; letter-spacing: .045em; text-transform: uppercase; }
+.field { display: grid; min-width: 0; gap: 6px; color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
 .input { width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 0 12px; background: var(--surface); color: var(--ink); }
 .readOnly { min-height: 40px; border-radius: var(--radius-control); padding: 10px 12px; background: var(--surface-2); color: var(--ink-2); font-weight: 500; letter-spacing: 0; text-transform: none; }
-.duration { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.message { margin: 0; font-size: 12px; }
+.durationRow { display: grid; grid-template-columns: minmax(190px, 1fr) minmax(0, 1.2fr); gap: 12px 24px; align-items: center; min-width: 0; border: 0; padding: 0; }
+.durationRow legend { color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
+.durationRow > .message { grid-column: 2; }
+.durationInputs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.durationInputs label { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px; align-items: center; color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
+.visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+.message { margin: 0; font-size: var(--text-small); }
 .error { color: var(--danger); }
 .success { color: var(--ok); }
 .savedRow, .buttonRow, .calendarRow, .dayRow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.savedPill { display: inline-flex; width: fit-content; border-radius: var(--radius-pill); padding: 5px 10px; background: var(--ok-soft); color: var(--ok); font-size: 12px; font-weight: 650; }
-.hint { margin: 6px 0 0; color: var(--ink-3); font-size: 12px; }
+.savedPill { display: inline-flex; width: fit-content; border-radius: var(--radius-pill); padding: 5px 10px; background: var(--ok-soft); color: var(--ok); font-size: var(--text-small); font-weight: 600; }
+.hint { margin: 6px 0 0; color: var(--ink-3); font-size: var(--text-small); }
 .calendarList, .daysList { display: grid; gap: 8px; margin-top: 14px; }
 .calendarRow, .dayRow { min-height: 44px; justify-content: space-between; border: 1px solid var(--line); border-radius: 9px; padding: 8px 11px; }
 .calendarChoice { display: flex; align-items: center; gap: 9px; min-height: 40px; cursor: pointer; }
@@ -28,6 +33,7 @@
 
 @media (max-width: 620px) {
   .twoColumns, .dayForm { grid-template-columns: 1fr; }
-  .duration { grid-template-columns: 1fr 1fr; }
+  .durationRow { grid-template-columns: 1fr; }
+  .durationRow > .message { grid-column: 1; }
   .buttonRow > *, .dayForm button { flex: 1 1 auto; width: 100%; }
 }

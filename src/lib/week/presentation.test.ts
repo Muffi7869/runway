@@ -4,6 +4,7 @@ import {
   assignmentProgress,
   buildPlannedBlockLabel,
   buildWarningSentences,
+  limitBannerItems,
   nowLineOffset,
 } from "./presentation";
 import { APP_TIMEZONE, zonedTimeToUtc } from "../time/zoned";
@@ -132,5 +133,19 @@ describe("buildWarningSentences", () => {
         [{ id: "assignment-a", title: "Test Assignment A" }],
       ),
     ).toEqual([]);
+  });
+});
+
+describe("limitBannerItems", () => {
+  it.each([
+    [0, 0, 0],
+    [1, 1, 0],
+    [3, 3, 0],
+    [4, 3, 1],
+    [10, 3, 7],
+  ])("limits %i items to %i shown and %i more", (count, shown, more) => {
+    const result = limitBannerItems(Array.from({ length: count }, (_, index) => index));
+    expect(result.shown).toHaveLength(shown);
+    expect(result.more).toBe(more);
   });
 });

@@ -10,6 +10,7 @@ import { Tag } from "../../../components/ui/tag";
 import type { ClassColor } from "../../../lib/classes/palette";
 
 import styles from "./assignments.module.css";
+import { AssignmentActionsMenu } from "./assignment-actions-menu";
 import { AssignmentStatusButton } from "./status-button";
 
 export type AssignmentListItem = {
@@ -25,7 +26,7 @@ export type AssignmentListItem = {
   aiTotal?: string;
   needsSpec: boolean;
   overdue: boolean;
-  weekGroup: "thisWeek" | "nextWeek" | "later";
+  weekGroup: "overdue" | "thisWeek" | "nextWeek" | "later";
   hasSteps: boolean;
 };
 
@@ -42,7 +43,7 @@ export function AssignmentRowDisplay({ assignment, showActions = true }: { assig
           <div className={styles.tags}>
             {active && assignment.needsSpec ? <Tag>Needs spec</Tag> : null}
             {active && assignment.overdue ? <Tag variant="warn">Overdue</Tag> : null}
-            <Tag>{assignment.weight}</Tag>
+            {assignment.weight === "high" ? <Tag>High</Tag> : null}
           </div>
         </div>
       </div>
@@ -59,10 +60,8 @@ export function AssignmentRowDisplay({ assignment, showActions = true }: { assig
         <div className={styles.actions}>
           {active ? (
             <>
-              <Link className="ui-button ui-button--small" href={`/assignments/${assignment.id}/breakdown`}>{assignment.hasSteps ? "Plan" : "Break down"}</Link>
-              <Link className="ui-button ui-button--small" href={`/assignments/${assignment.id}/edit`}>Edit</Link>
-              <AssignmentStatusButton assignmentId={assignment.id} kind="done" />
-              <AssignmentStatusButton assignmentId={assignment.id} kind="drop" />
+              <Link className={`ui-button ui-button--small${assignment.hasSteps ? "" : " ui-button--primary"}`} href={`/assignments/${assignment.id}/breakdown`}>{assignment.hasSteps ? "Plan" : "Break down"}</Link>
+              <AssignmentActionsMenu assignmentId={assignment.id} assignmentTitle={assignment.title} />
             </>
           ) : <AssignmentStatusButton assignmentId={assignment.id} kind="restore" />}
         </div>
@@ -71,7 +70,7 @@ export function AssignmentRowDisplay({ assignment, showActions = true }: { assig
   );
 }
 
-const groupLabels = { thisWeek: "This week", nextWeek: "Next week", later: "Later" } as const;
+const groupLabels = { overdue: "Overdue", thisWeek: "This week", nextWeek: "Next week", later: "Later" } as const;
 
 function AssignmentTable({ assignments }: { assignments: AssignmentListItem[] }) {
   return <div className={styles.table}>
@@ -81,12 +80,12 @@ function AssignmentTable({ assignments }: { assignments: AssignmentListItem[] })
 }
 
 export function AssignmentsView({ activeGroups, done, dropped }: {
-  activeGroups: Record<"thisWeek" | "nextWeek" | "later", AssignmentListItem[]>;
+  activeGroups: Record<"overdue" | "thisWeek" | "nextWeek" | "later", AssignmentListItem[]>;
   done: AssignmentListItem[];
   dropped: AssignmentListItem[];
 }) {
   const [tab, setTab] = useState<AssignmentTab>("active");
-  const activeCount = activeGroups.thisWeek.length + activeGroups.nextWeek.length + activeGroups.later.length;
+  const activeCount = activeGroups.overdue.length + activeGroups.thisWeek.length + activeGroups.nextWeek.length + activeGroups.later.length;
   return <>
     <Tabs ariaLabel="Assignment status" onValueChange={setTab} options={[
       { value: "active", label: "Active", count: activeCount },

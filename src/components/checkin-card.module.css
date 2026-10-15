@@ -18,7 +18,7 @@
 .heading h2 {
   min-width: 0;
   margin: 0;
-  font-size: 14px;
+  font-size: var(--text-secondary);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -58,7 +58,7 @@
 .note,
 .minutesRow > span {
   color: var(--ink-3);
-  font-size: 12px;
+  font-size: var(--text-small);
 }
 
 .note {
@@ -80,8 +80,8 @@
   border-radius: var(--radius-segment);
   background: transparent;
   color: var(--ink-2);
-  font-family: var(--font-code);
-  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-small);
   font-weight: 500;
   cursor: pointer;
 }

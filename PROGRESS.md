@@ -55,6 +55,10 @@
 - [ ] Theme persists after reload on every page
 - [ ] Tabs feel instant on the live site (measure in Vercel Logs: before vs after per page)
 - [ ] Theme choice survives reload, new tab, sign out and in
+- [ ] New font and bigger type look right on every page, light and dark
+- [ ] Assignments: Overdue first, one action plus a ⋯ menu per row
+- [ ] Settings: one label per duration with hours and minutes side by side, saves exactly as before
+- [ ] Shortfall banner shows at most 3 lines then +N more
 
 ## Phase 6.6 performance audit
 
@@ -643,3 +647,13 @@ Counts are sequential network/database stages on the critical response path, not
 - Made explicit Light and Dark cookies part of the first root-layout HTML, retained pre-paint System resolution, made the cookie authoritative over stale local storage, and kept theme persistence independent of Supabase sign-out.
 - Decisions: reading the theme cookie makes all routes dynamic without adding a network call; the Settings Google section now streams separately so Google cannot delay the main Settings response.
 - Known issues: real authenticated timings and cross-tab theme persistence require the live manual checks listed above.
+
+### P6.6-2 — Typography, layout, and focused screen fixes
+
+- Replaced the previous sans and code fonts with Plus Jakarta Sans at the approved weights, retained tabular figures without a separate number font, and applied the larger shared type and spacing tokens across public and protected screens.
+- Left-aligned protected content up to the approved width while retaining narrower left-aligned Settings and Check in layouts and phone stacking.
+- Split overdue active assignments into the first non-empty group, reduced active rows to one visible plan action plus an accessible keyboard menu, and limited weight tags to high priority.
+- Combined each Settings duration into one sentence-case label with side-by-side hour and minute controls while preserving every submitted field name and the existing validation schema.
+- Limited Week shortfall banners to three unchanged warning lines plus a remaining-count line and added pure and markup coverage for the revised presentation.
+- Decisions: the assignment menu uses plain React with Escape, outside-pointer, focus-return, and arrow-key handling; duration conversion rejects malformed or negative inputs without adding a new validation rule.
+- Known issues: signed-in visual comparison and live Settings saves remain in Manual checks because Codex cannot access the owner account.

@@ -4,8 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 const themeCookie = vi.hoisted(() => ({ get: vi.fn() }));
 
 vi.mock("next/font/google", () => ({
-  Geist: () => ({ variable: "font-sans-test" }),
-  Geist_Mono: () => ({ variable: "font-mono-test" }),
+  Plus_Jakarta_Sans: () => ({ variable: "font-sans-test" }),
 }));
 
 vi.mock("next/headers", () => ({

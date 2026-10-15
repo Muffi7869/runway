@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { RootDocument } from "../components/root-document";
 import { THEME_COOKIE_NAME } from "../lib/theme";
 import "./globals.css";
 
-const geistSans = Geist({
+const plusJakartaSans = Plus_Jakarta_Sans({
   display: "swap",
-  variable: "--font-geist-sans",
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  display: "swap",
-  variable: "--font-geist-mono",
-  weight: ["400", "500"],
+  variable: "--font-plus-jakarta-sans",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
 });
 
@@ -31,7 +24,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   return (
     <RootDocument
-      fontClassName={`${geistSans.variable} ${geistMono.variable}`}
+      fontClassName={plusJakartaSans.variable}
       themePreference={themePreference}
     >
       {children}

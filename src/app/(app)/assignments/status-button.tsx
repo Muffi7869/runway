@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, type Ref } from "react";
 
 import {
   dropAction,
@@ -26,10 +26,14 @@ const labels = {
 
 export function AssignmentStatusButton({
   assignmentId,
+  buttonRef,
   kind,
+  menuItem = false,
 }: {
   assignmentId: string;
+  buttonRef?: Ref<HTMLButtonElement>;
   kind: StatusActionKind;
+  menuItem?: boolean;
 }) {
   const [state, formAction, isPending] = useActionState<
     AssignmentStatusActionState,
@@ -37,11 +41,13 @@ export function AssignmentStatusButton({
   >(statusActions[kind], {});
 
   return (
-    <form action={formAction} className={styles.statusForm}>
+    <form action={formAction} className={menuItem ? styles.menuStatusForm : styles.statusForm}>
       <input name="assignmentId" type="hidden" value={assignmentId} />
       <button
-        className={styles.statusButton}
+        className={menuItem ? styles.menuItem : styles.statusButton}
         disabled={isPending}
+        ref={buttonRef}
+        role={menuItem ? "menuitem" : undefined}
         type="submit"
       >
         {isPending ? `${labels[kind]}…` : labels[kind]}

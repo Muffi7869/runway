@@ -62,10 +62,8 @@
 .weekdayLabel {
   display: block;
   color: var(--ink-3);
-  font-size: 11px;
+  font-size: var(--text-small);
   font-weight: 500;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
 }
 
 .dayNumber {
@@ -75,7 +73,7 @@
   margin-top: 3px;
   place-items: center;
   border-radius: 50%;
-  font-size: 15px;
+  font-size: var(--text-secondary);
 }
 
 .todayHeader .weekdayLabel {
@@ -100,7 +98,7 @@
   border-right: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink-3);
-  font-size: 0.75rem;
+  font-size: var(--text-small);
 }
 
 .hourLabel {
@@ -166,13 +164,12 @@
 }
 
 .eventTitle {
-  font-size: 0.75rem;
+  font-size: var(--text-small);
   font-weight: 600;
 }
 
 .eventTime {
-  font-size: 0.6875rem;
-  font-family: var(--font-code);
+  font-size: var(--text-small);
   font-variant-numeric: tabular-nums;
 }
 
@@ -180,7 +177,7 @@
   overflow: hidden;
   margin: 3px 0 0;
   color: currentColor;
-  font-size: 0.6875rem;
+  font-size: var(--text-small);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

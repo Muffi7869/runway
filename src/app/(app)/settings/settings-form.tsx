@@ -3,11 +3,11 @@
 import { useActionState, useState, type FormEvent } from "react";
 
 import {
-  hoursAndMinutesToTotalMinutes,
   parseTimeOfDay,
   settingsSchema,
   type SettingsInput,
-} from "@/lib/settings/schema";
+} from "../../../lib/settings/schema";
+import { joinMinutes } from "../../../lib/settings/duration";
 
 import { saveSettings, type SettingsActionState } from "./actions";
 import styles from "./settings.module.css";
@@ -40,17 +40,6 @@ function numericValue(value: string) {
   return Number.isFinite(parsedValue) ? parsedValue : null;
 }
 
-function durationValue(hours: string, minutes: string) {
-  const parsedHours = numericValue(hours);
-  const parsedMinutes = numericValue(minutes);
-
-  if (parsedHours === null || parsedMinutes === null) {
-    return null;
-  }
-
-  return hoursAndMinutesToTotalMinutes(parsedHours, parsedMinutes);
-}
-
 function ErrorMessage({ errors }: { errors?: string[] }) {
   if (!errors?.length) {
     return null;
@@ -77,15 +66,15 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
     const result = settingsSchema.safeParse({
       study_window_start: parseTimeOfDay(values.study_window_start),
       study_window_end: parseTimeOfDay(values.study_window_end),
-      max_study_minutes_per_day: durationValue(
+      max_study_minutes_per_day: joinMinutes(
         values.max_study_hours,
         values.max_study_minutes,
       ),
-      min_block_minutes: durationValue(
+      min_block_minutes: joinMinutes(
         values.min_block_hours,
         values.min_block_minutes,
       ),
-      max_block_minutes: durationValue(
+      max_block_minutes: joinMinutes(
         values.max_block_hours,
         values.max_block_minutes,
       ),
@@ -139,11 +128,11 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
       <ErrorMessage errors={errors?.study_window_start} />
       <ErrorMessage errors={errors?.study_window_end} />
 
-      <fieldset className={styles.field}>
+      <fieldset className={styles.durationRow}>
         <legend>Maximum study time per day</legend>
-        <div className={styles.duration}>
-          <label className={styles.field}>
-            <span>Hours</span>
+        <div className={styles.durationInputs}>
+          <label>
+            <span className={styles.visuallyHidden}>Maximum study time hours</span>
             <input
               className={styles.input}
               min="0"
@@ -155,9 +144,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               type="number"
               value={values.max_study_hours}
             />
+            <span aria-hidden="true">h</span>
           </label>
-          <label className={styles.field}>
-            <span>Minutes</span>
+          <label>
+            <span className={styles.visuallyHidden}>Maximum study time minutes</span>
             <input
               className={styles.input}
               min="0"
@@ -169,16 +159,17 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               type="number"
               value={values.max_study_minutes}
             />
+            <span aria-hidden="true">m</span>
           </label>
         </div>
         <ErrorMessage errors={errors?.max_study_minutes_per_day} />
       </fieldset>
 
-      <fieldset className={styles.field}>
+      <fieldset className={styles.durationRow}>
         <legend>Minimum block length</legend>
-        <div className={styles.duration}>
-          <label className={styles.field}>
-            <span>Hours</span>
+        <div className={styles.durationInputs}>
+          <label>
+            <span className={styles.visuallyHidden}>Minimum block hours</span>
             <input
               className={styles.input}
               min="0"
@@ -190,9 +181,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               type="number"
               value={values.min_block_hours}
             />
+            <span aria-hidden="true">h</span>
           </label>
-          <label className={styles.field}>
-            <span>Minutes</span>
+          <label>
+            <span className={styles.visuallyHidden}>Minimum block minutes</span>
             <input
               className={styles.input}
               min="0"
@@ -204,16 +196,17 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               type="number"
               value={values.min_block_minutes}
             />
+            <span aria-hidden="true">m</span>
           </label>
         </div>
         <ErrorMessage errors={errors?.min_block_minutes} />
       </fieldset>
 
-      <fieldset className={styles.field}>
+      <fieldset className={styles.durationRow}>
         <legend>Maximum block length</legend>
-        <div className={styles.duration}>
-          <label className={styles.field}>
-            <span>Hours</span>
+        <div className={styles.durationInputs}>
+          <label>
+            <span className={styles.visuallyHidden}>Maximum block hours</span>
             <input
               className={styles.input}
               min="0"
@@ -225,9 +218,10 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               type="number"
               value={values.max_block_hours}
             />
+            <span aria-hidden="true">h</span>
           </label>
-          <label className={styles.field}>
-            <span>Minutes</span>
+          <label>
+            <span className={styles.visuallyHidden}>Maximum block minutes</span>
             <input
               className={styles.input}
               min="0"
@@ -239,6 +233,7 @@ export function SettingsForm({ initialValues }: SettingsFormProps) {
               type="number"
               value={values.max_block_minutes}
             />
+            <span aria-hidden="true">m</span>
           </label>
         </div>
         <ErrorMessage errors={errors?.max_block_minutes} />

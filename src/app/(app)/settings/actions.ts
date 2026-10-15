@@ -7,11 +7,11 @@ import type { Database } from "@/lib/db/database.types";
 import { createClient } from "@/lib/db/server";
 import {
   formatTimeOfDay,
-  hoursAndMinutesToTotalMinutes,
   parseTimeOfDay,
   settingsSchema,
   type SettingsInput,
 } from "@/lib/settings/schema";
+import { joinMinutes } from "@/lib/settings/duration";
 
 export type SettingsActionState = {
   errors?: Partial<Record<keyof SettingsInput, string[]>>;
@@ -36,14 +36,7 @@ function numberValue(formData: FormData, name: string) {
 }
 
 function durationValue(formData: FormData, hoursName: string, minutesName: string) {
-  const hours = numberValue(formData, hoursName);
-  const minutes = numberValue(formData, minutesName);
-
-  if (hours === null || minutes === null) {
-    return null;
-  }
-
-  return hoursAndMinutesToTotalMinutes(hours, minutes);
+  return joinMinutes(textValue(formData, hoursName), textValue(formData, minutesName));
 }
 
 export async function saveSettings(

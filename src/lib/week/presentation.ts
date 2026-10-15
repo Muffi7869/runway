@@ -76,6 +76,17 @@ export function buildPlannedBlockLabel({
   return `${className} · ${assignmentTitle} · ${stepName}`;
 }
 
+export function limitBannerItems<T>(
+  items: readonly T[],
+  max = 3,
+): { shown: T[]; more: number } {
+  const limit = Number.isInteger(max) ? Math.max(0, max) : 3;
+  return {
+    shown: items.slice(0, limit),
+    more: Math.max(0, items.length - limit),
+  };
+}
+
 export function buildWarningSentences(
   stored: Json | null,
   activeAssignments: ReadonlyArray<{ id: string; title: string }>,

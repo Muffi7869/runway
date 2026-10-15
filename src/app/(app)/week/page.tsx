@@ -41,6 +41,7 @@ import {
   assignmentProgress,
   buildPlannedBlockLabel,
   buildWarningSentences,
+  limitBannerItems,
 } from "@/lib/week/presentation";
 
 import styles from "./week.module.css";
@@ -351,6 +352,7 @@ export default async function WeekPage({
     planningResult.data?.last_plan_warnings ?? null,
     activeAssignmentsResult.data,
   );
+  const limitedWarnings = limitBannerItems(warningSentences);
   const today = zonedParts(now, APP_TIMEZONE);
   const todayIndex = days.findIndex((day) => sameDate(day, today));
   const gridDays: WeekGridDay[] = days.map((day) => {
@@ -467,9 +469,10 @@ export default async function WeekPage({
         <Banner className={styles.warning} variant="warn">
           <AlertTriangle aria-hidden="true" size={18} strokeWidth={1.6} />
           <div aria-label="Planning warnings">
-          {warningSentences.map((warning) => (
+          {limitedWarnings.shown.map((warning) => (
             <p key={warning}>{warning}</p>
           ))}
+          {limitedWarnings.more > 0 ? <p>+{limitedWarnings.more} more</p> : null}
           </div>
         </Banner>
       ) : null}

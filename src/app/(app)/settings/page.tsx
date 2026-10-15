@@ -6,8 +6,8 @@ import { GOOGLE_CALENDAR_SCOPES } from "@/lib/google/scopes";
 import {
   formatTimeOfDay,
   parseTimeOfDay,
-  totalMinutesToHoursAndMinutes,
 } from "@/lib/settings/schema";
+import { splitMinutes } from "@/lib/settings/duration";
 import { laDateKey } from "@/lib/settings/day-off";
 
 import { AppearanceSection } from "./appearance-section";
@@ -128,15 +128,13 @@ export default async function SettingsPage({
   };
 
   if (settings) {
-    const maximumStudyTime = totalMinutesToHoursAndMinutes(
-      settings.max_study_minutes_per_day,
-    );
-    const minimumBlockTime = totalMinutesToHoursAndMinutes(
-      settings.min_block_minutes,
-    );
-    const maximumBlockTime = totalMinutesToHoursAndMinutes(
-      settings.max_block_minutes,
-    );
+    const maximumStudyTime = splitMinutes(settings.max_study_minutes_per_day);
+    const minimumBlockTime = splitMinutes(settings.min_block_minutes);
+    const maximumBlockTime = splitMinutes(settings.max_block_minutes);
+
+    if (!maximumStudyTime || !minimumBlockTime || !maximumBlockTime) {
+      throw new Error("Unable to read duration settings.");
+    }
 
     initialValues = {
       study_window_start: formatTimeInput(settings.study_window_start),

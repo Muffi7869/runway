@@ -22,7 +22,7 @@ export default async function NewAssignmentPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
+    <main className="app-page">
       <h1 className="text-2xl font-semibold">Add assignment</h1>
       {classes.length === 0 ? (
         <p className="mt-6">

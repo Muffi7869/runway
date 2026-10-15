@@ -36,12 +36,23 @@ describe("assignment presentation", () => {
   });
 
   it("renders segmented tab counts", () => {
-    const markup = renderToStaticMarkup(<AssignmentsView activeGroups={{ thisWeek: [active], nextWeek: [], later: [] }} done={[]} dropped={[]} />);
+    const markup = renderToStaticMarkup(<AssignmentsView activeGroups={{ overdue: [active], thisWeek: [], nextWeek: [], later: [] }} done={[]} dropped={[]} />);
     expect(markup).toContain("Active 1");
     expect(markup).toContain("Done 0");
     expect(markup).toContain("Dropped 0");
-    expect(markup).toContain("This week");
+    expect(markup).toContain("Overdue");
+    expect(markup).not.toContain("This week");
     expect(markup).not.toContain("Next week");
     expect(markup).not.toContain("Later");
+  });
+
+  it("does not render low or medium weight tags", () => {
+    const mediumMarkup = renderToStaticMarkup(<AssignmentRowDisplay assignment={active} showActions={false} />);
+    const lowMarkup = renderToStaticMarkup(<AssignmentRowDisplay assignment={{ ...active, weight: "low" }} showActions={false} />);
+    const highMarkup = renderToStaticMarkup(<AssignmentRowDisplay assignment={{ ...active, weight: "high" }} showActions={false} />);
+
+    expect(mediumMarkup).not.toContain(">medium<");
+    expect(lowMarkup).not.toContain(">low<");
+    expect(highMarkup).toContain(">High<");
   });
 });

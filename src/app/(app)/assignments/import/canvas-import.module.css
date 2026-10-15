@@ -1,34 +1,34 @@
-.page { width: min(100%, 980px); margin: 0 auto; padding: var(--page-padding-top) var(--page-padding-inline) 48px; overflow-wrap: anywhere; }
+.page { width: min(100%, 1320px); margin: 0; padding: var(--page-padding-top) var(--page-padding-inline) 48px; overflow-wrap: anywhere; }
 .headingRow { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.headingRow h1 { margin: 0; font-size: clamp(25px, 3vw, 32px); font-weight: 650; letter-spacing: -.025em; }
-.eyebrow { margin: 0 0 3px; color: var(--ink-3); font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; }
+.headingRow h1 { margin: 0; font-size: var(--text-page-title); font-weight: 700; letter-spacing: -.02em; }
+.eyebrow { margin: 0 0 3px; color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
 .intro { margin: 5px 0 0; color: var(--ink-2); }
 .flow { display: grid; gap: 18px; margin-top: 24px; }
 .section, .details { border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--card-padding); background: var(--surface); }
 .section { display: grid; gap: 14px; }
-.section h2, .details summary { margin: 0; font-size: 16px; font-weight: 650; }
+.section h2, .details summary { margin: 0; font-size: var(--text-section-title); font-weight: 600; }
 .details summary { min-height: 40px; cursor: pointer; }
 .details[open] summary { margin-bottom: 14px; }
 .list { display: grid; gap: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; }
 .row { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 14px; background: var(--surface); }
 .row + .row { border-top: 1px solid var(--line); }
 .rowContent { min-width: 0; }
-.rowContent h3 { margin: 0; font-size: 14px; font-weight: 650; }
-.rowContent p { margin: 6px 0 0; color: var(--ink-2); font-size: 13px; }
+.rowContent h3 { margin: 0; font-size: var(--text-secondary); font-weight: 600; }
+.rowContent p { margin: 6px 0 0; color: var(--ink-2); font-size: var(--text-secondary); }
 .titleLine, .dueFields, .checkboxLabel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .field, .rowAction { display: grid; gap: 5px; }
-.field { margin-top: 10px; color: var(--ink-3); font-size: 11px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.field { margin-top: 10px; color: var(--ink-2); font-size: var(--text-label); font-weight: 500; }
 .field select, .field input { width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--line-2); border-radius: var(--radius-control); padding: 0 11px; background: var(--surface); }
 .checkboxLabel { min-height: 40px; cursor: pointer; }
 .checkboxLabel input { width: 18px; height: 18px; }
-.tag { display: inline-flex; border: 1px solid var(--line-2); border-radius: 6px; padding: 2px 8px; color: var(--ink-2); font-size: 12px; font-weight: 500; white-space: nowrap; }
+.tag { display: inline-flex; border: 1px solid var(--line-2); border-radius: 6px; padding: 2px 8px; color: var(--ink-2); font-size: var(--text-small); font-weight: 500; white-space: nowrap; }
 .primaryButton, .rowAction button { display: inline-flex; width: fit-content; min-height: 40px; align-items: center; justify-content: center; border: 1px solid var(--primary-line); border-radius: var(--radius-control); padding: 0 14px; background: var(--primary); color: var(--on-primary); font-weight: 600; cursor: pointer; }
 .primaryButton:disabled, .rowAction button:disabled { cursor: not-allowed; opacity: .5; }
 .counts { margin: 0; font-weight: 600; }
-.skipped { margin: 0; border-radius: 10px; padding: 11px 14px; background: var(--surface-2); color: var(--ink-2); font-size: 13px; }
-.note { margin: 7px 0 0; color: var(--ink-3); font-size: 12px; }
-.error { margin: 0; color: var(--danger); font-size: 13px; }
-.success { margin: 0; color: var(--ok); font-size: 13px; }
+.skipped { margin: 0; border-radius: 10px; padding: 11px 14px; background: var(--surface-2); color: var(--ink-2); font-size: var(--text-secondary); }
+.note { margin: 7px 0 0; color: var(--ink-3); font-size: var(--text-small); }
+.error { margin: 0; color: var(--danger); font-size: var(--text-small); }
+.success { margin: 0; color: var(--ok); font-size: var(--text-small); }
 
 @media (max-width: 620px) {
   .headingRow a { width: 100%; }

@@ -5,7 +5,7 @@ import { groupByWeek } from "./presentation";
 const item = (id: string, deadline: string) => ({ id, deadline });
 
 describe("groupByWeek", () => {
-  it("groups Monday-through-Sunday Los Angeles weeks and keeps overdue work this week", () => {
+  it("puts overdue work first and removes it from the current week", () => {
     const groups = groupByWeek(
       [
         item("overdue", "2026-10-04T19:00:00Z"),
@@ -16,7 +16,8 @@ describe("groupByWeek", () => {
       new Date("2026-10-07T19:00:00Z"),
     );
 
-    expect(groups.thisWeek.map(({ id }) => id)).toEqual(["overdue", "sunday"]);
+    expect(groups.overdue.map(({ id }) => id)).toEqual(["overdue"]);
+    expect(groups.thisWeek.map(({ id }) => id)).toEqual(["sunday"]);
     expect(groups.nextWeek.map(({ id }) => id)).toEqual(["next-monday"]);
     expect(groups.later.map(({ id }) => id)).toEqual(["later"]);
   });
@@ -47,6 +48,7 @@ describe("groupByWeek", () => {
 
   it("returns empty groups for no assignments", () => {
     expect(groupByWeek([], new Date("2026-10-07T19:00:00Z"))).toEqual({
+      overdue: [],
       thisWeek: [],
       nextWeek: [],
       later: [],

@@ -89,7 +89,7 @@ export default async function AssignmentsPage() {
       </div>
     </div>
     <AssignmentsView
-      activeGroups={{ thisWeek: grouped.thisWeek.map(present), nextWeek: grouped.nextWeek.map(present), later: grouped.later.map(present) }}
+      activeGroups={{ overdue: grouped.overdue.map(present), thisWeek: grouped.thisWeek.map(present), nextWeek: grouped.nextWeek.map(present), later: grouped.later.map(present) }}
       done={split.done.map(present)} dropped={split.dropped.map(present)}
     />
   </main>;
