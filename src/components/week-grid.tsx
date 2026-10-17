@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, type TouchEvent } from "react";
+import { useEffect, useId, useRef, useState, type TouchEvent } from "react";
 
 import { blockLabel } from "../lib/week/declutter";
 import { eventPlacement } from "../lib/week/placement";
 import { nowLineOffset } from "../lib/week/presentation";
 import type { WeekEventLayout } from "../lib/week/view";
 
+import { PortalPopup, popupContainsTarget } from "./portal-popup";
 import styles from "./week-grid.module.css";
 
 export const WEEK_GRID_ROW_HEIGHT_PX = 56;
@@ -62,6 +63,10 @@ function formatHour(hour: number): string {
   return `${displayHour} ${normalized < 12 ? "AM" : "PM"}`;
 }
 
+function weekEventKey(event: WeekGridEvent): string {
+  return `${event.id}-${event.dayIndex}-${event.startMinute}-${event.endMinute}`;
+}
+
 export function WeekGridPresentation({
   days,
   events,
@@ -76,6 +81,8 @@ export function WeekGridPresentation({
   now,
 }: WeekGridPresentationProps) {
   const [activeEvent, setActiveEvent] = useState<string>();
+  const activeTriggerRef = useRef<HTMLButtonElement>(null);
+  const popoverId = useId();
   const triggerRefs = useRef(new Map<string, HTMLButtonElement>());
   const popoverRef = useRef<HTMLDivElement>(null);
   const hours = Array.from(
@@ -95,12 +102,12 @@ export function WeekGridPresentation({
     }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") close(true);
+      if (event.key === "Tab") close(false);
     }
     function onPointerDown(event: PointerEvent) {
       const trigger = triggerRefs.current.get(activeKey);
       if (
-        !popoverRef.current?.contains(event.target as Node) &&
-        !trigger?.contains(event.target as Node)
+        !popupContainsTarget(event.target as Node, trigger ?? null, popoverRef.current)
       ) close(true);
     }
     document.addEventListener("keydown", onKeyDown);
@@ -224,7 +231,7 @@ export function WeekGridPresentation({
                   minHeightPx: MIN_EVENT_HEIGHT_PX,
                 });
 
-                const eventKey = `${event.id}-${event.dayIndex}-${event.startMinute}-${event.endMinute}`;
+                const eventKey = weekEventKey(event);
                 const displayTitle =
                   event.kind === "block" && event.className && event.assignmentTitle && event.stepNames
                     ? blockLabel(
@@ -252,11 +259,20 @@ export function WeekGridPresentation({
                     }}
                   >
                     <button
+                      aria-controls={activeEvent === eventKey ? popoverId : undefined}
                       aria-expanded={activeEvent === eventKey}
                       aria-haspopup="dialog"
                       aria-label={`${event.fullTitle}, ${event.timeRange}`}
                       className={`${styles.eventBlock} ${event.kind === "fixed" ? styles.fixedEvent : ""}`}
-                      onClick={() => setActiveEvent((current) => current === eventKey ? undefined : eventKey)}
+                      onClick={(clickEvent) => {
+                        if (activeEvent === eventKey) {
+                          setActiveEvent(undefined);
+                          activeTriggerRef.current = null;
+                        } else {
+                          activeTriggerRef.current = clickEvent.currentTarget;
+                          setActiveEvent(eventKey);
+                        }
+                      }}
                       ref={(element) => {
                         if (element) triggerRefs.current.set(eventKey, element);
                         else triggerRefs.current.delete(eventKey);
@@ -282,15 +298,6 @@ export function WeekGridPresentation({
                         <span aria-label="Not checked in" className={styles.missedMarker} role="img" />
                       ) : null}
                     </button>
-                    {activeEvent === eventKey ? (
-                      <div className={styles.eventPopover} ref={popoverRef} role="dialog" aria-label="Calendar item details">
-                        <strong>{event.fullTitle}</strong>
-                        <span className="num">{event.timeRange}</span>
-                        {event.className ? <span>Class: {event.className}</span> : null}
-                        {event.stepNames?.length ? <span>Step: {event.stepNames.join(", ")}</span> : null}
-                        {event.status ? <span>Status: {event.status.replace("_", " ")}</span> : null}
-                      </div>
-                    ) : null}
                   </div>
                 );
               })}
@@ -319,6 +326,27 @@ export function WeekGridPresentation({
           </div>
         ))}
       </div>
+      {(() => {
+        const event = events.find((candidate) => weekEventKey(candidate) === activeEvent);
+
+        return event ? (
+          <PortalPopup
+            anchorRef={activeTriggerRef}
+            ariaLabel="Calendar item details"
+            className={styles.eventPopover}
+            id={popoverId}
+            open
+            popupRef={popoverRef}
+            role="dialog"
+          >
+            <strong>{event.fullTitle}</strong>
+            <span className="num">{event.timeRange}</span>
+            {event.className ? <span>Class: {event.className}</span> : null}
+            {event.stepNames?.length ? <span>Step: {event.stepNames.join(", ")}</span> : null}
+            {event.status ? <span>Status: {event.status.replace("_", " ")}</span> : null}
+          </PortalPopup>
+        ) : null;
+      })()}
     </section>
   );
 }

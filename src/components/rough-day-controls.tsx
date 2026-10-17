@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Moon } from "lucide-react";
 
@@ -10,6 +10,7 @@ import {
   type RoughDayActionResult,
 } from "@/app/(app)/week/rough-day-actions";
 import { Button } from "@/components/ui/button";
+import { PortalPopup } from "@/components/portal-popup";
 
 export function RoughDayControls({
   initiallyActive,
@@ -20,6 +21,8 @@ export function RoughDayControls({
   const [isPending, startTransition] = useTransition();
   const [active, setActive] = useState(initiallyActive);
   const [result, setResult] = useState<RoughDayActionResult>();
+  const controlRef = useRef<HTMLElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   function run(action: () => Promise<RoughDayActionResult>, next: boolean) {
     setResult(undefined);
@@ -39,7 +42,7 @@ export function RoughDayControls({
   }
 
   return (
-    <section aria-label="Rough day" className="week-control">
+    <section aria-label="Rough day" className="week-control" ref={controlRef}>
       <Button
         disabled={isPending}
         onClick={() =>
@@ -58,11 +61,16 @@ export function RoughDayControls({
             : "Rough day"}
       </Button>
 
-      {result?.error ? (
-        <p className="week-control__message text-[var(--danger)]">{result.error}</p>
-      ) : null}
-      {result?.ok ? (
-        <div className="week-control__message" role="status">
+      <PortalPopup
+        anchorRef={controlRef}
+        className={`week-control__message ${result?.error ? "text-[var(--danger)]" : ""}`}
+        open={Boolean(result)}
+        popupRef={messageRef}
+        role="status"
+      >
+        {result?.error ?? null}
+        {result?.ok ? (
+          <>
           {result.text ? <p>{result.text}</p> : null}
           {result.warnings?.map((warning) => <p key={warning}>{warning}</p>)}
           {result.note ? <p>{result.note}</p> : null}
@@ -85,8 +93,9 @@ export function RoughDayControls({
               Dismiss
             </button>
           </div>
-        </div>
-      ) : null}
+          </>
+        ) : null}
+      </PortalPopup>
     </section>
   );
 }

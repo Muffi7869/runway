@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useCallback, useEffect, useId, useRef, useState } from "react";
 
+import { PortalPopup, popupContainsTarget } from "../../../components/portal-popup";
 import { ClassChip } from "../../../components/ui/class-chip";
 import { CLASS_COLOR_PALETTE, type ClassColor } from "../../../lib/classes/palette";
 import { describePace } from "../../../lib/pace/compute";
@@ -24,24 +25,31 @@ export function ColorPopover({ name, selectedColor, onChange, initialOpen = fals
   name: string; selectedColor: string; onChange: (color: ClassColor) => void; initialOpen?: boolean;
 }) {
   const [open, setOpen] = useState(initialOpen);
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const popoverId = useId();
+  const popoverRef = useRef<HTMLDivElement>(null);
   const selected = validColor(selectedColor);
   const selectedLabel = CLASS_COLOR_PALETTE.find(({ key }) => key === selected)?.label;
+
+  const focusFirstColor = useCallback(() => {
+    const selectedOption = popoverRef.current?.querySelector<HTMLElement>("[role='radio'][aria-checked='true']");
+    const firstOption = popoverRef.current?.querySelector<HTMLElement>("[role='radio']");
+    (selectedOption ?? firstOption)?.focus();
+  }, []);
 
   useEffect(() => {
     if (!open) return;
     function outside(event: PointerEvent) {
-      if (!wrapperRef.current?.contains(event.target as Node)) {
+      if (!popupContainsTarget(event.target as Node, buttonRef.current, popoverRef.current)) {
         setOpen(false);
         buttonRef.current?.focus();
       }
     }
     function keydown(event: KeyboardEvent) {
-      if (shouldCloseColorPopover(event.key)) {
-        event.preventDefault();
+      if (shouldCloseColorPopover(event.key) || event.key === "Tab") {
+        if (event.key === "Escape") event.preventDefault();
         setOpen(false);
-        buttonRef.current?.focus();
+        if (event.key === "Escape") buttonRef.current?.focus();
       }
     }
     document.addEventListener("pointerdown", outside);
@@ -49,19 +57,28 @@ export function ColorPopover({ name, selectedColor, onChange, initialOpen = fals
     return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", keydown); };
   }, [open]);
 
-  return <div className={styles.picker} ref={wrapperRef}>
+  return <div className={styles.picker}>
     <input name={name} type="hidden" value={selectedColor} />
-    <button aria-expanded={open} aria-haspopup="dialog" className={`ui-button ${styles.pickerButton}`} onClick={() => setOpen((value) => !value)} ref={buttonRef} type="button">
+    <button aria-controls={popoverId} aria-expanded={open} aria-haspopup="dialog" className={`ui-button ${styles.pickerButton}`} onClick={() => setOpen((value) => !value)} ref={buttonRef} type="button">
       <span>{selected ? <i aria-hidden="true" className={styles.pickerDot} data-class-color={selected} /> : null}{selectedLabel ?? "Choose color"}</span>
     </button>
-    {open ? <div aria-label="Choose a class color" className={styles.popover} role="dialog">
+    <PortalPopup
+      anchorRef={buttonRef}
+      ariaLabel="Choose a class color"
+      className={styles.popover}
+      id={popoverId}
+      onReady={focusFirstColor}
+      open={open}
+      popupRef={popoverRef}
+      role="dialog"
+    >
       <div className={styles.palette} role="radiogroup">
         {CLASS_COLOR_PALETTE.map((color) => <button
           aria-checked={selectedColor === color.key} aria-label={color.label} className={styles.colorOption}
           data-class-color={color.key} key={color.key} onClick={() => { onChange(color.key); setOpen(false); buttonRef.current?.focus(); }} role="radio" type="button"
         ><span aria-hidden="true" /></button>)}
       </div>
-    </div> : null}
+    </PortalPopup>
   </div>;
 }
 

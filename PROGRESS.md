@@ -66,6 +66,8 @@
 - [ ] Sign-in, Google connect and the reminder email work on runway.mrajkotwala.com
 - [ ] The old vercel.app link redirects to the new domain
 - [ ] Theme choice survives reload
+- [ ] Assignments ⋯ menu shows Edit, Done and Drop fully, including on the last row of a short card
+- [ ] Week ⋯ menu and the Classes Color popover also open fully
 
 ## Phase 6.6 performance audit
 
@@ -674,3 +676,11 @@ Counts are sequential network/database stages on the critical response path, not
 - Documented the custom-domain and Resend sender cutover; no Vercel redirect was added and cron configuration was unchanged.
 - Decisions: production domain text is present only in the environment template and public project documentation; external Google, Resend, GitHub, Canvas, and API endpoint URLs remain explicit because they are third-party destinations, not Runway canonical links.
 - Known issues: the signed-in Week presentation, reported duplicate's real database rows, custom-domain account settings, Google verification, redirect cutover, and new-domain email delivery require the unchecked manual checks above.
+
+### P6.6-FIX1 — Portaled popup menus and popovers
+
+- Audited every popup pattern and moved the shared Assignments and Week action menu, Week calendar-item details, Classes color picker, and Week control result panels into one fixed-position portal attached to the document body.
+- Added viewport-aware below-or-above placement with edge clamping and live repositioning on window resize and captured scrolling, while retaining rounded card clipping.
+- Preserved assignment status form actions and fields, menu and popover accessibility, pending and error states, and existing visual tokens; added focused positioning, portal-contract, action-wiring, and keyboard-behavior coverage.
+- Decisions: one shared popup layer token keeps every floating surface above cards and the sidebar; no application logic, action contract, data query, or persistence behavior changed.
+- Known issues: signed-in visual confirmation remains in Manual checks because Codex cannot access the owner account.

@@ -1,7 +1,7 @@
 .weekGrid {
   width: 100%;
   min-width: 0;
-  overflow: visible;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface);
@@ -207,10 +207,7 @@
 }
 
 .eventPopover {
-  position: absolute;
-  z-index: 40;
-  top: calc(100% + 4px);
-  left: 2px;
+  z-index: var(--z-popup);
   display: grid;
   width: min(260px, calc(100vw - 48px));
   gap: 4px;
@@ -218,7 +215,7 @@
   border: 1px solid var(--line-2);
   border-radius: var(--radius-control);
   background: var(--surface);
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 14%, transparent);
+  box-shadow: var(--shadow-floating);
   color: var(--ink);
   font-size: var(--text-small);
 }

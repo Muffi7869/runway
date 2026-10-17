@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CloudDownload } from "lucide-react";
 
@@ -8,6 +8,7 @@ import { syncNowAction } from "@/app/(app)/week/actions";
 import type { SyncFixedEventsResult } from "@/lib/google/sync-service";
 import { formatLastSynced } from "@/lib/week/view";
 import { Button } from "@/components/ui/button";
+import { PortalPopup } from "@/components/portal-popup";
 
 function resultMessage(result: SyncFixedEventsResult): string {
   if (result.ok) {
@@ -45,6 +46,8 @@ export function SyncControls({
   const router = useRouter();
   const [isRunning, setIsRunning] = useState(false);
   const [message, setMessage] = useState<string>();
+  const controlRef = useRef<HTMLElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   async function syncNow() {
     setIsRunning(true);
@@ -60,7 +63,7 @@ export function SyncControls({
   }
 
   return (
-    <section className="week-control" aria-label="Calendar sync">
+    <section className="week-control" aria-label="Calendar sync" ref={controlRef}>
       <Button
         role={menuItem ? "menuitem" : undefined}
         disabled={isRunning}
@@ -74,7 +77,15 @@ export function SyncControls({
       {showStatus ? <p className="week-control__status">
         Synced {formatLastSynced(lastSyncedAt, new Date(now))}
       </p> : null}
-      {message ? <p className="week-control__message">{message}</p> : null}
+      <PortalPopup
+        anchorRef={controlRef}
+        className="week-control__message"
+        open={Boolean(message)}
+        popupRef={messageRef}
+        role="status"
+      >
+        {message}
+      </PortalPopup>
     </section>
   );
 }

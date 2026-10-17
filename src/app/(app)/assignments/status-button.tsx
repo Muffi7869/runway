@@ -10,7 +10,7 @@ import {
 } from "./actions";
 import styles from "./assignments.module.css";
 
-type StatusActionKind = "done" | "drop" | "restore";
+export type StatusActionKind = "done" | "drop" | "restore";
 
 const statusActions = {
   done: markDoneAction,
@@ -24,22 +24,27 @@ const labels = {
   restore: "Restore",
 };
 
-export function AssignmentStatusButton({
+export function statusActionForKind(kind: StatusActionKind) {
+  return statusActions[kind];
+}
+
+export function AssignmentStatusButtonView({
   assignmentId,
   buttonRef,
+  formAction,
+  isPending,
   kind,
-  menuItem = false,
+  menuItem,
+  state,
 }: {
   assignmentId: string;
   buttonRef?: Ref<HTMLButtonElement>;
+  formAction: (formData: FormData) => void;
+  isPending: boolean;
   kind: StatusActionKind;
-  menuItem?: boolean;
+  menuItem: boolean;
+  state: AssignmentStatusActionState;
 }) {
-  const [state, formAction, isPending] = useActionState<
-    AssignmentStatusActionState,
-    FormData
-  >(statusActions[kind], {});
-
   return (
     <form action={formAction} className={menuItem ? styles.menuStatusForm : styles.statusForm}>
       <input name="assignmentId" type="hidden" value={assignmentId} />
@@ -56,5 +61,34 @@ export function AssignmentStatusButton({
         <span className={styles.actionError}>{state.error}</span>
       ) : null}
     </form>
+  );
+}
+
+export function AssignmentStatusButton({
+  assignmentId,
+  buttonRef,
+  kind,
+  menuItem = false,
+}: {
+  assignmentId: string;
+  buttonRef?: Ref<HTMLButtonElement>;
+  kind: StatusActionKind;
+  menuItem?: boolean;
+}) {
+  const [state, formAction, isPending] = useActionState<
+    AssignmentStatusActionState,
+    FormData
+  >(statusActionForKind(kind), {});
+
+  return (
+    <AssignmentStatusButtonView
+      assignmentId={assignmentId}
+      buttonRef={buttonRef}
+      formAction={formAction}
+      isPending={isPending}
+      kind={kind}
+      menuItem={menuItem}
+      state={state}
+    />
   );
 }

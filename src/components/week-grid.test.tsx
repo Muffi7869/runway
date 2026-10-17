@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -166,6 +167,16 @@ describe("WeekGridPresentation", () => {
     expect(markup).toContain('aria-haspopup="dialog"');
     expect(markup).toContain('aria-label="Checked in"');
     expect(markup).toContain('title="Test Class A · Test Assignment A · Draft"');
+  });
+
+  it("renders item details through the shared body portal while the card keeps rounded clipping", () => {
+    const componentSource = readFileSync(new URL("./week-grid.tsx", import.meta.url), "utf8");
+    const cssSource = readFileSync(new URL("./week-grid.module.css", import.meta.url), "utf8");
+
+    expect(componentSource).toContain("<PortalPopup");
+    expect(componentSource).toContain('role="dialog"');
+    expect(cssSource).toMatch(/\.weekGrid\s*\{[^}]*overflow:\s*hidden/);
+    expect(cssSource).not.toMatch(/\.eventPopover\s*\{[^}]*position:\s*absolute/);
   });
 
   it("renders the hidden overlap count", () => {

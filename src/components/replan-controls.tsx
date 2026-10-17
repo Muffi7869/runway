@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 
 import { replanAction } from "@/app/(app)/week/actions";
 import { formatLastSynced } from "@/lib/week/view";
 import { Button } from "@/components/ui/button";
+import { PortalPopup } from "@/components/portal-popup";
 
 export function ReplanControls({
   lastPlannedAt,
@@ -20,6 +21,8 @@ export function ReplanControls({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string>();
+  const controlRef = useRef<HTMLElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   function runReplan() {
     setMessage(undefined);
@@ -53,7 +56,7 @@ export function ReplanControls({
   }
 
   return (
-    <section className="week-control" aria-label="Study plan">
+    <section className="week-control" aria-label="Study plan" ref={controlRef}>
       <Button
         disabled={isPending}
         onClick={runReplan}
@@ -68,7 +71,15 @@ export function ReplanControls({
           ? `Updated ${formatLastSynced(lastPlannedAt, new Date(now))}`
           : "Not planned yet"}
       </p> : null}
-      {message ? <p className="week-control__message">{message}</p> : null}
+      <PortalPopup
+        anchorRef={controlRef}
+        className="week-control__message"
+        open={Boolean(message)}
+        popupRef={messageRef}
+        role="status"
+      >
+        {message}
+      </PortalPopup>
     </section>
   );
 }

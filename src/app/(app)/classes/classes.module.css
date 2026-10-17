@@ -23,7 +23,7 @@
 .pickerButton { min-width: 112px; }
 .pickerButton span { display: inline-flex; align-items: center; gap: 7px; }
 .pickerDot { width: 10px; height: 10px; border-radius: 50%; background: var(--class-dot); }
-.popover { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; width: 196px; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface); box-shadow: var(--shadow-floating); }
+.popover { z-index: var(--z-popup); width: 196px; max-width: calc(100vw - 16px); border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface); box-shadow: var(--shadow-floating); }
 .palette { display: grid; grid-template-columns: repeat(4, 40px); gap: 5px; }
 .colorOption { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid transparent; border-radius: 8px; background: transparent; cursor: pointer; }
 .colorOption:hover, .colorOption[aria-checked="true"] { border-color: var(--line-2); background: var(--surface-2); }
@@ -34,7 +34,6 @@
   .addCard { grid-template-columns: 1fr; align-items: stretch; }
   .addCard button { width: 100%; }
   .pickerButton { width: 100%; }
-  .popover { right: auto; left: 0; }
   .stats { grid-template-columns: 1fr; }
   .editRow { grid-template-columns: 1fr; }
 }
