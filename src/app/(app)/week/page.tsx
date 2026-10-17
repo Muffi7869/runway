@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 
+import { ActionMenu } from "@/components/action-menu";
 import { ReplanControls } from "@/components/replan-controls";
 import { RoughDayControls } from "@/components/rough-day-controls";
 import { SyncControls } from "@/components/sync-controls";
@@ -29,9 +30,19 @@ import {
   zonedTimeToUtc,
 } from "@/lib/time/zoned";
 import {
+  cleanEventTitle,
+  fullBlockLabel,
+  isPastDay,
+  limitLanes,
+  mergeAdjacentBlocks,
+  visibleHourRange,
+  weekPlannedStat,
+  type VisualBlock,
+} from "@/lib/week/declutter";
+import {
   assignLanes,
   formatTimeRange,
-  hourRange,
+  formatLastSynced,
   parseWeekParam,
   segmentEventsByDay,
   weekBounds,
@@ -39,7 +50,6 @@ import {
 } from "@/lib/week/view";
 import {
   assignmentProgress,
-  buildPlannedBlockLabel,
   buildWarningSentences,
   limitBannerItems,
 } from "@/lib/week/presentation";
@@ -297,30 +307,50 @@ export default async function WeekPage({
   const fixedGridEvents = fixedEvents.map((event) => ({
     ...event,
     id: `fixed:${event.id}`,
+    title: cleanEventTitle(event.title),
+    fullTitle: event.title,
+    kind: "fixed" as const,
   }));
-  const plannedGridEvents = plannedBlocks.map((block) => ({
-    id: `block:${block.id}`,
-    title: buildPlannedBlockLabel({
-      className: block.step.assignment.class.name,
-      assignmentTitle: block.step.assignment.title,
-      stepName: block.step.name,
+  const visualBlocks: VisualBlock[] = plannedBlocks.map((block) => ({
+    id: block.id,
+    assignmentId: block.step.assignment.id,
+    className: block.step.assignment.class.name,
+    assignmentTitle: block.step.assignment.title,
+    stepName: block.step.name,
+    start: block.start,
+    end: block.end,
+    plannedMinutes: block.planned_minutes,
+    status: blockStatus(block.status),
+  }));
+  const plannedGridEvents = mergeAdjacentBlocks(visualBlocks).map((block) => ({
+    id: `block:${block.blockIds.join(":")}`,
+    title: fullBlockLabel({
+      className: block.className,
+      assignmentTitle: block.assignmentTitle,
+      stepNames: block.stepNames,
     }),
     start: block.start,
     end: block.end,
-    status: blockStatus(block.status),
-    color: colorByKey.get(block.step.assignment.class.color) ?? {
+    status: block.status,
+    kind: "block" as const,
+    fullTitle: fullBlockLabel(block),
+    className: block.className,
+    assignmentTitle: block.assignmentTitle,
+    stepNames: block.stepNames,
+    color: colorByKey.get(
+      plannedBlocks.find((row) => row.id === block.blockIds[0])?.step.assignment.class.color ?? "",
+    ) ?? {
       fill: "var(--surface-2)",
       text: "var(--ink-2)",
     },
   }));
   const allEvents = [...fixedGridEvents, ...plannedGridEvents];
   const segments = segmentEventsByDay(allEvents, monday);
-  const layouts = assignLanes(segments);
-  const range = hourRange({
-    segments,
+  const limitedLayouts = limitLanes(assignLanes(segments));
+  const range = visibleHourRange({
     studyWindowStartMinutes,
     studyWindowEndMinutes,
-  });
+  }, segments);
   const eventTimes = new Map(
     allEvents.map((event) => [
       event.id,
@@ -333,11 +363,24 @@ export default async function WeekPage({
       { color: event.color, status: event.status },
     ]),
   );
-  const gridEvents: WeekGridEvent[] = layouts.map((event) => {
+  const eventDetails = new Map(
+    allEvents.map((event) => [event.id, event]),
+  );
+  const gridEvents: WeekGridEvent[] = limitedLayouts.visible.map((event) => {
     const presentation = plannedPresentation.get(event.id);
+    const details = eventDetails.get(event.id);
 
     return {
       ...event,
+      kind: details?.kind ?? "fixed",
+      fullTitle: details?.fullTitle ?? event.title,
+      ...(details?.kind === "block"
+        ? {
+            className: details.className,
+            assignmentTitle: details.assignmentTitle,
+            stepNames: details.stepNames,
+          }
+        : {}),
       timeRange: eventTimes.get(event.id) ?? "",
       ...(presentation ? { status: presentation.status } : {}),
       ...(presentation
@@ -364,6 +407,7 @@ export default async function WeekPage({
       dayLabel: dayNumberFormatter.format(date),
       longLabel: longDayFormatter.format(date),
       isToday: sameDate(day, today),
+      isPast: isPastDay(day, now),
       visibleStart: zonedTimeToUtc(
         { ...day, hour: range.startHour, minute: 0 },
         APP_TIMEZONE,
@@ -377,10 +421,10 @@ export default async function WeekPage({
     .filter((block) => laDateKey(new Date(block.start)) === todayKey)
     .map((block) => ({
       id: block.id,
-      label: buildPlannedBlockLabel({
+      label: fullBlockLabel({
         className: block.step.assignment.class.name,
         assignmentTitle: block.step.assignment.title,
-        stepName: block.step.name,
+        stepNames: [block.step.name],
       }),
       detail: formatTimeRange(block.start, block.end),
       color: classColor(block.step.assignment.class.color),
@@ -429,9 +473,8 @@ export default async function WeekPage({
       <header className={styles.header}>
         <div>
           <h1>This week</h1>
-          <p>
-            {weekLabel(days)} · {formatEstimate(weekPlannedMinutes)} of study planned
-          </p>
+          <p>{weekLabel(days)}</p>
+          <p className={styles.weekStat}>{weekPlannedStat(weekPlannedMinutes)}</p>
         </div>
         <div className={styles.headerActions}>
           <nav aria-label="Week navigation" className={styles.weekNavigation}>
@@ -457,13 +500,25 @@ export default async function WeekPage({
           <ReplanControls
             lastPlannedAt={planningResult.data?.last_planned_at ?? null}
             now={now.toISOString()}
+            showStatus={false}
           />
-          <SyncControls
-            lastSyncedAt={connection.last_synced_at}
-            now={now.toISOString()}
-          />
+          <ActionMenu label="More Week actions">
+            <SyncControls
+              lastSyncedAt={connection.last_synced_at}
+              menuItem
+              now={now.toISOString()}
+              showStatus={false}
+            />
+          </ActionMenu>
         </div>
       </header>
+
+      <p className={styles.statusLine}>
+        {planningResult.data?.last_planned_at
+          ? `Updated ${formatLastSynced(planningResult.data.last_planned_at, now)}`
+          : "Not planned yet"}
+        {" · "}Synced {formatLastSynced(connection.last_synced_at, now)}
+      </p>
 
       {warningSentences.length > 0 ? (
         <Banner className={styles.warning} variant="warn">
@@ -483,6 +538,7 @@ export default async function WeekPage({
             days={gridDays}
             endHour={range.endHour}
             events={gridEvents}
+            overflows={limitedLayouts.hidden}
             initialDayIndex={todayIndex >= 0 ? todayIndex : 0}
             now={now.toISOString()}
             startHour={range.startHour}

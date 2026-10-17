@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { RootDocument } from "../components/root-document";
 import { THEME_COOKIE_NAME } from "../lib/theme";
+import { siteUrl } from "../lib/site-url";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -14,8 +15,16 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: process.env.NEXT_PUBLIC_SITE_URL
+    ? new URL(siteUrl())
+    : undefined,
   title: "Runway",
   description: "A personal assignment planning app.",
+  openGraph: {
+    title: "Runway",
+    description: "A personal assignment planning app.",
+    url: "/",
+  },
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {

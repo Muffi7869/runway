@@ -26,10 +26,6 @@
 .statusButton:hover:not(:disabled) { background: var(--surface-2); }
 .statusButton:disabled { cursor: wait; opacity: .5; }
 .actionError { max-width: 180px; color: var(--danger); font-size: var(--text-small); }
-.actionsMenu { position: relative; }
-.menuTrigger { display: inline-grid; width: 40px; height: 40px; place-items: center; border: 1px solid var(--line-2); border-radius: var(--radius-control); background: var(--surface); color: var(--ink-2); font-size: 20px; cursor: pointer; }
-.menuTrigger:hover { background: var(--surface-2); color: var(--ink); }
-.menuPopover { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; display: grid; width: 150px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-control); padding: 4px; background: var(--surface); box-shadow: var(--shadow-floating); }
 .menuItem { display: flex; width: 100%; min-height: 40px; align-items: center; border: 0; border-radius: 6px; padding: 0 10px; background: transparent; color: var(--ink); font-size: var(--text-label); font-weight: 500; text-decoration: none; cursor: pointer; }
 .menuItem:hover, .menuItem:focus-visible { background: var(--surface-2); }
 .menuStatusForm { display: contents; }

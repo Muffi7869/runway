@@ -14,9 +14,9 @@ import {
 const originalEnvironment = {
   ALLOWED_EMAIL: process.env.ALLOWED_EMAIL,
   APP_URL: process.env.APP_URL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   RESEND_FROM: process.env.RESEND_FROM,
-  VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
 };
 
 afterEach(() => {
@@ -32,6 +32,7 @@ afterEach(() => {
 describe("reminder delivery", () => {
   it("builds singular and plural count-only messages", () => {
     process.env.APP_URL = "https://example.com";
+    delete process.env.NEXT_PUBLIC_SITE_URL;
     expect(buildReminderMessage(1)).toMatchObject({
       subject: "Check in for today",
       text: "You have 1 block planned today.\n\nhttps://example.com/checkin",
@@ -79,6 +80,7 @@ describe("reminder delivery", () => {
   it("sends only the count and check-in link in the email content", async () => {
     process.env.ALLOWED_EMAIL = "owner@example.com";
     process.env.APP_URL = "https://example.com";
+    delete process.env.NEXT_PUBLIC_SITE_URL;
     process.env.RESEND_API_KEY = "test-api-key";
     process.env.RESEND_FROM = "Runway <sender@example.com>";
     const fetchImpl = vi.fn<typeof fetch>(async () =>

@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState, type TouchEvent } from "react";
 
+import { blockLabel } from "../lib/week/declutter";
 import { eventPlacement } from "../lib/week/placement";
 import { nowLineOffset } from "../lib/week/presentation";
 import type { WeekEventLayout } from "../lib/week/view";
 
 import styles from "./week-grid.module.css";
 
-export const WEEK_GRID_ROW_HEIGHT_PX = 48;
+export const WEEK_GRID_ROW_HEIGHT_PX = 56;
 const MIN_EVENT_HEIGHT_PX = 20;
 const SWIPE_THRESHOLD = 50;
 
@@ -18,19 +19,33 @@ export type WeekGridDay = {
   weekdayLabel: string;
   dayLabel: string;
   isToday: boolean;
+  isPast: boolean;
   visibleStart: string;
 };
 
 export type WeekGridEvent = WeekEventLayout & {
+  kind: "fixed" | "block";
+  fullTitle: string;
+  className?: string;
+  assignmentTitle?: string;
+  stepNames?: string[];
   timeRange: string;
   backgroundColor?: string;
   textColor?: string;
   status?: "planned" | "checked_in" | "missed";
 };
 
+export type WeekGridOverflow = {
+  dayIndex: number;
+  startMinute: number;
+  endMinute: number;
+  hiddenCount: number;
+};
+
 type WeekGridPresentationProps = {
   days: WeekGridDay[];
   events: WeekGridEvent[];
+  overflows?: WeekGridOverflow[];
   startHour: number;
   endHour: number;
   activeDayIndex: number;
@@ -50,6 +65,7 @@ function formatHour(hour: number): string {
 export function WeekGridPresentation({
   days,
   events,
+  overflows = [],
   startHour,
   endHour,
   activeDayIndex,
@@ -59,12 +75,41 @@ export function WeekGridPresentation({
   onTouchEnd,
   now,
 }: WeekGridPresentationProps) {
+  const [activeEvent, setActiveEvent] = useState<string>();
+  const triggerRefs = useRef(new Map<string, HTMLButtonElement>());
+  const popoverRef = useRef<HTMLDivElement>(null);
   const hours = Array.from(
     { length: Math.max(0, endHour - startHour) },
     (_, index) => startHour + index,
   );
   const gridHeight =
     Math.max(1, endHour - startHour) * WEEK_GRID_ROW_HEIGHT_PX;
+
+  useEffect(() => {
+    if (!activeEvent) return;
+    const activeKey = activeEvent;
+
+    function close(returnFocus: boolean) {
+      setActiveEvent(undefined);
+      if (returnFocus) window.setTimeout(() => triggerRefs.current.get(activeKey)?.focus());
+    }
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") close(true);
+    }
+    function onPointerDown(event: PointerEvent) {
+      const trigger = triggerRefs.current.get(activeKey);
+      if (
+        !popoverRef.current?.contains(event.target as Node) &&
+        !trigger?.contains(event.target as Node)
+      ) close(true);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [activeEvent]);
 
   return (
     <section
@@ -133,7 +178,7 @@ export function WeekGridPresentation({
         {days.map((day, dayIndex) => (
           <div
             aria-label={day.longLabel}
-            className={`${styles.dayColumn} ${day.isToday ? styles.todayColumn : ""}`}
+            className={`${styles.dayColumn} ${day.isToday ? styles.todayColumn : ""} ${day.isPast ? styles.pastColumn : ""}`}
             data-active={activeDayIndex === dayIndex ? "true" : "false"}
             data-day-column={dayIndex}
             key={day.longLabel}
@@ -179,12 +224,26 @@ export function WeekGridPresentation({
                   minHeightPx: MIN_EVENT_HEIGHT_PX,
                 });
 
+                const eventKey = `${event.id}-${event.dayIndex}-${event.startMinute}-${event.endMinute}`;
+                const displayTitle =
+                  event.kind === "block" && event.className && event.assignmentTitle && event.stepNames
+                    ? blockLabel(
+                        {
+                          className: event.className,
+                          assignmentTitle: event.assignmentTitle,
+                          stepNames: event.stepNames,
+                        },
+                        placement.heightPx,
+                      )
+                    : event.title;
+                const showTime = event.kind === "fixed" ? false : placement.heightPx >= 70;
+
                 return (
                   <div
                     className={styles.eventSlot}
                     data-event-id={event.id}
                     data-status={event.status}
-                    key={`${event.id}-${event.dayIndex}-${event.startMinute}-${event.endMinute}`}
+                    key={eventKey}
                     style={{
                       height: placement.heightPx,
                       left: `${(event.lane / event.laneCount) * 100}%`,
@@ -192,25 +251,69 @@ export function WeekGridPresentation({
                       width: `${100 / event.laneCount}%`,
                     }}
                   >
-                    <div
-                      className={styles.eventBlock}
+                    <button
+                      aria-expanded={activeEvent === eventKey}
+                      aria-haspopup="dialog"
+                      aria-label={`${event.fullTitle}, ${event.timeRange}`}
+                      className={`${styles.eventBlock} ${event.kind === "fixed" ? styles.fixedEvent : ""}`}
+                      onClick={() => setActiveEvent((current) => current === eventKey ? undefined : eventKey)}
+                      ref={(element) => {
+                        if (element) triggerRefs.current.set(eventKey, element);
+                        else triggerRefs.current.delete(eventKey);
+                      }}
                       style={{
                         backgroundColor: event.backgroundColor,
                         borderColor: event.backgroundColor,
                         color: event.textColor,
                       }}
+                      title={event.fullTitle}
+                      type="button"
                     >
-                      <p className={styles.eventTitle} title={event.title}>
-                        {event.title}
+                      <p className={styles.eventTitle}>
+                        {displayTitle}
                       </p>
-                      <p className={styles.eventTime}>{event.timeRange}</p>
+                      {showTime ? <p className={styles.eventTime}>{event.timeRange}</p> : null}
                       {event.status === "checked_in" ? (
-                        <p className={styles.eventStatus}>Checked in</p>
+                        <svg aria-label="Checked in" className={styles.statusIcon} role="img" viewBox="0 0 16 16">
+                          <title>Checked in</title>
+                          <path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+                        </svg>
                       ) : event.status === "missed" ? (
-                        <p className={styles.eventStatus}>Not checked in</p>
+                        <span aria-label="Not checked in" className={styles.missedMarker} role="img" />
                       ) : null}
-                    </div>
+                    </button>
+                    {activeEvent === eventKey ? (
+                      <div className={styles.eventPopover} ref={popoverRef} role="dialog" aria-label="Calendar item details">
+                        <strong>{event.fullTitle}</strong>
+                        <span className="num">{event.timeRange}</span>
+                        {event.className ? <span>Class: {event.className}</span> : null}
+                        {event.stepNames?.length ? <span>Step: {event.stepNames.join(", ")}</span> : null}
+                        {event.status ? <span>Status: {event.status.replace("_", " ")}</span> : null}
+                      </div>
+                    ) : null}
                   </div>
+                );
+              })}
+
+            {overflows
+              .filter((overflow) => overflow.dayIndex === dayIndex)
+              .map((overflow) => {
+                const placement = eventPlacement({
+                  startMinute: overflow.startMinute,
+                  endMinute: overflow.endMinute,
+                  startHour,
+                  rowHeightPx: WEEK_GRID_ROW_HEIGHT_PX,
+                  minHeightPx: MIN_EVENT_HEIGHT_PX,
+                });
+                return (
+                  <span
+                    aria-label={`${overflow.hiddenCount} more overlapping calendar items`}
+                    className={styles.overflowCount}
+                    key={`${overflow.dayIndex}-${overflow.startMinute}-${overflow.endMinute}`}
+                    style={{ top: placement.topPx }}
+                  >
+                    +{overflow.hiddenCount}
+                  </span>
                 );
               })}
           </div>
@@ -223,6 +326,7 @@ export function WeekGridPresentation({
 export function WeekGrid({
   days,
   events,
+  overflows,
   startHour,
   endHour,
   initialDayIndex,
@@ -230,6 +334,7 @@ export function WeekGrid({
 }: {
   days: WeekGridDay[];
   events: WeekGridEvent[];
+  overflows?: WeekGridOverflow[];
   startHour: number;
   endHour: number;
   initialDayIndex: number;
@@ -278,6 +383,7 @@ export function WeekGrid({
       days={days}
       endHour={endHour}
       events={events}
+      overflows={overflows}
       onNextDay={() => moveDay(1)}
       onPreviousDay={() => moveDay(-1)}
       onTouchEnd={handleTouchEnd}

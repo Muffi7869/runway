@@ -4,6 +4,8 @@ import { PublicDocumentShell } from "../../components/public-document-shell";
 
 export const metadata = {
   title: "Privacy Policy – Runway",
+  alternates: { canonical: "/privacy" },
+  openGraph: { url: "/privacy" },
 };
 
 export default function PrivacyPage() {

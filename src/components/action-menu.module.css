@@ -1,0 +1,6 @@
+.menu { position: relative; }
+.trigger { display: inline-grid; width: 40px; height: 40px; place-items: center; border: 1px solid var(--line-2); border-radius: var(--radius-control); background: var(--surface); color: var(--ink-2); font-size: 20px; cursor: pointer; }
+.trigger:hover { background: var(--surface-2); color: var(--ink); }
+.popover { position: absolute; top: calc(100% + 6px); right: 0; z-index: 40; display: grid; width: 170px; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-control); padding: 4px; background: var(--surface); box-shadow: var(--shadow-floating); }
+.popover > [role="menuitem"], .item { display: flex; width: 100%; min-height: 40px; align-items: center; border: 0; border-radius: 6px; padding: 0 10px; background: transparent; color: var(--ink); font-size: var(--text-label); font-weight: 500; text-decoration: none; cursor: pointer; }
+.popover > [role="menuitem"]:hover, .popover > [role="menuitem"]:focus-visible, .item:hover, .item:focus-visible { background: var(--surface-2); }

@@ -1,7 +1,7 @@
 .weekGrid {
   width: 100%;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--surface);
@@ -134,25 +134,40 @@
 .eventSlot {
   position: absolute;
   z-index: 10;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
   padding: 0 2px;
 }
 
 .eventBlock {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: 0;
+  text-align: left;
   height: 100%;
   overflow: hidden;
   box-sizing: border-box;
   padding: 0.25rem 0.5rem;
-  border: 1px solid var(--line);
   border-radius: var(--radius-study-block);
   background: var(--surface-2);
   color: var(--ink-2);
 }
 
+.fixedEvent {
+  border: 0;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
 .eventSlot[data-status="checked_in"],
 .eventSlot[data-status="missed"] {
-  opacity: 0.6;
+  opacity: 0.55;
+}
+
+.pastColumn {
+  opacity: 0.7;
 }
 
 .eventTitle,
@@ -173,13 +188,51 @@
   font-variant-numeric: tabular-nums;
 }
 
-.eventStatus {
-  overflow: hidden;
-  margin: 3px 0 0;
-  color: currentColor;
+.statusIcon {
+  position: absolute;
+  right: 5px;
+  bottom: 4px;
+  width: 14px;
+  height: 14px;
+}
+
+.missedMarker {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warn);
+}
+
+.eventPopover {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  left: 2px;
+  display: grid;
+  width: min(260px, calc(100vw - 48px));
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ink) 14%, transparent);
+  color: var(--ink);
   font-size: var(--text-small);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.overflowCount {
+  position: absolute;
+  right: 4px;
+  z-index: 30;
+  padding: 2px 5px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--text-small);
+  font-weight: 600;
 }
 
 .nowLine {

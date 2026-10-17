@@ -34,9 +34,13 @@ function resultMessage(result: SyncFixedEventsResult): string {
 export function SyncControls({
   lastSyncedAt,
   now,
+  menuItem = false,
+  showStatus = true,
 }: {
   lastSyncedAt: string | null;
   now: string;
+  menuItem?: boolean;
+  showStatus?: boolean;
 }) {
   const router = useRouter();
   const [isRunning, setIsRunning] = useState(false);
@@ -58,6 +62,7 @@ export function SyncControls({
   return (
     <section className="week-control" aria-label="Calendar sync">
       <Button
+        role={menuItem ? "menuitem" : undefined}
         disabled={isRunning}
         onClick={syncNow}
         type="button"
@@ -66,9 +71,9 @@ export function SyncControls({
         <CloudDownload aria-hidden="true" size={18} strokeWidth={1.6} />
         {isRunning ? "Syncing…" : "Sync now"}
       </Button>
-      <p className="week-control__status">
+      {showStatus ? <p className="week-control__status">
         Synced {formatLastSynced(lastSyncedAt, new Date(now))}
-      </p>
+      </p> : null}
       {message ? <p className="week-control__message">{message}</p> : null}
     </section>
   );

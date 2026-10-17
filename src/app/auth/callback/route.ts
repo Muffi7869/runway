@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 
 import { getOwnerStatus } from "@/lib/auth/server";
 import { createClient } from "@/lib/db/server";
+import { absoluteUrl } from "@/lib/site-url";
 
 function redirectTo(requestUrl: URL, pathname: string) {
-  return NextResponse.redirect(new URL(pathname, requestUrl.origin));
+  return NextResponse.redirect(absoluteUrl(pathname, requestUrl.origin));
 }
 
 export async function GET(request: Request) {

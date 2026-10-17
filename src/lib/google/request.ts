@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server";
 
+import { siteUrl } from "../site-url";
+
 export const GOOGLE_CALLBACK_PATH = "/api/google/callback";
 export const GOOGLE_STATE_COOKIE = "google_oauth_state";
 
@@ -16,10 +18,10 @@ export function getPublicOrigin(request: NextRequest): string {
   );
 
   if (forwardedHost && forwardedProto) {
-    return `${forwardedProto}://${forwardedHost}`;
+    return siteUrl(`${forwardedProto}://${forwardedHost}`);
   }
 
-  return request.nextUrl.origin;
+  return siteUrl(request.nextUrl.origin);
 }
 
 export function getGoogleCredentials(): {

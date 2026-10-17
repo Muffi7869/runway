@@ -3,6 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../db/database.types";
+import { absoluteUrl } from "../site-url";
 
 export type ReminderMessage = {
   subject: string;
@@ -12,16 +13,8 @@ export type ReminderMessage = {
 };
 
 function checkinLink(): string | null {
-  const configured = process.env.APP_URL?.trim();
-  const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  const base = configured || (productionHost ? `https://${productionHost}` : "");
-
-  if (!base) {
-    return null;
-  }
-
   try {
-    return new URL("/checkin", base).toString();
+    return absoluteUrl("/checkin", process.env.APP_URL);
   } catch {
     return null;
   }
@@ -82,7 +75,7 @@ export async function sendReminderEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM || "Runway <onboarding@resend.dev>",
+      from: process.env.RESEND_FROM?.trim() || "Runway <onboarding@resend.dev>",
       to: recipient,
       subject: message.subject,
       text: message.text,

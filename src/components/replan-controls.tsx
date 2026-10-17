@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 export function ReplanControls({
   lastPlannedAt,
   now,
+  showStatus = true,
 }: {
   lastPlannedAt: string | null;
   now: string;
+  showStatus?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -61,11 +63,11 @@ export function ReplanControls({
         <RefreshCw aria-hidden="true" size={18} strokeWidth={1.6} />
         {isPending ? "Replanning..." : "Replan"}
       </Button>
-      <p className="week-control__status">
+      {showStatus ? <p className="week-control__status">
         {lastPlannedAt
           ? `Updated ${formatLastSynced(lastPlannedAt, new Date(now))}`
           : "Not planned yet"}
-      </p>
+      </p> : null}
       {message ? <p className="week-control__message">{message}</p> : null}
     </section>
   );

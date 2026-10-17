@@ -7,6 +7,11 @@ import { getRouteAction } from "../lib/auth/routing";
 import { getOwnerStatus } from "../lib/auth/server";
 import { createClient } from "../lib/db/server";
 
+export const metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { url: "/" },
+};
+
 export default async function Home() {
   const supabase = await createClient();
   const ownerStatus = await getOwnerStatus(supabase);

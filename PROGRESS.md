@@ -12,6 +12,8 @@
 - Supabase browser and server clients live in `src/lib/db`, matching the project layout. The Supabase CLI installed and ran without requiring install-script approval, so no package scripts were approved.
 - Sessions store assignment-level work totals, while `session_steps` stores each step touched in that session with its before-and-after progress. This preserves one session across multiple steps without duplicating session totals.
 - Live Vercel URL: https://runway-xi-ten.vercel.app
+- Canonical site URLs come from `NEXT_PUBLIC_SITE_URL`; the custom-domain value is `https://runway.mrajkotwala.com`, while `APP_URL` remains a reminder-email fallback during cutover.
+- Reminder email sender identity comes only from `RESEND_FROM`, defaulting to the Resend onboarding sender. After `mrajkotwala.com` is verified in Resend, set `RESEND_FROM` in Vercel to an address on that domain, such as `runway@mrajkotwala.com`.
 - Vercel functions are configured for `sfo1`, the closest function region to the Supabase `us-west-1` project. If the deployment plan does not honor the file setting, use Project Settings → Functions → Function Region.
 - The root layout reads the theme cookie before rendering. This makes every route dynamic, including public pages, but adds only a local cookie read and no network round trip.
 
@@ -59,6 +61,11 @@
 - [ ] Assignments: Overdue first, one action plus a ⋯ menu per row
 - [ ] Settings: one label per duration with hours and minutes side by side, saves exactly as before
 - [ ] Shortfall banner shows at most 3 lines then +N more
+- [ ] Week looks calm with real data (merged blocks, quiet events, +N lanes, faded past days)
+- [ ] The duplicate [MMW 14] event: SQL result read and cause identified
+- [ ] Sign-in, Google connect and the reminder email work on runway.mrajkotwala.com
+- [ ] The old vercel.app link redirects to the new domain
+- [ ] Theme choice survives reload
 
 ## Phase 6.6 performance audit
 
@@ -657,3 +664,13 @@ Counts are sequential network/database stages on the critical response path, not
 - Limited Week shortfall banners to three unchanged warning lines plus a remaining-count line and added pure and markup coverage for the revised presentation.
 - Decisions: the assignment menu uses plain React with Escape, outside-pointer, focus-return, and arrow-key handling; duration conversion rejects malformed or negative inputs without adding a new validation rule.
 - Known issues: signed-in visual comparison and live Settings saves remain in Manual checks because Codex cannot access the owner account.
+
+### P6.6-3 — Week declutter, site URL, and Phase 6.6 report
+
+- Decluttered Week with a 56-pixel hour scale, study-window-based visible range, display-only adjacent block merging, height-aware labels, compact checked-in and missed markers, quiet cleaned fixed-event titles, two-lane overlap limits, accessible item details, Los Angeles past-day fading, a combined update/sync line, and the existing Sync action inside the shared more menu.
+- Added pure coverage for hour visibility including daylight-saving time, block merging and labels, title cleaning, lane limits, past days, planned totals, plus sync regression cases for recurring, cross-calendar, moved, and cancelled Google events.
+- Investigated the reported duplicate without changing sync behavior: the composite database key, mapper, planner, service, and Week placement do not duplicate one stored row; two selected calendars or two distinct Google event IDs can legitimately render side by side, so no event is hidden automatically.
+- Added canonical URL helpers and wired metadata, Supabase and Google OAuth redirects, and reminder links to `NEXT_PUBLIC_SITE_URL`, retaining request-origin and local-development behavior plus the existing `APP_URL` email fallback.
+- Documented the custom-domain and Resend sender cutover; no Vercel redirect was added and cron configuration was unchanged.
+- Decisions: production domain text is present only in the environment template and public project documentation; external Google, Resend, GitHub, Canvas, and API endpoint URLs remain explicit because they are third-party destinations, not Runway canonical links.
+- Known issues: the signed-in Week presentation, reported duplicate's real database rows, custom-domain account settings, Google verification, redirect cutover, and new-domain email delivery require the unchecked manual checks above.

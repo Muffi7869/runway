@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/db/client";
+import { absoluteUrl } from "@/lib/site-url";
 
 export function SignInButton() {
   async function signInWithGoogle() {
@@ -9,7 +10,7 @@ export function SignInButton() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: absoluteUrl("/auth/callback", window.location.origin),
         queryParams: {
           prompt: "select_account",
         },

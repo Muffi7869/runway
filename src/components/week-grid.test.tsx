@@ -22,6 +22,7 @@ const days: WeekGridDay[] = [
   weekdayLabel: longLabel.slice(0, 3),
   dayLabel: String(5 + index),
   isToday: index === 2,
+  isPast: index < 2,
   visibleStart: `2026-10-${String(5 + index).padStart(2, "0")}T15:00:00.000Z`,
 }));
 
@@ -34,6 +35,8 @@ function event(
   return {
     id,
     title: `Test Event ${id}`,
+    fullTitle: `Test Event ${id}`,
+    kind: "fixed",
     timeRange: `${startHour}:00 – ${startHour}:50`,
     dayIndex: 0,
     startMinute: startHour * 60,
@@ -101,9 +104,9 @@ describe("WeekGridPresentation", () => {
 
   it.each([
     ["event-8", 0],
-    ["event-9", 48],
-    ["event-10", 96],
-    ["event-16", 384],
+    ["event-9", 56],
+    ["event-10", 112],
+    ["event-16", 448],
   ])("renders %s at top %i", (id, topPx) => {
     const tag = eventOpeningTag(renderGrid(), id);
     const expectedTop =
@@ -131,11 +134,53 @@ describe("WeekGridPresentation", () => {
     expect(saturdayMarkup).not.toContain("data-event-id");
   });
 
-  it("uses the approved 48-pixel row height", () => {
-    expect(WEEK_GRID_ROW_HEIGHT_PX).toBe(48);
+  it("uses the approved 56-pixel row height", () => {
+    expect(WEEK_GRID_ROW_HEIGHT_PX).toBe(56);
   });
 
   it("renders the current-time line only inside today's visible hours", () => {
     expect(renderGrid().match(/data-now-line="true"/g)).toHaveLength(1);
+  });
+
+  it("uses accessible block controls and compact status markers", () => {
+    const checked = {
+      ...event("checked", 11),
+      kind: "block" as const,
+      className: "Test Class A",
+      assignmentTitle: "Test Assignment A",
+      stepNames: ["Draft"],
+      fullTitle: "Test Class A · Test Assignment A · Draft",
+      status: "checked_in" as const,
+    };
+    const markup = renderToStaticMarkup(
+      <WeekGridPresentation
+        activeDayIndex={0}
+        days={days}
+        endHour={18}
+        events={[checked]}
+        now={new Date("2026-10-07T18:30:00.000Z")}
+        startHour={8}
+      />,
+    );
+
+    expect(markup).toContain('aria-haspopup="dialog"');
+    expect(markup).toContain('aria-label="Checked in"');
+    expect(markup).toContain('title="Test Class A · Test Assignment A · Draft"');
+  });
+
+  it("renders the hidden overlap count", () => {
+    const markup = renderToStaticMarkup(
+      <WeekGridPresentation
+        activeDayIndex={0}
+        days={days}
+        endHour={18}
+        events={[]}
+        now={new Date("2026-10-07T18:30:00.000Z")}
+        overflows={[{ dayIndex: 0, startMinute: 600, endMinute: 660, hiddenCount: 2 }]}
+        startHour={8}
+      />,
+    );
+    expect(markup).toContain(">+2<");
+    expect(markup).toContain("2 more overlapping calendar items");
   });
 });

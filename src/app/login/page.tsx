@@ -2,6 +2,12 @@ import { SignedOutShell } from "@/components/signed-out-shell";
 
 import { SignInButton } from "./sign-in-button";
 
+export const metadata = {
+  title: "Sign in – Runway",
+  alternates: { canonical: "/login" },
+  openGraph: { url: "/login" },
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
