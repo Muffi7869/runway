@@ -684,3 +684,12 @@ Counts are sequential network/database stages on the critical response path, not
 - Preserved assignment status form actions and fields, menu and popover accessibility, pending and error states, and existing visual tokens; added focused positioning, portal-contract, action-wiring, and keyboard-behavior coverage.
 - Decisions: one shared popup layer token keeps every floating surface above cards and the sidebar; no application logic, action contract, data query, or persistence behavior changed.
 - Known issues: signed-in visual confirmation remains in Manual checks because Codex cannot access the owner account.
+
+### V2-1 Part 1 — Capacity, weekend window, and exam schema
+
+- Added one unapplied migration for weekend study windows, Light/Normal/Heavy capacity settings, per-day capacity overrides, durable exam decisions, and the V2 Google calendar-selection columns.
+- Preserved existing calendar behavior by mapping legacy selected calendars to Busy through `fixed_calendar_ids`; the new Show and Exams arrays start empty, and the Runway Events calendar identifier remains unused until V2-2.
+- Retired the legacy daily-maximum constraints while retaining its nullable column for the currently deployed pre-V2 application; a later migration will drop it after the V2 application is live.
+- Extended the rollback-only SQL runner with owner, stranger, anonymous, uniqueness, constraint, default, and calendar-array coverage for the V2 schema.
+- Decisions: `Show` uses only the visible array, `Busy` uses only the existing fixed array, `Exams` uses both the fixed and exam arrays, and `Hidden` uses none. Custom capacity is the only level with `custom_minutes`; Off has no custom value and resolves to zero in pure planning logic.
+- Known issues: Codex performed static SQL checks only. Mufaddal must apply the migration and run the rollback-only SQL runner before Part 2.

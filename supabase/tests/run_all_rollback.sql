@@ -1,4 +1,4 @@
--- Runway Phase 3, 4, and 6 database verification runner.
+-- Runway Phase 3, 4, 6, and V2 database verification runner.
 -- Safe to run repeatedly in the Supabase SQL Editor: every fixture and temp
 -- result is inside one outer transaction. Each test deliberately raises RN001
 -- to undo its inner subtransaction before recording PASS or FAIL. The final
@@ -27,8 +27,11 @@ union all select 'blocks', count(*) from public.blocks
 union all select 'sessions', count(*) from public.sessions
 union all select 'session_steps', count(*) from public.session_steps
 union all select 'blocked_days', count(*) from public.blocked_days
+union all select 'day_capacity', count(*) from public.day_capacity
+union all select 'exam_decisions', count(*) from public.exam_decisions
 union all select 'classes', count(*) from public.classes
 union all select 'settings', count(*) from public.settings
+union all select 'google_connection', count(*) from public.google_connection
 union all select 'auth.users', count(*) from auth.users;
 
 do $test$
@@ -704,6 +707,302 @@ begin
       raise exception 'anon called save_assignment_steps';
     exception when insufficient_privilege then null;
     end;
+
+    raise exception using errcode = 'RN001', message = 'test ok';
+  exception
+    when sqlstate 'RN001' then
+      insert into test_results values (test_name, 'PASS', null);
+      raise notice 'PASS %', test_name;
+    when others then
+      get stacked diagnostics state = returned_sqlstate, message = message_text;
+      insert into test_results values (test_name, 'FAIL', state || ': ' || message);
+      raise notice 'FAIL %: %: %', test_name, state, message;
+  end;
+end;
+$test$;
+
+do $test$
+declare
+  test_name constant text := 'day_capacity: owner CRUD, isolation, anon, uniqueness, and checks';
+  owner_id constant uuid := '50000000-0000-4000-8000-000000000001';
+  stranger_id constant uuid := '50000000-0000-4000-8000-000000000002';
+  row_id constant uuid := '50000000-0000-4000-8000-000000000003';
+  protected_id constant uuid := '50000000-0000-4000-8000-000000000004';
+  affected integer;
+  visible integer;
+  state text;
+  message text;
+begin
+  begin
+    insert into auth.users (
+      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    ) values
+      ('00000000-0000-0000-0000-000000000000', owner_id,
+       'authenticated', 'authenticated', null, '', now(), '{}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', stranger_id,
+       'authenticated', 'authenticated', null, '', now(), '{}'::jsonb, '{}'::jsonb, now(), now());
+
+    execute 'set local role authenticated';
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', owner_id, 'role', 'authenticated')::text,
+      true
+    );
+
+    insert into public.day_capacity (id, user_id, date, level)
+    values (row_id, owner_id, date '2026-11-01', 'light');
+    update public.day_capacity set level = 'heavy' where id = row_id;
+    if not exists (
+      select 1 from public.day_capacity where id = row_id and level = 'heavy'
+    ) then
+      raise exception 'owner insert or update failed';
+    end if;
+    delete from public.day_capacity where id = row_id;
+    get diagnostics affected = row_count;
+    if affected <> 1 then raise exception 'owner delete failed'; end if;
+
+    insert into public.day_capacity (id, user_id, date, level)
+    values (protected_id, owner_id, date '2026-11-02', 'normal');
+
+    begin
+      insert into public.day_capacity (user_id, date, level)
+      values (owner_id, date '2026-11-02', 'light');
+      raise exception 'duplicate owner date was accepted';
+    exception when unique_violation then null;
+    end;
+    begin
+      insert into public.day_capacity (user_id, date, level)
+      values (owner_id, date '2026-11-03', 'impossible');
+      raise exception 'invalid level was accepted';
+    exception when check_violation then null;
+    end;
+    begin
+      insert into public.day_capacity (user_id, date, level, custom_minutes)
+      values (owner_id, date '2026-11-04', 'custom', 1441);
+      raise exception 'invalid custom minutes were accepted';
+    exception when check_violation then null;
+    end;
+
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', stranger_id, 'role', 'authenticated')::text,
+      true
+    );
+    select count(*) into visible from public.day_capacity where user_id = owner_id;
+    if visible <> 0 then raise exception 'stranger read owner capacity'; end if;
+    delete from public.day_capacity where id = protected_id;
+    get diagnostics affected = row_count;
+    if affected <> 0 then raise exception 'stranger deleted owner capacity'; end if;
+
+    execute 'set local role anon';
+    perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+    begin
+      select count(*) into visible from public.day_capacity;
+      if visible <> 0 then raise exception 'anon read capacity'; end if;
+    exception when insufficient_privilege then null;
+    end;
+    begin
+      insert into public.day_capacity (user_id, date, level)
+      values (owner_id, date '2026-11-05', 'normal');
+      raise exception 'anon inserted capacity';
+    exception when insufficient_privilege then null;
+    end;
+
+    raise exception using errcode = 'RN001', message = 'test ok';
+  exception
+    when sqlstate 'RN001' then
+      insert into test_results values (test_name, 'PASS', null);
+      raise notice 'PASS %', test_name;
+    when others then
+      get stacked diagnostics state = returned_sqlstate, message = message_text;
+      insert into test_results values (test_name, 'FAIL', state || ': ' || message);
+      raise notice 'FAIL %: %: %', test_name, state, message;
+  end;
+end;
+$test$;
+
+do $test$
+declare
+  test_name constant text := 'exam_decisions: owner CRUD, isolation, anon, uniqueness, and checks';
+  owner_id constant uuid := '60000000-0000-4000-8000-000000000001';
+  stranger_id constant uuid := '60000000-0000-4000-8000-000000000002';
+  row_id constant uuid := '60000000-0000-4000-8000-000000000003';
+  protected_id constant uuid := '60000000-0000-4000-8000-000000000004';
+  affected integer;
+  visible integer;
+  state text;
+  message text;
+begin
+  begin
+    insert into auth.users (
+      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    ) values
+      ('00000000-0000-0000-0000-000000000000', owner_id,
+       'authenticated', 'authenticated', null, '', now(), '{}'::jsonb, '{}'::jsonb, now(), now()),
+      ('00000000-0000-0000-0000-000000000000', stranger_id,
+       'authenticated', 'authenticated', null, '', now(), '{}'::jsonb, '{}'::jsonb, now(), now());
+
+    execute 'set local role authenticated';
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', owner_id, 'role', 'authenticated')::text,
+      true
+    );
+
+    insert into public.exam_decisions (
+      id, user_id, source_calendar_id, google_event_id, decision
+    ) values (row_id, owner_id, 'test-calendar-a', 'test-event-a', 'protect');
+    update public.exam_decisions set decision = 'not_exam' where id = row_id;
+    if not exists (
+      select 1 from public.exam_decisions
+      where id = row_id and decision = 'not_exam'
+    ) then
+      raise exception 'owner insert or update failed';
+    end if;
+    delete from public.exam_decisions where id = row_id;
+    get diagnostics affected = row_count;
+    if affected <> 1 then raise exception 'owner delete failed'; end if;
+
+    insert into public.exam_decisions (
+      id, user_id, source_calendar_id, google_event_id, decision
+    ) values (
+      protected_id, owner_id, 'test-calendar-b', 'test-event-b', 'no_protection'
+    );
+
+    begin
+      insert into public.exam_decisions (
+        user_id, source_calendar_id, google_event_id, decision
+      ) values (owner_id, 'test-calendar-b', 'test-event-b', 'protect');
+      raise exception 'duplicate owner event was accepted';
+    exception when unique_violation then null;
+    end;
+    begin
+      insert into public.exam_decisions (
+        user_id, source_calendar_id, google_event_id, decision
+      ) values (owner_id, 'test-calendar-c', 'test-event-c', 'maybe');
+      raise exception 'invalid decision was accepted';
+    exception when check_violation then null;
+    end;
+
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', stranger_id, 'role', 'authenticated')::text,
+      true
+    );
+    select count(*) into visible from public.exam_decisions where user_id = owner_id;
+    if visible <> 0 then raise exception 'stranger read owner exam decisions'; end if;
+    delete from public.exam_decisions where id = protected_id;
+    get diagnostics affected = row_count;
+    if affected <> 0 then raise exception 'stranger deleted owner exam decision'; end if;
+
+    execute 'set local role anon';
+    perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+    begin
+      select count(*) into visible from public.exam_decisions;
+      if visible <> 0 then raise exception 'anon read exam decisions'; end if;
+    exception when insufficient_privilege then null;
+    end;
+    begin
+      insert into public.exam_decisions (
+        user_id, source_calendar_id, google_event_id, decision
+      ) values (owner_id, 'test-calendar-d', 'test-event-d', 'protect');
+      raise exception 'anon inserted exam decision';
+    exception when insufficient_privilege then null;
+    end;
+
+    raise exception using errcode = 'RN001', message = 'test ok';
+  exception
+    when sqlstate 'RN001' then
+      insert into test_results values (test_name, 'PASS', null);
+      raise notice 'PASS %', test_name;
+    when others then
+      get stacked diagnostics state = returned_sqlstate, message = message_text;
+      insert into test_results values (test_name, 'FAIL', state || ': ' || message);
+      raise notice 'FAIL %: %: %', test_name, state, message;
+  end;
+end;
+$test$;
+
+do $test$
+declare
+  test_name constant text := 'V2 settings and calendar columns: constraints, defaults, and arrays';
+  owner_id constant uuid := '70000000-0000-4000-8000-000000000001';
+  settings_id constant uuid := '70000000-0000-4000-8000-000000000002';
+  connection_id constant uuid := '70000000-0000-4000-8000-000000000003';
+  state text;
+  message text;
+begin
+  begin
+    insert into auth.users (
+      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+    ) values (
+      '00000000-0000-0000-0000-000000000000', owner_id,
+      'authenticated', 'authenticated', null, '', now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+    );
+    insert into public.settings (
+      id, user_id, study_window_start, study_window_end,
+      min_block_minutes, max_block_minutes, buffer_days, timezone
+    ) values (
+      settings_id, owner_id, time '08:00', time '22:00', 30, 120, 2,
+      'America/Los_Angeles'
+    );
+
+    begin
+      update public.settings
+      set capacity_light_minutes = 300, capacity_normal_minutes = 240
+      where id = settings_id;
+      raise exception 'light greater than normal was accepted';
+    exception when check_violation then null;
+    end;
+    begin
+      update public.settings set capacity_heavy_minutes = 1441
+      where id = settings_id;
+      raise exception 'heavy above 1440 was accepted';
+    exception when check_violation then null;
+    end;
+    begin
+      update public.settings set weekend_window_start = time '09:00'
+      where id = settings_id;
+      raise exception 'one weekend bound was accepted';
+    exception when check_violation then null;
+    end;
+    begin
+      update public.settings
+      set weekend_window_start = time '18:00', weekend_window_end = time '10:00'
+      where id = settings_id;
+      raise exception 'reversed weekend window was accepted';
+    exception when check_violation then null;
+    end;
+
+    insert into public.google_connection (
+      id, user_id, refresh_token_encrypted, granted_scopes, status
+    ) values (
+      connection_id, owner_id, 'test-ciphertext', 'test-scope', 'connected'
+    );
+    if not exists (
+      select 1 from public.google_connection
+      where id = connection_id
+        and exam_calendar_ids = '{}'::text[]
+        and visible_calendar_ids = '{}'::text[]
+        and events_calendar_id is null
+    ) then
+      raise exception 'new calendar columns did not use safe defaults';
+    end if;
+    update public.google_connection
+    set exam_calendar_ids = array['test-calendar-a'],
+        visible_calendar_ids = array['test-calendar-b']
+    where id = connection_id;
+    if not exists (
+      select 1 from public.google_connection
+      where id = connection_id
+        and exam_calendar_ids = array['test-calendar-a']
+        and visible_calendar_ids = array['test-calendar-b']
+    ) then
+      raise exception 'calendar arrays did not store identifiers';
+    end if;
 
     raise exception using errcode = 'RN001', message = 'test ok';
   exception
